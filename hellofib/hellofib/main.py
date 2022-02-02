@@ -8,7 +8,7 @@ def main():
             return fib(n - 2) + fib(n - 1)
     
     start_time = time.time()
-    fib(32)
+    fib(34)
     print(f"Calculating fibs took {time.time() - start_time} seconds")
 
 

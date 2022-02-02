@@ -1,0 +1,20 @@
+python_sources(name="libhellonumpy", sources=["**/*.py"])
+
+python_distribution(
+    name="hellonumpy-dist",
+    dependencies=[":libhellonumpy"],
+    wheel=True,
+    sdist=False,
+    provides=python_artifact(
+        name="hellonumpy-dist",
+        version="0.0.1",
+        description="A distribution for the hello Numpy library.",
+    ),
+)
+
+pyoxidizer_binary(
+    name="hellonumpy-bin",
+    entry_point="hellonumpy.main",
+    dependencies=[":hellonumpy-dist"],
+    filesystem_resources=["numpy"],
+)

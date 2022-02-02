@@ -1,0 +1,38 @@
+[GLOBAL]
+pants_version = "2.9.0"
+pantsd = true 
+build_patterns = ["BUILD.pants", "BUILD"]
+pythonpath = ["pants-plugins"]
+print_stacktrace = true
+
+backend_packages = [
+    "pants.backend.plugin_development",
+    "pants.backend.python",
+    "pants.backend.python.lint.black",
+    "pants.backend.python.lint.docformatter",
+    "pants.backend.python.lint.flake8",
+    "pants.backend.python.lint.isort",
+    "experimental.pyoxidizer",
+]
+
+[source]
+marker_filenames = ["BUILD.pants"]
+root_patterns = [
+    "pants-plugins",
+]
+
+[python]
+interpreter_constraints = [">=3.9"]
+requirement_constraints = "requirements.constraints.txt"
+
+[flake8]
+args = ["--max-line-length 88", "--ignore=E501"]
+
+[isort]
+args = "--profile black"
+
+[pyoxidizer]
+interpreter_constraints = [">=3.9"]
+
+[anonymous-telemetry]
+enabled = false

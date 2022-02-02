@@ -1,0 +1,26 @@
+python_sources(
+    name="libhellotemplate",
+    sources=["**/*.py"],
+    dependencies=[
+        "//:uvicorn",
+    ],
+)
+
+python_distribution(
+    name="hellotemplate-dist",
+    dependencies=[":libhellotemplate"],
+    wheel=True,
+    sdist=False,
+    provides=python_artifact(
+        name="hellotemplate-dist",
+        version="0.0.1",
+        description="A distribution for the hellotemplate library.",
+    ),
+)
+
+pyoxidizer_binary(
+    name="hellotemplate-bin",
+    entry_point="hellotemplate.main",
+    template="pyoxidizer.bzlt",
+    dependencies=[":hellotemplate-dist"],
+)

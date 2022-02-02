@@ -1,0 +1,25 @@
+python_sources(
+    name="libhellotyper",
+    sources=["**/*.py"],
+    dependencies=[
+        "//:uvicorn",
+    ],
+)
+
+python_distribution(
+    name="hellotyper-dist",
+    dependencies=[":libhellotyper"],
+    wheel=True,
+    sdist=False,
+    provides=python_artifact(
+        name="hellotyper-dist",
+        version="0.0.1",
+        description="A distribution for the hello typer library.",
+    ),
+)
+
+pyoxidizer_binary(
+    name="hellotyper-bin",
+    entry_point="hellotyper.main",
+    dependencies=[":hellotyper-dist"],
+)

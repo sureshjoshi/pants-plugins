@@ -1,0 +1,6 @@
+fastapi
+kivy
+numpy
+pydantic
+typer
+uvicorn

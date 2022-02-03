@@ -1,3 +1,6 @@
+# Copyright 2022 Pants project contributors (see CONTRIBUTORS.md).
+# Licensed under the Apache License, Version 2.0 (see LICENSE).
+
 import logging
 from dataclasses import dataclass
 
@@ -48,40 +51,35 @@ class PyOxidizerFieldSet(PackageFieldSet):
 async def package_pyoxidizer_binary(
     pyoxidizer: PyOxidizer, field_set: PyOxidizerFieldSet
 ) -> BuiltPackage:
-    logger.info(f"Incoming package_pyoxidizer_binary field set: {field_set}")
-    targets = await Get(Targets, DependenciesRequest(field_set.dependencies)) 
+    logger.debug(f"Incoming package_pyoxidizer_binary field set: {field_set}")
+    targets = await Get(Targets, DependenciesRequest(field_set.dependencies))
     target = targets[0]
 
-    logger.info(
-        f"Received these targets inside pyox targets: {target.address.target_name}"
-    )
+    logger.debug(f"Received these targets inside pyox targets: {target.address.target_name}")
 
     packages = await Get(
         FieldSetsPerTarget,
         FieldSetsPerTargetRequest(PackageFieldSet, [target]),
     )
-    logger.info(f"Retrieved the following FieldSetsPerTarget {packages}")
+    logger.debug(f"Retrieved the following FieldSetsPerTarget {packages}")
 
     built_packages = await MultiGet(
-        Get(BuiltPackage, PackageFieldSet, field_set)
-        for field_set in packages.field_sets
+        Get(BuiltPackage, PackageFieldSet, field_set) for field_set in packages.field_sets
     )
-    assert len(built_packages) >= 1, "There should be at least one wheel as a PyOxidizer dependency"
 
-    # TODO: Can this be walrus'd? Double for with repeated artifact.relpath is ugly
     wheels = [
         artifact.relpath
         for wheel in built_packages
         for artifact in wheel.artifacts
         if artifact.relpath is not None
     ]
-    logger.info(f"This is the built package retrieved {built_packages}")
+    logger.debug(f"This is the built package retrieved {built_packages}")
 
     # Pulling this merged digests idea from the Docker plugin
     built_package_digests = [built_package.digest for built_package in built_packages]
 
     # Pip install pyoxidizer
-    pyoxidizer_pex_get = await Get(
+    pyoxidizer_pex = await Get(
         Pex,
         PexRequest(
             output_filename="pyoxidizer.pex",
@@ -94,13 +92,9 @@ async def package_pyoxidizer_binary(
 
     config_template = None
     if field_set.template.value is not None:
-        config_template_source = await Get(
-            SourceFiles, SourceFilesRequest([field_set.template])
-        )
+        config_template_source = await Get(SourceFiles, SourceFilesRequest([field_set.template]))
 
-        digest_contents = await Get(
-            DigestContents, Digest, config_template_source.snapshot.digest
-        )
+        digest_contents = await Get(DigestContents, Digest, config_template_source.snapshot.digest)
         config_template = digest_contents[0].content.decode("utf-8")
 
     config = PyOxidizerConfig(
@@ -112,24 +106,24 @@ async def package_pyoxidizer_binary(
         if not field_set.unclassified_resources.value
         else list(field_set.unclassified_resources.value),
     )
-    config_content = config.output()
 
-    logger.info(config_content)
+    rendered_config = config.render()
+    logger.debug(f"Rendered configuation to use -> {rendered_config}")
     config_digest = await Get(
         Digest,
-        CreateDigest([FileContent("pyoxidizer.bzl", config_content.encode("utf-8"))]),
+        CreateDigest([FileContent("pyoxidizer.bzl", rendered_config.encode("utf-8"))]),
     )
 
     all_digests = (config_digest, *built_package_digests)
     merged_digest = await Get(Digest, MergeDigests(d for d in all_digests if d))
     merged_digest_snapshot = await Get(Snapshot, Digest, merged_digest)
-    logger.info(merged_digest_snapshot)
+    logger.debug(merged_digest_snapshot)
 
     result = await Get(
         ProcessResult,
         PexProcess(
-            pyoxidizer_pex_get,
-            argv=["build"],
+            pyoxidizer_pex,
+            argv=["build", *pyoxidizer.args],
             description="Running PyOxidizer build (...this can take a minute...)",
             input_digest=merged_digest,
             level=LogLevel.DEBUG,
@@ -146,4 +140,7 @@ async def package_pyoxidizer_binary(
 
 
 def rules():
-    return [*collect_rules(), UnionRule(PackageFieldSet, PyOxidizerFieldSet)]
+    return (
+        *collect_rules(),
+        UnionRule(PackageFieldSet, PyOxidizerFieldSet),
+    )

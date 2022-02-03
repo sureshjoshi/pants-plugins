@@ -69,4 +69,3 @@ python -c "from hellofib.main import main; main()"
 2. Handle use case where `ext_modules` are already specified in the SetupKwargs
 3. Figure out better API for SetupPyContentRequest - it feels a bit hacky to expect a certain key from another method, where there might be a better, more holistic solution
 4. Test on imported libraries and add libraries to pants deps
-5. 

@@ -12,6 +12,7 @@ backend_packages = [
     "pants.backend.python.lint.docformatter",
     "pants.backend.python.lint.flake8",
     "pants.backend.python.lint.isort",
+    "experimental.mypyc",
     "experimental.pyoxidizer",
 ]
 
@@ -36,3 +37,7 @@ interpreter_constraints = [">=3.9"]
 
 [anonymous-telemetry]
 enabled = false
+
+[setuptools]
+extra_requirements = ["wheel", "mypy"]
+lockfile = "build-support/setuptools.txt"

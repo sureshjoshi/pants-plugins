@@ -1,6 +1,6 @@
 python_sources(name="libhellonumpy", sources=["**/*.py"])
 
-python_distribution(
+mypyc_python_distribution(
     name="hellonumpy-dist",
     dependencies=[":libhellonumpy"],
     wheel=True,

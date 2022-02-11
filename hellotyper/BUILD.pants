@@ -1,12 +1,9 @@
 python_sources(
     name="libhellotyper",
     sources=["**/*.py"],
-    dependencies=[
-        "//:uvicorn",
-    ],
 )
 
-python_distribution(
+mypyc_python_distribution(
     name="hellotyper-dist",
     dependencies=[":libhellotyper"],
     wheel=True,

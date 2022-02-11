@@ -1,9 +1,12 @@
 from dataclasses import dataclass
-from decimal import DivisionByZero
 import logging
 import os
 from pathlib import Path
 
+
+from pants.backend.python.util_rules.pex import (
+    PexRequirements
+)
 from pants.backend.python.goals.setup_py import (
     DistBuildChroot,
     DistBuildChrootRequest,
@@ -26,13 +29,13 @@ from pants.backend.python.subsystems.setup import PythonSetup
 from pants.backend.python.util_rules.dists import (
     distutils_repr,
     BuildSystem, 
-    BuildSystemRequest,
+    Setuptools,
 )
 from pants.backend.python.util_rules.python_sources import (
     PythonSourceFilesRequest,
     PythonSourceFiles,
 )
-from pants.engine.fs import AddPrefix, CreateDigest, Digest, FileContent, Snapshot
+from pants.engine.fs import AddPrefix, Digest, Snapshot
 from pants.engine.rules import Get, collect_rules, rule
 from pants.engine.target import Target, TransitiveTargets, TransitiveTargetsRequest
 from pants.engine.unions import UnionRule
@@ -134,8 +137,8 @@ class MyPycPythonDistributionFieldSet(PackageFieldSet):
 async def package_mypyc_python_dist(
     field_set: MyPycPythonDistributionFieldSet,
     python_setup: PythonSetup,
+    setuptools: Setuptools,
 ) -> BuiltPackage:
-
     transitive_targets = await Get(TransitiveTargets, TransitiveTargetsRequest([field_set.address]))
     exported_target = ExportedTarget(transitive_targets.roots[0])
 
@@ -166,8 +169,14 @@ async def package_mypyc_python_dist(
     working_directory = os.path.join(chroot_prefix, chroot.working_directory)
     prefixed_chroot = await Get(Digest, AddPrefix(chroot.digest, chroot_prefix))
     dist_snapshot = await Get(Snapshot, Digest, chroot.digest)
-    logger.info(f"Dist snapshot: {dist_snapshot}")
-    build_system = await Get(BuildSystem, BuildSystemRequest(prefixed_chroot, working_directory))
+    # build_system = await Get(BuildSystem, BuildSystemRequest(typer_digest, working_directory))
+
+    # TODO: Check if pyproject.toml exists?
+    build_system = BuildSystem(
+        requires=PexRequirements(req_strings=(*setuptools.all_requirements, "typer",)), 
+        build_backend="setuptools.build_meta:__legacy__"
+    )
+
     logger.info(f"Build system: {build_system}")
     setup_py_result = await Get(
         DistBuildResult,
@@ -184,19 +193,7 @@ async def package_mypyc_python_dist(
         ),
     )
 
-    # build_backend_pex = await Get(
-    #     VenvPex,
-    #     PexRequest(
-    #         output_filename="build_backend.pex",
-    #         internal_only=True,
-    #         requirements=request.build_system.requires,
-    #         interpreter_constraints=request.interpreter_constraints,
-    #     ),
-    # )
-
     dist_snapshot = await Get(Snapshot, Digest, setup_py_result.output)
-    # empty_digest = await Get(Digest, CreateDigest([FileContent("f1.txt", b"hello world")]))
-    logger.info(dist_snapshot)
     return BuiltPackage(
         setup_py_result.output,
         tuple(BuiltPackageArtifact(path) for path in dist_snapshot.files),

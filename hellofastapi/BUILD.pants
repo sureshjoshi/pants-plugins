@@ -6,7 +6,7 @@ python_sources(
     ],
 )
 
-mypyc_python_distribution(
+python_distribution(
     name="hellofastapi-dist",
     dependencies=[":libhellofastapi"],
     wheel=True,

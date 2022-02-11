@@ -53,11 +53,14 @@
 
 ## Examples/Libraries to test
 
-At the moment, only `hellofib` uses the new mypyc_python_distribution target
+All of the examples that can compile with `mypyc_python_distribution` have that target applied. There are some outstanding examples which fail when `mypy` tries to compile them.
 
+To quickly see which examples are supported, type the following: `./pants_from_sources filter --target-type=mypyc_python_distribution ::`
+
+For example, with `hellofib`:
 ```bash
-./pants --version
-./pants package hellofib:hellofib-dist
+./pants_from_sources --version
+./pants_from_sources package hellofib:hellofib-dist
 
 pip install dist/hellofib-{whatever}-.whl --force-reinstall
 python -c "from hellofib.main import main; main()"
@@ -68,4 +71,4 @@ python -c "from hellofib.main import main; main()"
 1. Add support for multiple dependency targets (only tested/working with one `python_sources` dependency)
 2. Handle use case where `ext_modules` are already specified in the SetupKwargs
 3. Figure out better API for SetupPyContentRequest - it feels a bit hacky to expect a certain key from another method, where there might be a better, more holistic solution
-4. Test on imported libraries and add libraries to pants deps
+4. ~Test on imported libraries and add libraries to pants deps~

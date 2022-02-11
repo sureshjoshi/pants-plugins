@@ -3,7 +3,7 @@ python_sources(
     sources=["**/*.py"],
 )
 
-mypyc_python_distribution(
+python_distribution(
     name="hellokivy-dist",
     dependencies=[":libhellokivy"],
     wheel=True,

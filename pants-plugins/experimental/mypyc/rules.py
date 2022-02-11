@@ -1,27 +1,45 @@
 from dataclasses import dataclass
+from decimal import DivisionByZero
 import logging
+import os
 from pathlib import Path
 
 from pants.backend.python.goals.setup_py import (
+    DistBuildChroot,
+    DistBuildChrootRequest,
+    DistBuildRequest,
+    DistBuildResult,
+    ExportedTarget,
+    PythonProvidesField,
+    NoDistTypeSelected,
     SetupKwargs,
     SetupKwargsRequest,
     SETUP_BOILERPLATE,
     SetupPyContentRequest,
     SetupPyContent,
+    WheelConfigSettingsField,
+    WheelField
 )
+from pants.backend.python.util_rules.interpreter_constraints import InterpreterConstraints
+from pants.core.goals.package import BuiltPackage, BuiltPackageArtifact, PackageFieldSet
+from pants.backend.python.subsystems.setup import PythonSetup
 from pants.backend.python.util_rules.dists import (
     distutils_repr,
+    BuildSystem, 
+    BuildSystemRequest,
 )
 from pants.backend.python.util_rules.python_sources import (
     PythonSourceFilesRequest,
     PythonSourceFiles,
 )
+from pants.engine.fs import AddPrefix, CreateDigest, Digest, FileContent, Snapshot
 from pants.engine.rules import Get, collect_rules, rule
 from pants.engine.target import Target, TransitiveTargets, TransitiveTargetsRequest
 from pants.engine.unions import UnionRule
+from pants.util.frozendict import FrozenDict
+from pants.util.logging import LogLevel
 
 from experimental.mypyc.target_types import MyPycPythonDistribution
-from pants.util.logging import LogLevel
 
 logger = logging.getLogger(__name__)
 
@@ -45,12 +63,14 @@ class MyPycSetupKwargsRequest(SetupKwargsRequest):
 
 @rule(level=LogLevel.DEBUG)
 async def mypyc_setup_kwargs(request: MyPycSetupKwargsRequest) -> SetupKwargs:
-    logger.debug(f"mypyc_setup_kwargs: Running on requested target: {request.target}")
+    logger.info(f"mypyc_setup_kwargs: Running on requested target: {request.target}")
     transitive_targets = await Get(
         TransitiveTargets,
         TransitiveTargetsRequest([request.target.address]),
     )
-    logger.debug(f"mypyc_setup_kwargs: Transitive targets of {request.target.address} : {transitive_targets}")
+    logger.info(f"mypyc_setup_kwargs: Transitive targets of {request.target.address} : {transitive_targets}")
+
+    logger.info(f"mypyc_setup_kwargs: Dependencies {transitive_targets.dependencies}")
 
     python_source_files = (
         await Get(
@@ -103,10 +123,91 @@ async def generate_setup_py_content(request: MyPycSetupPyContentRequest) -> Setu
     logger.debug(f"generate_setup_py_content: Generating mypyc setup.py: {content}")
     return SetupPyContent(content)
 
+@dataclass(frozen=True)
+class MyPycPythonDistributionFieldSet(PackageFieldSet):
+    required_fields = (PythonProvidesField,)
+
+    provides: PythonProvidesField
+
+
+@rule(level=LogLevel.DEBUG)
+async def package_mypyc_python_dist(
+    field_set: MyPycPythonDistributionFieldSet,
+    python_setup: PythonSetup,
+) -> BuiltPackage:
+
+    transitive_targets = await Get(TransitiveTargets, TransitiveTargetsRequest([field_set.address]))
+    exported_target = ExportedTarget(transitive_targets.roots[0])
+
+    dist_tgt = exported_target.target
+    wheel = dist_tgt.get(WheelField).value
+    # sdist = dist_tgt.get(SDistField).value
+    if not wheel:
+        raise NoDistTypeSelected(f"In order to package {dist_tgt.address.spec}, {WheelField.alias!r} or must be `True`.")
+
+    wheel_config_settings = dist_tgt.get(WheelConfigSettingsField).value or FrozenDict()
+    # sdist_config_settings = dist_tgt.get(SDistConfigSettingsField).value or FrozenDict()
+
+    interpreter_constraints = InterpreterConstraints.create_from_targets(
+        transitive_targets.closure, python_setup
+    ) or InterpreterConstraints(python_setup.interpreter_constraints)
+    chroot = await Get(
+        DistBuildChroot,
+        DistBuildChrootRequest(
+            exported_target,
+            py2=interpreter_constraints.includes_python2(),
+        ),
+    )
+
+    # We prefix the entire chroot, and run with this prefix as the cwd, so that we can capture
+    # any changes setup made within it without also capturing other artifacts of the pex
+    # process invocation.
+    chroot_prefix = "chroot"
+    working_directory = os.path.join(chroot_prefix, chroot.working_directory)
+    prefixed_chroot = await Get(Digest, AddPrefix(chroot.digest, chroot_prefix))
+    dist_snapshot = await Get(Snapshot, Digest, chroot.digest)
+    logger.info(f"Dist snapshot: {dist_snapshot}")
+    build_system = await Get(BuildSystem, BuildSystemRequest(prefixed_chroot, working_directory))
+    logger.info(f"Build system: {build_system}")
+    setup_py_result = await Get(
+        DistBuildResult,
+        DistBuildRequest(
+            build_system=build_system,
+            interpreter_constraints=interpreter_constraints,
+            build_wheel=wheel,
+            build_sdist=False,
+            input=prefixed_chroot,
+            working_directory=working_directory,
+            target_address_spec=exported_target.target.address.spec,
+            wheel_config_settings=wheel_config_settings,
+            # sdist_config_settings=sdist_config_settings,
+        ),
+    )
+
+    # build_backend_pex = await Get(
+    #     VenvPex,
+    #     PexRequest(
+    #         output_filename="build_backend.pex",
+    #         internal_only=True,
+    #         requirements=request.build_system.requires,
+    #         interpreter_constraints=request.interpreter_constraints,
+    #     ),
+    # )
+
+    dist_snapshot = await Get(Snapshot, Digest, setup_py_result.output)
+    # empty_digest = await Get(Digest, CreateDigest([FileContent("f1.txt", b"hello world")]))
+    logger.info(dist_snapshot)
+    return BuiltPackage(
+        setup_py_result.output,
+        tuple(BuiltPackageArtifact(path) for path in dist_snapshot.files),
+    )
+
+
 
 def rules():
     return (
         *collect_rules(),
         UnionRule(SetupKwargsRequest, MyPycSetupKwargsRequest),
         UnionRule(SetupPyContentRequest, MyPycSetupPyContentRequest),
+        UnionRule(PackageFieldSet, MyPycPythonDistributionFieldSet),
     )

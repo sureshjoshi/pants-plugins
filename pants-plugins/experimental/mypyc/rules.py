@@ -23,6 +23,9 @@ from pants.backend.python.goals.setup_py import (
     WheelConfigSettingsField,
     WheelField
 )
+from pants.backend.python.target_types import (
+    PythonRequirementsField,
+)
 from pants.backend.python.util_rules.interpreter_constraints import InterpreterConstraints
 from pants.core.goals.package import BuiltPackage, BuiltPackageArtifact, PackageFieldSet
 from pants.backend.python.subsystems.setup import PythonSetup
@@ -142,6 +145,9 @@ async def package_mypyc_python_dist(
     transitive_targets = await Get(TransitiveTargets, TransitiveTargetsRequest([field_set.address]))
     exported_target = ExportedTarget(transitive_targets.roots[0])
 
+    # TODO: This will ignore the requirements/constraints files
+    requirements = [target.address.target_name for target in transitive_targets.dependencies if target.has_field(PythonRequirementsField)]
+
     dist_tgt = exported_target.target
     wheel = dist_tgt.get(WheelField).value
     # sdist = dist_tgt.get(SDistField).value
@@ -173,7 +179,7 @@ async def package_mypyc_python_dist(
 
     # TODO: Check if pyproject.toml exists?
     build_system = BuildSystem(
-        requires=PexRequirements(req_strings=(*setuptools.all_requirements, "typer",)), 
+        requires=PexRequirements(req_strings=(*setuptools.all_requirements, *requirements,)), 
         build_backend="setuptools.build_meta:__legacy__"
     )
 

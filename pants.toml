@@ -12,7 +12,8 @@ backend_packages = [
     "pants.backend.python.lint.docformatter",
     "pants.backend.python.lint.flake8",
     "pants.backend.python.lint.isort",
-    "experimental.mypyc",
+    "experimental.ansible",
+    #"experimental.mypyc", # If uncommenting this, ensure you're using pants_from_sources
     "experimental.pyoxidizer",
 ]
 
@@ -34,6 +35,7 @@ args = "--profile black"
 
 [pyoxidizer]
 interpreter_constraints = [">=3.9"]
+args = ["--release"]
 
 [anonymous-telemetry]
 enabled = false

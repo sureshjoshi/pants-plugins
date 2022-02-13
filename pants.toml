@@ -19,6 +19,7 @@ backend_packages = [
     "experimental.cpp.lint.clangformat",
     "experimental.nodejs",
     "experimental.nodejs.lint.prettier",
+    "experimental.ansible",
     "experimental.pyoxidizer",
 ]
 
@@ -41,6 +42,7 @@ args = "--profile black"
 
 [pyoxidizer]
 interpreter_constraints = [">=3.9"]
+args = ["--release"]
 
 [anonymous-telemetry]
 enabled = false

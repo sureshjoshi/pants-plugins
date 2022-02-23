@@ -14,5 +14,19 @@ class Ansible(PythonToolBase):
     default_interpreter_constraints = ["CPython>=3.7"]
 
 
+class AnsibleLint(PythonToolBase):
+    options_scope = "ansible-lint"
+    help = """ansible-lint linter for Ansible"""
+
+    default_version = "ansible-lint==5.4.0"
+    default_extra_requirements = [
+        "ansible==5.3.0"
+    ]
+    default_main = ConsoleScript("ansible-lint")
+
+    register_interpreter_constraints = True
+    default_interpreter_constraints = ["CPython>=3.7"]
+
+
 def rules():
     return collect_rules()

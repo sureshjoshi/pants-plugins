@@ -1,17 +1,20 @@
 from dataclasses import dataclass
 import logging
 
-from pants.backend.python.util_rules.pex import Pex, PexProcess, PexRequest
+from pants.backend.python.util_rules.pex import Pex, PexProcess, PexRequest, VenvPex, VenvPexProcess, VenvPexRequest
 from pants.core.goals.check import CheckRequest, CheckResult, CheckResults
+from pants.core.goals.lint import LintRequest, LintResult, LintResults
 from pants.engine.fs import Digest, RemovePrefix
 from pants.engine.process import FallibleProcessResult, ProcessCacheScope
 from pants.engine.rules import Get, collect_rules, rule
 from pants.engine.target import HydratedSources, HydrateSourcesRequest,SingleSourceField, WrappedTarget, Address
 from pants.engine.unions import UnionRule
 from pants.util.logging import LogLevel
+from pants.backend.python.target_types import ConsoleScript
+
 
 from experimental.ansible.deploy import DeploymentFieldSet, DeployResults, DeployResult
-from experimental.ansible.subsystem import Ansible
+from experimental.ansible.subsystem import Ansible, AnsibleLint
 from experimental.ansible.target_types import AnsibleDependenciesField, AnsiblePlaybook
 
 logger = logging.getLogger(__name__)
@@ -127,9 +130,68 @@ async def run_ansible_playbook(
     )
 
 
+class AnsibleLintRequest(LintRequest):
+    field_set_type = AnsibleFieldSet
+
+
+@rule
+async def run_ansiblelint(
+    request: AnsibleLintRequest, ansible_lint: AnsibleLint
+) -> LintResults:
+
+    # TODO: Pull this out into separate rule to hydrate the playbook
+    field_set: AnsibleFieldSet = request.field_sets[0]
+    logger.info(field_set)
+    wrapped_target = await Get(WrappedTarget, Address, field_set.address)
+    target = wrapped_target.target
+    sources = await Get(
+        HydratedSources,
+        HydrateSourcesRequest(
+            target.get(SingleSourceField),
+            for_sources_types=(AnsiblePlaybook,),
+        ),
+    )
+
+    # Drop the top-level directory
+    flattened_digest = await Get(Digest, RemovePrefix(sources.snapshot.digest, sources.snapshot.dirs[0]))
+
+    # Install ansible
+    ansible_pex = await Get(
+        VenvPex,
+        VenvPexRequest(
+            pex_request = PexRequest(
+                output_filename="ansible-lint.pex",
+                internal_only=True,
+                requirements=ansible_lint.pex_requirements(),
+                interpreter_constraints=ansible_lint.interpreter_constraints,
+                main=ansible_lint.main,
+            ),
+            bin_names=["ansible-lint", "ansible"]
+        )
+    )
+
+
+    # Run the ansible syntax check on the passed-in playbook
+    process_result = await Get(
+        FallibleProcessResult,
+        VenvPexProcess(
+            ansible_pex,
+            argv=[],
+            description="Running Ansible syntax check...",
+            input_digest=flattened_digest,
+            level=LogLevel.DEBUG,
+        )
+    )
+
+    return LintResults(
+        [LintResult.from_fallible_process_result(process_result)], linter_name="ansible-lint"
+    )
+
+
 def rules():
     return (
         *collect_rules(),
         UnionRule(CheckRequest, AnsibleCheckRequest),
+        UnionRule(LintRequest, AnsibleLintRequest),
         UnionRule(DeploymentFieldSet, AnsibleFieldSet),
     )

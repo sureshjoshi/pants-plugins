@@ -1,6 +1,6 @@
 python_sources(name="libhellofib", sources=["**/*.py"])
 
-mypyc_python_distribution(
+python_distribution(
     name="hellofib-dist",
     dependencies=[":libhellofib"],
     wheel=True,

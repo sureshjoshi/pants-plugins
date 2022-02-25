@@ -1,6 +1,6 @@
 python_sources(name="libhelloworld", sources=["**/*.py"])
 
-mypyc_python_distribution(
+python_distribution(
     name="helloworld-dist",
     dependencies=[":libhelloworld"],
     wheel=True,
@@ -16,4 +16,38 @@ pyoxidizer_binary(
     name="helloworld-bin",
     entry_point="helloworld.main",
     dependencies=[":helloworld-dist"],
+)
+
+# Testing multi-dependency pyoxidizer cases below
+
+python_sources(name="libspeaker", sources=["helloworld/speaker.py"])
+python_sources(name="libtalker", sources=["helloworld/talker.py"])
+
+python_distribution(
+    name="speaker-dist",
+    dependencies=[":libspeaker"],
+    wheel=True,
+    sdist=False,
+    provides=python_artifact(
+        name="speaker-dist",
+        version="0.0.1",
+        description="A distribution for the hello world speaker library.",
+    ),
+)
+
+python_distribution(
+    name="talker-dist",
+    dependencies=[":libtalker"],
+    wheel=True,
+    sdist=False,
+    provides=python_artifact(
+        name="talker-dist",
+        version="0.0.1",
+        description="A distribution for the hello world talker library.",
+    ),
+)
+
+pyoxidizer_binary(
+    name="helloworld-repl",
+    dependencies=[":speaker-dist", ":talker-dist"],
 )

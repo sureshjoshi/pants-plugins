@@ -2,7 +2,7 @@ python_sources(
     name="libhellotemplate",
     sources=["**/*.py"],
     dependencies=[
-        "//:uvicorn",
+        "//:reqs#uvicorn",
     ],
 )
 

@@ -1,0 +1,16 @@
+python_sources(
+    name="libcore",
+    sources=["**/*.py"],
+)
+
+python_distribution(
+    name="core-dist",
+    dependencies=[":libcore"],
+    wheel=True,
+    sdist=False,
+    provides=python_artifact(
+        name="core-dist",
+        version="0.0.1",
+        description="A distribution for the core library.",
+    ),
+)

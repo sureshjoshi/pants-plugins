@@ -2,7 +2,7 @@ python_sources(
     name="libhellofastapi",
     sources=["**/*.py"],
     dependencies=[
-        "//:uvicorn",
+        "//:reqs#uvicorn",
     ],
 )
 

@@ -1,4 +1,10 @@
-python_sources(name="libhelloworld", sources=["**/*.py"])
+python_sources(
+    name="libhelloworld",
+    sources=["**/*.py"],
+    # dependencies=[
+    #     "//core:libcore",
+    # ],
+)
 
 python_distribution(
     name="helloworld-dist",

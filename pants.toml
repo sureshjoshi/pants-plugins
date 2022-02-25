@@ -1,5 +1,5 @@
 [GLOBAL]
-pants_version = "2.10.0rc1"
+pants_version = "2.11.0.dev1"
 pantsd = true 
 build_patterns = ["BUILD.pants", "BUILD"]
 pythonpath = ["pants-plugins"]
@@ -19,6 +19,7 @@ backend_packages = [
 [source]
 marker_filenames = ["BUILD.pants"]
 root_patterns = [
+    "/",
     "pants-plugins",
 ]
 

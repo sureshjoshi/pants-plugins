@@ -10,7 +10,7 @@ python_distribution(
         version="0.0.1",
         description="A distribution for the hello fib library.",
     ),
-    generate_setup = True,
+    generate_setup=True,
 )
 
 pyoxidizer_binary(

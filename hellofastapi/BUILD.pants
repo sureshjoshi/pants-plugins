@@ -9,8 +9,6 @@ python_sources(
 python_distribution(
     name="hellofastapi-dist",
     dependencies=[":libhellofastapi"],
-    wheel=True,
-    sdist=False,
     provides=python_artifact(
         name="hellofastapi-dist",
         version="0.0.1",

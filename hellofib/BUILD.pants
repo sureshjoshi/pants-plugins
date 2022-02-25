@@ -3,8 +3,6 @@ python_sources(name="libhellofib", sources=["**/*.py"])
 python_distribution(
     name="hellofib-dist",
     dependencies=[":libhellofib"],
-    wheel=True,
-    sdist=False,
     provides=setup_py(
         name="hellofib-dist",
         version="0.0.1",

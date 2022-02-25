@@ -1,16 +1,14 @@
 python_sources(
     name="libhelloworld",
     sources=["**/*.py"],
-    # dependencies=[
-    #     "//core:libcore",
-    # ],
+    dependencies=[
+        "core:libcore",
+    ],
 )
 
 python_distribution(
     name="helloworld-dist",
     dependencies=[":libhelloworld"],
-    wheel=True,
-    sdist=False,
     provides=python_artifact(
         name="helloworld-dist",
         version="0.0.1",
@@ -18,11 +16,13 @@ python_distribution(
     ),
 )
 
+# TODO: core:core-dist needs to be added directly here, otherwise PyOx tries to grab it from pypi
 pyoxidizer_binary(
     name="helloworld-bin",
     entry_point="helloworld.main",
-    dependencies=[":helloworld-dist"],
+    dependencies=[":helloworld-dist", "core:core-dist"],
 )
+
 
 # Testing multi-dependency pyoxidizer cases below
 
@@ -32,8 +32,6 @@ python_sources(name="libtalker", sources=["helloworld/talker.py"])
 python_distribution(
     name="speaker-dist",
     dependencies=[":libspeaker"],
-    wheel=True,
-    sdist=False,
     provides=python_artifact(
         name="speaker-dist",
         version="0.0.1",
@@ -44,8 +42,6 @@ python_distribution(
 python_distribution(
     name="talker-dist",
     dependencies=[":libtalker"],
-    wheel=True,
-    sdist=False,
     provides=python_artifact(
         name="talker-dist",
         version="0.0.1",

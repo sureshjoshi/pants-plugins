@@ -96,7 +96,7 @@ async def package_pyoxidizer_binary(
     )
 
     deps_field_sets = await Get(
-        FieldSetsPerTarget, FieldSetsPerTargetRequest(PackageFieldSet, [direct_deps[0]])
+        FieldSetsPerTarget, FieldSetsPerTargetRequest(PackageFieldSet, direct_deps)
     )
     built_packages = await MultiGet(
         Get(BuiltPackage, PackageFieldSet, field_set) for field_set in deps_field_sets.field_sets

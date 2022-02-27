@@ -3,8 +3,6 @@ python_sources(name="libhellonumpy", sources=["**/*.py"])
 python_distribution(
     name="hellonumpy-dist",
     dependencies=[":libhellonumpy"],
-    wheel=True,
-    sdist=False,
     provides=python_artifact(
         name="hellonumpy-dist",
         version="0.0.1",

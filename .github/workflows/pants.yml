@@ -56,7 +56,7 @@ jobs:
     - name: Package / Run
       run: |
         ./pants package ::
-        ./pants run helloworld/main.py
+        ./pants run helloworld:
     
     - name: Upload pants log
       uses: actions/upload-artifact@v2

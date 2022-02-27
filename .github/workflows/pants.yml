@@ -45,18 +45,19 @@ jobs:
       run: |
         ./pants update-build-files --check
     
-    - name: Lint and typecheck
+    - name: Lint and (TODO) typecheck
       run: |
         ./pants lint ::
     
-    # - name: Test
+    # - name: Test (TODO Check failure - seems like internal Pants problem)
     #   run: |
     #     ./pants test ::
     
+    # TODO: Speeding this up by only running one package - in reality, should build each on main only - tests should be enough otherwise
     - name: Package / Run
       run: |
-        ./pants package ::
-        ./pants run helloworld:
+        ./pants package helloworld:
+        ./pants run helloworld:helloworld-bin
     
     - name: Upload pants log
       uses: actions/upload-artifact@v2

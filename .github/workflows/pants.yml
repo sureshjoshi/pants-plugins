@@ -49,9 +49,9 @@ jobs:
       run: |
         ./pants lint ::
     
-    - name: Test
-      run: |
-        ./pants test ::
+    # - name: Test
+    #   run: |
+    #     ./pants test ::
     
     - name: Package / Run
       run: |

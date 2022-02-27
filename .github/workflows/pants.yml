@@ -38,16 +38,20 @@ jobs:
         python-version: ${{ matrix.python-version }}
     
     - name: Bootstrap Pants
-      run: ./pants --version
+      run: |
+        ./pants --version
     
     - name: Check BUILD files
-      run: ./pants update-build-files --check
+      run: |
+        ./pants update-build-files --check
     
     - name: Lint and typecheck
-      run: ./pants lint check ::
+      run: |
+        ./pants lint check ::
     
     - name: Test
-      run: ./pants test ::
+      run: |
+        ./pants test ::
     
     - name: Package / Run
       run: |

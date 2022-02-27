@@ -47,7 +47,7 @@ jobs:
     
     - name: Lint and typecheck
       run: |
-        ./pants lint check ::
+        ./pants lint ::
     
     - name: Test
       run: |

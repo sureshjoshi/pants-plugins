@@ -2,9 +2,10 @@
 # Testing absolute imports inside Rust binary
 from helloworld.speaker import say_bye
 
+from core import greeter
+
 from . import talker
 
-from core import greeter
 
 def main():
     talker.say_hello()

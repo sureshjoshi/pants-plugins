@@ -1,6 +1,7 @@
 [GLOBAL]
-dynamic_ui = false
 colors = true
+dynamic_ui = false
+pantsd = false
 
 [pytest]
 args = ["-vv", "--no-header"]

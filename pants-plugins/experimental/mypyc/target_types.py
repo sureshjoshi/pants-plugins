@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 from pants.backend.python.target_types import (
     GenerateSetupField,
     PythonDistributionEntryPointsField,

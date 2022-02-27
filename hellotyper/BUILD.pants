@@ -3,11 +3,9 @@ python_sources(
     sources=["**/*.py"],
 )
 
-mypyc_python_distribution(
+python_distribution(
     name="hellotyper-dist",
     dependencies=[":libhellotyper"],
-    wheel=True,
-    sdist=False,
     provides=python_artifact(
         name="hellotyper-dist",
         version="0.0.1",

@@ -1,51 +1,47 @@
-from dataclasses import dataclass
 import logging
 import os
+from dataclasses import dataclass
 from pathlib import Path
 
-
-from pants.backend.python.util_rules.pex import (
-    PexRequirements
-)
+from experimental.mypyc.target_types import MyPycPythonDistribution
 from pants.backend.python.goals.setup_py import (
+    SETUP_BOILERPLATE,
     DistBuildChroot,
     DistBuildChrootRequest,
     DistBuildRequest,
     DistBuildResult,
     ExportedTarget,
-    PythonProvidesField,
     NoDistTypeSelected,
+    PythonProvidesField,
     SetupKwargs,
     SetupKwargsRequest,
-    SETUP_BOILERPLATE,
-    SetupPyContentRequest,
     SetupPyContent,
+    SetupPyContentRequest,
     WheelConfigSettingsField,
-    WheelField
+    WheelField,
 )
-from pants.backend.python.target_types import (
-    PythonRequirementsField,
-)
-from pants.backend.python.util_rules.interpreter_constraints import InterpreterConstraints
-from pants.core.goals.package import BuiltPackage, BuiltPackageArtifact, PackageFieldSet
 from pants.backend.python.subsystems.setup import PythonSetup
+from pants.backend.python.target_types import PythonRequirementsField
 from pants.backend.python.util_rules.dists import (
-    distutils_repr,
-    BuildSystem, 
+    BuildSystem,
     Setuptools,
+    distutils_repr,
 )
+from pants.backend.python.util_rules.interpreter_constraints import (
+    InterpreterConstraints,
+)
+from pants.backend.python.util_rules.pex import PexRequirements
 from pants.backend.python.util_rules.python_sources import (
-    PythonSourceFilesRequest,
     PythonSourceFiles,
+    PythonSourceFilesRequest,
 )
+from pants.core.goals.package import BuiltPackage, BuiltPackageArtifact, PackageFieldSet
 from pants.engine.fs import AddPrefix, Digest, Snapshot
 from pants.engine.rules import Get, collect_rules, rule
 from pants.engine.target import Target, TransitiveTargets, TransitiveTargetsRequest
 from pants.engine.unions import UnionRule
 from pants.util.frozendict import FrozenDict
 from pants.util.logging import LogLevel
-
-from experimental.mypyc.target_types import MyPycPythonDistribution
 
 logger = logging.getLogger(__name__)
 
@@ -60,12 +56,14 @@ from mypyc.build import mypycify
 
 setup(**{setup_kwargs_str}, ext_modules=mypycify({mypycify_files}),)
 """
- 
+
+
 @dataclass(frozen=True)
 class MyPycSetupKwargsRequest(SetupKwargsRequest):
     @classmethod
     def is_applicable(cls, target: Target) -> bool:
         return isinstance(target, MyPycPythonDistribution)
+
 
 @rule(level=LogLevel.DEBUG)
 async def mypyc_setup_kwargs(request: MyPycSetupKwargsRequest) -> SetupKwargs:
@@ -74,7 +72,9 @@ async def mypyc_setup_kwargs(request: MyPycSetupKwargsRequest) -> SetupKwargs:
         TransitiveTargets,
         TransitiveTargetsRequest([request.target.address]),
     )
-    logger.info(f"mypyc_setup_kwargs: Transitive targets of {request.target.address} : {transitive_targets}")
+    logger.info(
+        f"mypyc_setup_kwargs: Transitive targets of {request.target.address} : {transitive_targets}"
+    )
 
     logger.info(f"mypyc_setup_kwargs: Dependencies {transitive_targets.dependencies}")
 
@@ -86,13 +86,19 @@ async def mypyc_setup_kwargs(request: MyPycSetupKwargsRequest) -> SetupKwargs:
             ),
         ),
     )
-    
+
     # TODO: Handle multiple PythonSourceFiles
-    logger.debug(f"mypyc_setup_kwargs: Internals of the retrieved PythonSourceFiles: {python_source_files[0]}")
-    source_files = [Path(file) for file in python_source_files[0].source_files.snapshot.files]
+    logger.debug(
+        f"mypyc_setup_kwargs: Internals of the retrieved PythonSourceFiles: {python_source_files[0]}"
+    )
+    source_files = [
+        Path(file) for file in python_source_files[0].source_files.snapshot.files
+    ]
     # TODO: Handle multiple source roots
     source_root = python_source_files[0].source_roots[0]
-    relative_source_files = [str(file.relative_to(source_root)) for file in source_files]
+    relative_source_files = [
+        str(file.relative_to(source_root)) for file in source_files
+    ]
 
     kwargs = SetupKwargs(
         {
@@ -110,14 +116,19 @@ class MyPycSetupPyContentRequest(SetupPyContentRequest):
     def is_applicable(cls, target: Target) -> bool:
         return isinstance(target, MyPycPythonDistribution)
 
+
 @rule(level=LogLevel.DEBUG)
-async def generate_setup_py_content(request: MyPycSetupPyContentRequest) -> SetupPyContent:
+async def generate_setup_py_content(
+    request: MyPycSetupPyContentRequest,
+) -> SetupPyContent:
     setup_kwargs = request.finalized_setup_kwargs.kwargs
     mypycify_files = setup_kwargs.pop("mypycify_files", [])
 
-    template = MYPYC_SETUP_BOILERPLATE 
+    template = MYPYC_SETUP_BOILERPLATE
     if not mypycify_files:
-        logger.warning("generate_setup_py_content: No mypyc files were specified. Expecting a key named 'mypycify_files' with a list of source file paths")
+        logger.warning(
+            "generate_setup_py_content: No mypyc files were specified. Expecting a key named 'mypycify_files' with a list of source file paths"
+        )
         template = SETUP_BOILERPLATE
 
     # TODO: What happens if "ext_modules" was already specified in kwargs? Need to merge or error out as unsupported
@@ -128,6 +139,7 @@ async def generate_setup_py_content(request: MyPycSetupPyContentRequest) -> Setu
     ).encode()
     logger.debug(f"generate_setup_py_content: Generating mypyc setup.py: {content}")
     return SetupPyContent(content)
+
 
 @dataclass(frozen=True)
 class MyPycPythonDistributionFieldSet(PackageFieldSet):
@@ -142,17 +154,25 @@ async def package_mypyc_python_dist(
     python_setup: PythonSetup,
     setuptools: Setuptools,
 ) -> BuiltPackage:
-    transitive_targets = await Get(TransitiveTargets, TransitiveTargetsRequest([field_set.address]))
+    transitive_targets = await Get(
+        TransitiveTargets, TransitiveTargetsRequest([field_set.address])
+    )
     exported_target = ExportedTarget(transitive_targets.roots[0])
 
     # TODO: This will ignore the requirements/constraints files
-    requirements = [target.address.target_name for target in transitive_targets.dependencies if target.has_field(PythonRequirementsField)]
+    requirements = [
+        target.address.target_name
+        for target in transitive_targets.dependencies
+        if target.has_field(PythonRequirementsField)
+    ]
 
     dist_tgt = exported_target.target
     wheel = dist_tgt.get(WheelField).value
     # sdist = dist_tgt.get(SDistField).value
     if not wheel:
-        raise NoDistTypeSelected(f"In order to package {dist_tgt.address.spec}, {WheelField.alias!r} or must be `True`.")
+        raise NoDistTypeSelected(
+            f"In order to package {dist_tgt.address.spec}, {WheelField.alias!r} or must be `True`."
+        )
 
     wheel_config_settings = dist_tgt.get(WheelConfigSettingsField).value or FrozenDict()
     # sdist_config_settings = dist_tgt.get(SDistConfigSettingsField).value or FrozenDict()
@@ -179,8 +199,13 @@ async def package_mypyc_python_dist(
 
     # TODO: Check if pyproject.toml exists?
     build_system = BuildSystem(
-        requires=PexRequirements(req_strings=(*setuptools.all_requirements, *requirements,)), 
-        build_backend="setuptools.build_meta:__legacy__"
+        requires=PexRequirements(
+            req_strings=(
+                *setuptools.all_requirements,
+                *requirements,
+            )
+        ),
+        build_backend="setuptools.build_meta:__legacy__",
     )
 
     logger.info(f"Build system: {build_system}")
@@ -204,7 +229,6 @@ async def package_mypyc_python_dist(
         setup_py_result.output,
         tuple(BuiltPackageArtifact(path) for path in dist_snapshot.files),
     )
-
 
 
 def rules():

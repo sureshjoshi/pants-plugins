@@ -1,5 +1,5 @@
 [GLOBAL]
-pants_version = "2.10.0.dev3"
+pants_version = "2.11.0.dev2"
 pantsd = true 
 build_patterns = ["BUILD.pants", "BUILD"]
 pythonpath = ["pants-plugins"]
@@ -9,9 +9,10 @@ backend_packages = [
     "pants.backend.plugin_development",
     "pants.backend.python",
     "pants.backend.python.lint.black",
-    "pants.backend.python.lint.docformatter",
+    #"pants.backend.python.lint.docformatter",
     "pants.backend.python.lint.flake8",
     "pants.backend.python.lint.isort",
+    "pants.backend.python.typecheck.mypy",
     "experimental.ansible",
     #"experimental.mypyc", # If uncommenting this, ensure you're using pants_from_sources
     "experimental.pyoxidizer",
@@ -20,6 +21,7 @@ backend_packages = [
 [source]
 marker_filenames = ["BUILD.pants"]
 root_patterns = [
+    "/",
     "pants-plugins",
 ]
 

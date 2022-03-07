@@ -157,24 +157,22 @@ async def run_ansiblelint(
 
     # Install ansible
     ansible_pex = await Get(
-        VenvPex,
-        VenvPexRequest(
-            pex_request = PexRequest(
-                output_filename="ansible-lint.pex",
-                internal_only=True,
-                requirements=ansible_lint.pex_requirements(),
-                interpreter_constraints=ansible_lint.interpreter_constraints,
-                main=ansible_lint.main,
-            ),
-            bin_names=["ansible-lint", "ansible"]
-        )
+        Pex,
+        PexRequest(
+            output_filename="ansible-lint.pex",
+            internal_only=True,
+            requirements=ansible_lint.pex_requirements(),
+            interpreter_constraints=ansible_lint.interpreter_constraints,
+            main=ansible_lint.main,
+            additional_args=("--venv", "prepend")
+        ),
     )
 
 
     # Run the ansible syntax check on the passed-in playbook
     process_result = await Get(
         FallibleProcessResult,
-        VenvPexProcess(
+        PexProcess(
             ansible_pex,
             argv=[],
             description="Running Ansible syntax check...",

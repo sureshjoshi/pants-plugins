@@ -10,6 +10,12 @@ python_distribution(
     ),
 )
 
+pex_binary(
+    name="hellonumpy-pex",
+    entry_point="hellonumpy.main",
+    dependencies=[":libhellonumpy"],
+)
+
 pyoxidizer_binary(
     name="hellonumpy-bin",
     entry_point="hellonumpy.main",

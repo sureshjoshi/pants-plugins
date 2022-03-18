@@ -1,7 +1,6 @@
 [GLOBAL]
 pants_version = "2.11.0.dev2"
 pantsd = true 
-build_patterns = ["BUILD.pants", "BUILD"]
 pythonpath = ["pants-plugins"]
 print_stacktrace = true
 
@@ -20,13 +19,13 @@ backend_packages = [
 [source]
 marker_filenames = ["BUILD.pants"]
 root_patterns = [
-    "/",
+    "examples/*",
     "pants-plugins",
 ]
 
 [python]
 interpreter_constraints = [">=3.9"]
-requirement_constraints = "requirements.constraints.txt"
+requirement_constraints = "examples/python/requirements.constraints.txt"
 
 [flake8]
 args = ["--max-line-length 88", "--ignore=E501"]

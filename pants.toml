@@ -19,7 +19,7 @@ backend_packages = [
 [source]
 marker_filenames = ["BUILD.pants"]
 root_patterns = [
-    "examples/*",
+    "examples/python/*",
     "pants-plugins",
 ]
 

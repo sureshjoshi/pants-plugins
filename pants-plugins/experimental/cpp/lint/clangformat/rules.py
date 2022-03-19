@@ -66,24 +66,35 @@ async def setup_clangformat(
             field_set.sources for field_set in setup_request.request.field_sets
         ),
     )
+
     source_files_snapshot = (
         source_files.snapshot
         if setup_request.request.prior_formatter_result is None
         else setup_request.request.prior_formatter_result
     )
-    logger.debug(source_files_snapshot)
+
     input_digest = await Get(
         Digest,
-        MergeDigests((source_files_snapshot.digest, clangformat_pex.digest)),
+        MergeDigests([source_files_snapshot.digest, clangformat_pex.digest]),
     )
 
-    process = PexProcess(
-        clangformat_pex,
-        argv=["--dry-run" if setup_request.check_only else ""],
-        # argv=["--syntax-check", field_set.playbook.value or field_set.playbook.default],
-        description="Running clang-format...",
-        input_digest=input_digest,
-        level=LogLevel.DEBUG,
+    argv = [
+        "--Werror",
+        "--dry-run" if setup_request.check_only else "-i",
+        *source_files_snapshot.files,
+    ]
+
+
+    process = await Get (
+        Process,
+        PexProcess(
+            clangformat_pex,
+            argv=argv,
+            description=f"Run clang-format on {pluralize(len(source_files_snapshot.files), 'file')}.",
+            input_digest=input_digest,
+            output_files=source_files_snapshot.files,
+            level=LogLevel.DEBUG,
+        )
     )
 
     return Setup(process=process, original_digest=source_files_snapshot.digest)
@@ -105,8 +116,5 @@ async def clangformat_fmt(
 def rules():
     return (
         *collect_rules(),
-        # UnionRule(CheckRequest, AnsibleCheckRequest),
-        # UnionRule(DeploymentFieldSet, AnsibleFieldSet),
         UnionRule(FmtRequest, ClangFormatRequest),
-        # UnionRule(LintTargetsRequest, GofmtRequest),
     )

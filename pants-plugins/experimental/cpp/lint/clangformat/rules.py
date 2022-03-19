@@ -27,7 +27,7 @@ class ClangFormatFmtFieldSet(FieldSet):
     sources: CppSourceField
 
 
-class ClangFormatRequest(FmtRequest):
+class ClangFormatRequest(FmtRequest, LintTargetsRequest):
     field_set_type = ClangFormatFmtFieldSet
     name = ClangFormat.options_scope
 
@@ -84,8 +84,7 @@ async def setup_clangformat(
         *source_files_snapshot.files,
     ]
 
-
-    process = await Get (
+    process = await Get(
         Process,
         PexProcess(
             clangformat_pex,
@@ -94,17 +93,17 @@ async def setup_clangformat(
             input_digest=input_digest,
             output_files=source_files_snapshot.files,
             level=LogLevel.DEBUG,
-        )
+        ),
     )
 
     return Setup(process=process, original_digest=source_files_snapshot.digest)
 
 
-@rule(desc="Format with clang-format")
+@rule(desc="Format with clang-format", level=LogLevel.DEBUG)
 async def clangformat_fmt(
     request: ClangFormatRequest, clangformat: ClangFormat
 ) -> FmtResult:
-    # if gofmt.skip:
+    # if clangformat.skip:
     #     return FmtResult.skip(formatter_name=request.name)
     setup = await Get(Setup, SetupRequest(request, check_only=False))
     result = await Get(ProcessResult, Process, setup.process)
@@ -113,8 +112,23 @@ async def clangformat_fmt(
     )
 
 
+@rule(desc="Lint with prettier", level=LogLevel.DEBUG)
+async def clangformat_lint(
+    request: ClangFormatRequest, clangformat: ClangFormat
+) -> LintResults:
+    # if clangformat.skip:
+    # return LintResults([], linter_name=request.name)
+    setup = await Get(Setup, SetupRequest(request, check_only=True))
+    result = await Get(FallibleProcessResult, Process, setup.process)
+    return LintResults(
+        [LintResult.from_fallible_process_result(result, strip_chroot_path=True)],
+        linter_name=request.name,
+    )
+
+
 def rules():
     return (
         *collect_rules(),
         UnionRule(FmtRequest, ClangFormatRequest),
+        UnionRule(LintTargetsRequest, ClangFormatRequest),
     )

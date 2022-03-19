@@ -14,6 +14,7 @@ backend_packages = [
     "pants.backend.python.lint.isort",
     "pants.backend.python.typecheck.mypy",
     #"experimental.mypyc",
+    "experimental.cpp",
     "experimental.nodejs",
     "experimental.pyoxidizer",
 ]

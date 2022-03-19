@@ -7,12 +7,20 @@ from pants.engine.target import (
     TargetFilesGenerator,
 )
 
+
 class NodeSourceField(SingleSourceField):
-    expected_file_extensions = (".js", ".ts",)
+    expected_file_extensions = (
+        ".js",
+        ".ts",
+    )
 
 
 class NodeGeneratorSourcesField(MultipleSourcesField):
-    expected_file_extensions = (".js", ".ts",)
+    expected_file_extensions = (
+        ".js",
+        ".ts",
+    )
+
 
 class NodeSourceTarget(Target):
     alias = "node_source"
@@ -23,6 +31,7 @@ class NodeSourceTarget(Target):
     )
     help = "A single NodeJS source file containing application or library code."
 
+
 class NodeSourcesGeneratorTarget(TargetFilesGenerator):
     alias = "node_sources"
     core_fields = (
@@ -31,7 +40,5 @@ class NodeSourcesGeneratorTarget(TargetFilesGenerator):
     )
     generated_target_cls = NodeSourceTarget
     copied_fields = COMMON_TARGET_FIELDS
-    moved_fields = (
-        Dependencies,
-    )
+    moved_fields = (Dependencies,)
     help = "Generate a `node_source` target for each file in the `sources` field."

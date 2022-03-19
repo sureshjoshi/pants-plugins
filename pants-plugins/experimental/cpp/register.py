@@ -1,4 +1,8 @@
-from experimental.cpp.target_types import CppSourceTarget, CppSourcesGeneratorTarget
+from experimental.cpp.target_types import CppSourcesGeneratorTarget, CppSourceTarget
+
 
 def target_types():
-    return (CppSourceTarget, CppSourcesGeneratorTarget,)
+    return (
+        CppSourceTarget,
+        CppSourcesGeneratorTarget,
+    )

@@ -7,12 +7,20 @@ from pants.engine.target import (
     TargetFilesGenerator,
 )
 
+
 class CppSourceField(SingleSourceField):
-    expected_file_extensions = (".cpp", ".h",)
+    expected_file_extensions = (
+        ".cpp",
+        ".h",
+    )
 
 
 class CppGeneratorSourcesField(MultipleSourcesField):
-    expected_file_extensions = (".cpp", ".h",)
+    expected_file_extensions = (
+        ".cpp",
+        ".h",
+    )
+
 
 class CppSourceTarget(Target):
     alias = "cpp_source"
@@ -23,6 +31,7 @@ class CppSourceTarget(Target):
     )
     help = "A single cpp source or header file containing application or library code."
 
+
 class CppSourcesGeneratorTarget(TargetFilesGenerator):
     alias = "cpp_sources"
     core_fields = (
@@ -31,7 +40,5 @@ class CppSourcesGeneratorTarget(TargetFilesGenerator):
     )
     generated_target_cls = CppSourceTarget
     copied_fields = COMMON_TARGET_FIELDS
-    moved_fields = (
-        Dependencies,
-    )
+    moved_fields = (Dependencies,)
     help = "Generate a `cpp_source` target for each file in the `sources` field."

@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 import logging
+from platform import node
 
 from pants.core.goals.fmt import FmtRequest, FmtResult
 from pants.core.goals.lint import LintResult, LintResults, LintTargetsRequest
-from pants.core.util_rules.external_tool import DownloadedExternalTool, ExternalToolRequest
 from pants.core.util_rules.source_files import SourceFiles, SourceFilesRequest
 from pants.engine.fs import Digest, MergeDigests
 from pants.engine.internals.selectors import Get
@@ -17,7 +17,8 @@ from pants.util.strutil import pluralize
 
 from experimental.nodejs.lint.prettier.subsystem import Prettier
 from experimental.nodejs.target_types import NodeSourceField
-from experimental.nodejs.subsystem import Npx
+from experimental.nodejs.rules import DownloadedNpxTool, NpxToolRequest
+from experimental.nodejs.subsystem import NpxToolBase
 
 logger = logging.getLogger(__name__)
 
@@ -44,11 +45,11 @@ class Setup:
     original_digest: Digest
 
 @rule(level=LogLevel.DEBUG)
-async def setup_prettier(setup_request: SetupRequest, npx: Npx) -> Setup:
-    npx_tool = await Get(
-        DownloadedExternalTool,
-        ExternalToolRequest,
-        npx.get_request(Platform.current)
+async def setup_prettier(setup_request: SetupRequest, prettier: Prettier) -> Setup:
+    prettier_tool = await Get(
+        DownloadedNpxTool,
+        NpxToolRequest,
+        prettier.get_request()
     )
 
     source_files = await Get(
@@ -65,27 +66,23 @@ async def setup_prettier(setup_request: SetupRequest, npx: Npx) -> Setup:
     input_digest = await Get(
         Digest,
         MergeDigests(
-            (source_files_snapshot.digest, npx_tool.digest)
+            (source_files_snapshot.digest, prettier_tool.digest)
         ),
     )
     
     argv = [
-        npx_tool.exe,
-        "./node-v17.7.1-darwin-x64/lib/node_modules/npm/bin/npx-cli.js",
-        "--yes",
-        "prettier",
-        # "--version"
+        *prettier_tool.exe.split(" "),
         "--check" if setup_request.check_only else "--write",
-        "./hellotypescript/src/main.ts"
-        # *source_files_snapshot.files,
+        *source_files_snapshot.files,
     ]
+
     process = Process(
         argv=argv,
         input_digest=input_digest,
         output_files=source_files_snapshot.files,
-        description=f"Run prettier on {pluralize(len(source_files_snapshot.files), 'file(s)')}.",
+        description=f"Run prettier on {pluralize(len(source_files_snapshot.files), 'file')}.",
         level=LogLevel.DEBUG,
-        env={"PATH": "/bin:./node-v17.7.1-darwin-x64/bin"},
+        env=prettier_tool.env,
     )
     return Setup(process=process, original_digest=source_files_snapshot.digest)
 

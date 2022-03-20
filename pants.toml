@@ -17,6 +17,7 @@ backend_packages = [
     "experimental.cpp",
     "experimental.cpp.lint.clangformat",
     "experimental.nodejs",
+    "experimental.nodejs.lint.prettier",
     "experimental.pyoxidizer",
 ]
 

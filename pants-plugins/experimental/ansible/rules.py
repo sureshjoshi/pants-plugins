@@ -43,10 +43,12 @@ class AnsibleFieldSet(DeploymentFieldSet):
     required_fields = (
         AnsibleDependenciesField,
         AnsiblePlaybook,
+        AnsiblePlayContext,
     )
 
     dependencies: AnsibleDependenciesField
     playbook: AnsiblePlaybook
+    ansiblecontext: AnsiblePlayContext
 
 
 class AnsibleCheckRequest(CheckRequest):
@@ -78,22 +80,21 @@ async def run_ansible_check(
     # if ansible.skip:
     # return CheckResults([], checker_name="Ansible")
 
-    # TODO: Pull this out into separate rule to hydrate the playbook
-    field_set: AnsibleFieldSet = request.field_sets[0]
-    logger.info(field_set)
-    wrapped_target = await Get(WrappedTarget, Address, field_set.address)
-    target = wrapped_target.target
-    sources = await Get(
-        HydratedSources,
-        HydrateSourcesRequest(
-            target.get(SingleSourceField),
-            for_sources_types=(AnsiblePlaybook,),
-        ),
+    contexts = AnsibleContexts(
+        [field_set.ansiblecontext for field_set in request.field_sets]
+    )
+    context_files = await Get(
+        Digest,
+        AnsibleContexts,
+        contexts,
     )
 
-    # Drop the top-level directory
-    flattened_digest = await Get(
-        Digest, RemovePrefix(sources.snapshot.digest, sources.snapshot.dirs[0])
+    playbook: HydratedSources = await Get(
+        HydratedSources,
+        HydrateSourcesRequest(
+            request.field_sets[0].playbook,
+            for_sources_types=(AnsiblePlaybook,),
+        ),
     )
 
     # Install ansible
@@ -115,10 +116,10 @@ async def run_ansible_check(
             ansible_pex,
             argv=[
                 "--syntax-check",
-                field_set.playbook.value or field_set.playbook.default,
+                playbook.snapshot.files[0],
             ],
             description="Running Ansible syntax check...",
-            input_digest=flattened_digest,
+            input_digest=context_files,
             level=LogLevel.DEBUG,
         ),
     )
@@ -133,6 +134,7 @@ async def run_ansible_check(
 async def run_ansible_playbook(
     field_set: AnsibleFieldSet, ansible: Ansible
 ) -> DeployResults:
+
     # TODO: Pull this out into separate rule to hydrate the playbook
     wrapped_target = await Get(WrappedTarget, Address, field_set.address)
     target = wrapped_target.target

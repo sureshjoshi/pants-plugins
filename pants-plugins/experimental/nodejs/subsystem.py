@@ -6,6 +6,7 @@ from pants.engine.fs import Digest
 from pants.engine.platform import Platform
 from pants.option.subsystem import Subsystem
 
+
 class NodeJS(ExternalTool):
     options_scope = "nodejs"
     help = "The NodeJS Javascript runtime (including npm and npx)."
@@ -16,10 +17,10 @@ class NodeJS(ExternalTool):
     ]
 
     PLATFORM_MAPPING = {
-            # "macos_arm64": "darwin.x86_64",
-            "macos_x86_64": "darwin-x64",
-            # "linux_arm64": "linux.aarch64",
-            # "linux_x86_64": "linux.x86_64",
+        # "macos_arm64": "darwin.x86_64",
+        "macos_x86_64": "darwin-x64",
+        # "linux_arm64": "linux.aarch64",
+        # "linux_x86_64": "linux.x86_64",
     }
 
     def generate_url(self, plat: Platform) -> str:
@@ -29,6 +30,7 @@ class NodeJS(ExternalTool):
     def generate_exe(self, plat: Platform) -> str:
         plat_str = self.PLATFORM_MAPPING[plat.value]
         return f"./node-{self.version}-{plat_str}/bin/node"
+
 
 @dataclass(frozen=True)
 class NpxToolRequest:
@@ -41,9 +43,9 @@ class DownloadedNpxTool:
     exe: str
     env: Mapping[str, str]
 
+
 class NpxToolBase(Subsystem):
     default_version: ClassVar[str]
 
     def get_request(self) -> NpxToolRequest:
         return NpxToolRequest(self.default_version)
-

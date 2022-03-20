@@ -4,8 +4,10 @@ from experimental.nodejs.target_types import (
     NodeSourceTarget,
 )
 
+
 def rules():
     return (*nodejs_rules(),)
+
 
 def target_types():
     return (

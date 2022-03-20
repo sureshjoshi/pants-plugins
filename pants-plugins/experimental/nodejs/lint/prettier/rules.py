@@ -1,9 +1,9 @@
 import logging
 from dataclasses import dataclass
 
-from experimental.cpp.lint.clangformat.subsystem import ClangFormat
-from experimental.cpp.target_types import CppSourceField
-from pants.backend.python.util_rules.pex import Pex, PexProcess, PexRequest
+from experimental.nodejs.lint.prettier.subsystem import Prettier
+from experimental.nodejs.rules import DownloadedNpxTool, NpxToolRequest
+from experimental.nodejs.target_types import NodeSourceField
 from pants.core.goals.fmt import FmtRequest, FmtResult
 from pants.core.goals.lint import LintResult, LintResults, LintTargetsRequest
 from pants.core.util_rules.source_files import SourceFiles, SourceFilesRequest
@@ -20,20 +20,20 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
-class ClangFormatFmtFieldSet(FieldSet):
-    required_fields = (CppSourceField,)
+class PrettierFmtFieldSet(FieldSet):
+    required_fields = (NodeSourceField,)
 
-    sources: CppSourceField
+    sources: NodeSourceField
 
 
-class ClangFormatRequest(FmtRequest, LintTargetsRequest):
-    field_set_type = ClangFormatFmtFieldSet
-    name = ClangFormat.options_scope
+class PrettierFmtRequest(FmtRequest):
+    field_set_type = PrettierFmtFieldSet
+    name = Prettier.options_scope
 
 
 @dataclass(frozen=True)
 class SetupRequest:
-    request: ClangFormatRequest
+    request: PrettierFmtRequest
     check_only: bool
 
 
@@ -44,20 +44,8 @@ class Setup:
 
 
 @rule(level=LogLevel.DEBUG)
-async def setup_clangformat(
-    setup_request: SetupRequest, clangformat: ClangFormat
-) -> Setup:
-    logger.debug("asdsadsd")
-    clangformat_pex = await Get(
-        Pex,
-        PexRequest(
-            output_filename="clangformat.pex",
-            internal_only=True,
-            requirements=clangformat.pex_requirements(),
-            interpreter_constraints=clangformat.interpreter_constraints,
-            main=clangformat.main,
-        ),
-    )
+async def setup_prettier(setup_request: SetupRequest, prettier: Prettier) -> Setup:
+    prettier_tool = await Get(DownloadedNpxTool, NpxToolRequest, prettier.get_request())
 
     source_files = await Get(
         SourceFiles,
@@ -74,35 +62,29 @@ async def setup_clangformat(
 
     input_digest = await Get(
         Digest,
-        MergeDigests([source_files_snapshot.digest, clangformat_pex.digest]),
+        MergeDigests((source_files_snapshot.digest, prettier_tool.digest)),
     )
 
     argv = [
-        "--Werror",
-        "--dry-run" if setup_request.check_only else "-i",
+        *prettier_tool.exe.split(" "),
+        "--check" if setup_request.check_only else "--write",
         *source_files_snapshot.files,
     ]
 
-    process = await Get(
-        Process,
-        PexProcess(
-            clangformat_pex,
-            argv=argv,
-            description=f"Run clang-format on {pluralize(len(source_files_snapshot.files), 'file')}.",
-            input_digest=input_digest,
-            output_files=source_files_snapshot.files,
-            level=LogLevel.DEBUG,
-        ),
+    process = Process(
+        argv=argv,
+        input_digest=input_digest,
+        output_files=source_files_snapshot.files,
+        description=f"Run prettier on {pluralize(len(source_files_snapshot.files), 'file')}.",
+        level=LogLevel.DEBUG,
+        env=prettier_tool.env,
     )
-
     return Setup(process=process, original_digest=source_files_snapshot.digest)
 
 
-@rule(desc="Format with clang-format", level=LogLevel.DEBUG)
-async def clangformat_fmt(
-    request: ClangFormatRequest, clangformat: ClangFormat
-) -> FmtResult:
-    # if clangformat.skip:
+@rule(desc="Format with prettier")
+async def prettier_fmt(request: PrettierFmtRequest, prettier: Prettier) -> FmtResult:
+    # if prettier.skip:
     #     return FmtResult.skip(formatter_name=request.name)
     setup = await Get(Setup, SetupRequest(request, check_only=False))
     result = await Get(ProcessResult, Process, setup.process)
@@ -112,10 +94,8 @@ async def clangformat_fmt(
 
 
 @rule(desc="Lint with prettier", level=LogLevel.DEBUG)
-async def clangformat_lint(
-    request: ClangFormatRequest, clangformat: ClangFormat
-) -> LintResults:
-    # if clangformat.skip:
+async def prettier_lint(request: PrettierFmtRequest, prettier: Prettier) -> LintResults:
+    # if prettier.skip:
     # return LintResults([], linter_name=request.name)
     setup = await Get(Setup, SetupRequest(request, check_only=True))
     result = await Get(FallibleProcessResult, Process, setup.process)
@@ -128,6 +108,6 @@ async def clangformat_lint(
 def rules():
     return (
         *collect_rules(),
-        UnionRule(FmtRequest, ClangFormatRequest),
-        UnionRule(LintTargetsRequest, ClangFormatRequest),
+        UnionRule(FmtRequest, PrettierFmtRequest),
+        UnionRule(LintTargetsRequest, PrettierFmtRequest),
     )

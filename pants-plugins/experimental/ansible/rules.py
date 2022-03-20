@@ -196,14 +196,22 @@ async def resolve_ansible_context(contexts: AnsibleContexts) -> Digest:
     return await input_digest
 
 
+def resolve_lint_request_to_contexts(request: AnsibleLintRequest) -> AnsibleContexts:
+    return AnsibleContexts(
+        [field_set.ansiblecontext for field_set in request.field_sets]
+    )
+
+
 @rule
 async def run_ansiblelint(
     request: AnsibleLintRequest, ansible_lint: AnsibleLint
 ) -> LintResults:
 
+    contexts = resolve_lint_request_to_contexts(request)
     input_digest = await Get(
         Digest,
-        AnsibleContexts([field_set.ansiblecontext for field_set in request.field_sets]),
+        AnsibleContexts,
+        contexts,
     )
 
     # # TODO: Pull this out into separate rule to hydrate the playbook

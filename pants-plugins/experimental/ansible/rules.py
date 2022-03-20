@@ -23,7 +23,7 @@ from pants.core.util_rules.source_files import SourceFiles, SourceFilesRequest
 from pants.engine.collection import Collection
 from pants.engine.fs import Digest, MergeDigests, RemovePrefix
 from pants.engine.process import FallibleProcessResult, ProcessCacheScope
-from pants.engine.rules import Get, collect_rules, rule
+from pants.engine.rules import Get, MultiGet, collect_rules, rule
 from pants.engine.target import (
     Address,
     FieldSet,
@@ -208,22 +208,22 @@ async def run_ansiblelint(
 ) -> LintResults:
 
     contexts = resolve_lint_request_to_contexts(request)
-    input_digest = await Get(
-        Digest,
-        AnsibleContexts,
-        contexts,
-    )
-
-    # Install ansible
-    ansible_pex = await Get(
-        Pex,
-        PexRequest(
-            output_filename="ansible-lint.pex",
-            internal_only=True,
-            requirements=ansible_lint.pex_requirements(),
-            interpreter_constraints=ansible_lint.interpreter_constraints,
-            main=ansible_lint.main,
-            additional_args=("--venv", "prepend"),
+    input_digest, ansible_pex = await MultiGet(
+        Get(
+            Digest,
+            AnsibleContexts,
+            contexts,
+        ),
+        Get(
+            Pex,
+            PexRequest(
+                output_filename="ansible-lint.pex",
+                internal_only=True,
+                requirements=ansible_lint.pex_requirements(),
+                interpreter_constraints=ansible_lint.interpreter_constraints,
+                main=ansible_lint.main,
+                additional_args=("--venv", "prepend"),
+            ),
         ),
     )
 

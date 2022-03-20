@@ -1,0 +1,11 @@
+---
+- name: other playbook
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  tasks:
+    - name: log from other playbook
+      debug:
+        msg: >-
+          Hello I am in another playbook

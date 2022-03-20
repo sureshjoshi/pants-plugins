@@ -6,5 +6,10 @@
       register: shell_result
 
     - name: Print out the results of the shell command
-      ansible.builtin.debug: 
+      ansible.builtin.debug:
         var: shell_result
+
+    - name: include some tasks from context
+      include_tasks: tasks/main.yml
+
+- import_playbook: other_playbook.yml

@@ -214,22 +214,6 @@ async def run_ansiblelint(
         contexts,
     )
 
-    # # TODO: Pull this out into separate rule to hydrate the playbook
-    # field_set: AnsibleFieldSet = request.field_sets[0]
-    # logger.info(field_set)
-    # wrapped_target = await Get(WrappedTarget, Address, field_set.address)
-    # target = wrapped_target.target
-    # sources = await Get(
-    #     HydratedSources,
-    #     HydrateSourcesRequest(
-    #         target.get(SingleSourceField),
-    #         for_sources_types=(AnsiblePlaybook,),
-    #     ),
-    # )
-
-    # # Drop the top-level directory
-    # flattened_digest = await Get(Digest, RemovePrefix(sources.snapshot.digest, sources.snapshot.dirs[0]))
-
     # Install ansible
     ansible_pex = await Get(
         Pex,

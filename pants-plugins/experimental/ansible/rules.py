@@ -54,6 +54,22 @@ class AnsibleCheckRequest(CheckRequest):
     name = "ansible syntax check"
 
 
+class AnsibleContexts(Collection[AnsiblePlayContext]):
+    ...
+
+
+@rule
+async def resolve_ansible_context(contexts: AnsibleContexts) -> Digest:
+    """Resolve Ansible play contexts into their Digests, ready for use as files"""
+    source_files_get = Get(
+        SourceFiles,
+        SourceFilesRequest(contexts),
+    )
+    source_files = await source_files_get
+    input_digest = Get(Digest, MergeDigests((source_files.snapshot.digest,)))
+
+    return await input_digest
+
 
 @rule(level=LogLevel.DEBUG)
 async def run_ansible_check(
@@ -178,24 +194,6 @@ class AnsibleLintFieldSet(FieldSet):
 class AnsibleLintRequest(LintTargetsRequest):
     field_set_type = AnsibleLintFieldSet
     name = "ansible-lint"
-
-
-class AnsibleContexts(Collection[AnsiblePlayContext]):
-    ...
-
-
-@rule
-async def resolve_ansible_context(contexts: AnsibleContexts) -> Digest:
-    """Resolve Ansible play contexts into their Digests, ready for use as files"""
-
-    source_files_get = Get(
-        SourceFiles,
-        SourceFilesRequest(contexts),
-    )
-    source_files = await source_files_get
-    input_digest = Get(Digest, MergeDigests((source_files.snapshot.digest,)))
-
-    return await input_digest
 
 
 def resolve_lint_request_to_contexts(request: AnsibleLintRequest) -> AnsibleContexts:

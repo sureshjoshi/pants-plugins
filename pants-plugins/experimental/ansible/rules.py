@@ -3,7 +3,7 @@ import logging
 
 from pants.backend.python.util_rules.pex import Pex, PexProcess, PexRequest, VenvPex, VenvPexProcess, VenvPexRequest
 from pants.core.goals.check import CheckRequest, CheckResult, CheckResults
-from pants.core.goals.lint import LintRequest, LintResult, LintResults
+from pants.core.goals.lint import LintTargetsRequest, LintResult, LintResults
 from pants.engine.fs import Digest, RemovePrefix
 from pants.engine.process import FallibleProcessResult, ProcessCacheScope
 from pants.engine.rules import Get, collect_rules, rule
@@ -130,8 +130,9 @@ async def run_ansible_playbook(
     )
 
 
-class AnsibleLintRequest(LintRequest):
+class AnsibleLintRequest(LintTargetsRequest):
     field_set_type = AnsibleFieldSet
+    name = "ansible-lint"
 
 
 @rule
@@ -190,6 +191,6 @@ def rules():
     return (
         *collect_rules(),
         UnionRule(CheckRequest, AnsibleCheckRequest),
-        UnionRule(LintRequest, AnsibleLintRequest),
+        UnionRule(LintTargetsRequest, AnsibleLintRequest),
         UnionRule(DeploymentFieldSet, AnsibleFieldSet),
     )

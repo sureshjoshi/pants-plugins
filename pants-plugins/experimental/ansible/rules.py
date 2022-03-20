@@ -130,13 +130,12 @@ async def run_ansible_playbook(
     )
 
 
-
-
-
-
 @dataclass(frozen=True)
 class AnsibleLintFieldSet(FieldSet):
-    required_fields = (AnsiblePlaybook, AnsiblePlayContext,)
+    required_fields = (
+        AnsiblePlaybook,
+        AnsiblePlayContext,
+    )
 
     playbook: AnsiblePlaybook
     ansiblecontext: AnsiblePlayContext
@@ -152,21 +151,34 @@ async def run_ansiblelint(
     request: AnsibleLintRequest, ansible_lint: AnsibleLint
 ) -> LintResults:
 
-    # TODO: Pull this out into separate rule to hydrate the playbook
-    field_set: AnsibleFieldSet = request.field_sets[0]
-    logger.info(field_set)
-    wrapped_target = await Get(WrappedTarget, Address, field_set.address)
-    target = wrapped_target.target
-    sources = await Get(
-        HydratedSources,
-        HydrateSourcesRequest(
-            target.get(SingleSourceField),
-            for_sources_types=(AnsiblePlaybook,),
+    logger.info([request.field_sets[0].playbook])  # + request.field_sets[0].
+    logger.info("HIHELLO")
+
+    source_files_get = Get(
+        SourceFiles,
+        SourceFilesRequest(
+            field_set.ansiblecontext for field_set in request.field_sets
         ),
     )
+    source_files = await source_files_get
+    source_files_snapshot = source_files.snapshot
+    input_digest = await Get(Digest, MergeDigests((source_files_snapshot.digest,)))
 
-    # Drop the top-level directory
-    flattened_digest = await Get(Digest, RemovePrefix(sources.snapshot.digest, sources.snapshot.dirs[0]))
+    # # TODO: Pull this out into separate rule to hydrate the playbook
+    # field_set: AnsibleFieldSet = request.field_sets[0]
+    # logger.info(field_set)
+    # wrapped_target = await Get(WrappedTarget, Address, field_set.address)
+    # target = wrapped_target.target
+    # sources = await Get(
+    #     HydratedSources,
+    #     HydrateSourcesRequest(
+    #         target.get(SingleSourceField),
+    #         for_sources_types=(AnsiblePlaybook,),
+    #     ),
+    # )
+
+    # # Drop the top-level directory
+    # flattened_digest = await Get(Digest, RemovePrefix(sources.snapshot.digest, sources.snapshot.dirs[0]))
 
     # Install ansible
     ansible_pex = await Get(
@@ -177,10 +189,9 @@ async def run_ansiblelint(
             requirements=ansible_lint.pex_requirements(),
             interpreter_constraints=ansible_lint.interpreter_constraints,
             main=ansible_lint.main,
-            additional_args=("--venv", "prepend")
+            additional_args=("--venv", "prepend"),
         ),
     )
-
 
     # Run the ansible syntax check on the passed-in playbook
     process_result = await Get(
@@ -189,13 +200,14 @@ async def run_ansiblelint(
             ansible_pex,
             argv=[],
             description="Running Ansible syntax check...",
-            input_digest=flattened_digest,
+            input_digest=input_digest,
             level=LogLevel.DEBUG,
-        )
+        ),
     )
 
     return LintResults(
-        [LintResult.from_fallible_process_result(process_result)], linter_name="ansible-lint"
+        [LintResult.from_fallible_process_result(process_result)],
+        linter_name="ansible-lint",
     )
 
 

@@ -20,6 +20,7 @@ from pants.backend.python.util_rules.pex import (
 from pants.core.goals.check import CheckRequest, CheckResult, CheckResults
 from pants.core.goals.lint import LintResult, LintResults, LintTargetsRequest
 from pants.core.util_rules.source_files import SourceFiles, SourceFilesRequest
+from pants.engine.collection import Collection
 from pants.engine.fs import Digest, MergeDigests, RemovePrefix
 from pants.engine.process import FallibleProcessResult, ProcessCacheScope
 from pants.engine.rules import Get, collect_rules, rule
@@ -177,23 +178,33 @@ class AnsibleLintRequest(LintTargetsRequest):
     name = "ansible-lint"
 
 
+class AnsibleContexts(Collection[AnsiblePlayContext]):
+    ...
+
+
+@rule
+async def resolve_ansible_context(contexts: AnsibleContexts) -> Digest:
+    """Resolve Ansible play contexts into their Digests, ready for use as files"""
+
+    source_files_get = Get(
+        SourceFiles,
+        SourceFilesRequest(contexts),
+    )
+    source_files = await source_files_get
+    input_digest = Get(Digest, MergeDigests((source_files.snapshot.digest,)))
+
+    return await input_digest
+
+
 @rule
 async def run_ansiblelint(
     request: AnsibleLintRequest, ansible_lint: AnsibleLint
 ) -> LintResults:
 
-    logger.info([request.field_sets[0].playbook])  # + request.field_sets[0].
-    logger.info("HIHELLO")
-
-    source_files_get = Get(
-        SourceFiles,
-        SourceFilesRequest(
-            field_set.ansiblecontext for field_set in request.field_sets
-        ),
+    input_digest = await Get(
+        Digest,
+        AnsibleContexts([field_set.ansiblecontext for field_set in request.field_sets]),
     )
-    source_files = await source_files_get
-    source_files_snapshot = source_files.snapshot
-    input_digest = await Get(Digest, MergeDigests((source_files_snapshot.digest,)))
 
     # # TODO: Pull this out into separate rule to hydrate the playbook
     # field_set: AnsibleFieldSet = request.field_sets[0]

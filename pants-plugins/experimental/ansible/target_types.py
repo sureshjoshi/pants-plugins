@@ -1,6 +1,7 @@
 from pants.engine.target import (
     COMMON_TARGET_FIELDS,
     Dependencies,
+    MultipleSourcesField,
     SingleSourceField,
     Target,
 )
@@ -19,11 +20,25 @@ class AnsiblePlaybook(SingleSourceField):
     )
 
 
+class AnsiblePlayContext(MultipleSourcesField):
+    alias = "ansiblecontext"
+    default = (
+        "*.yml",
+        "*.ansible",
+        "files/*",
+        "tasks/*",
+        "templates/*",
+        "utils/*",
+    )
+    help = "Files reachable by an Ansible Play, such as tasks, templates, and files."
+
+
 class AnsibleDeployment(Target):
     alias = "ansible_deployment"
     core_fields = (
         *COMMON_TARGET_FIELDS,
         AnsibleDependenciesField,
         AnsiblePlaybook,
+        AnsiblePlayContext,
     )
     help = ""

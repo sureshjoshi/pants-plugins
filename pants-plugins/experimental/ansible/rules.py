@@ -7,7 +7,7 @@ from pants.core.goals.lint import LintTargetsRequest, LintResult, LintResults
 from pants.engine.fs import Digest, RemovePrefix
 from pants.engine.process import FallibleProcessResult, ProcessCacheScope
 from pants.engine.rules import Get, collect_rules, rule
-from pants.engine.target import HydratedSources, HydrateSourcesRequest,SingleSourceField, WrappedTarget, Address
+from pants.engine.target import FieldSet, HydratedSources, HydrateSourcesRequest,SingleSourceField, WrappedTarget, Address
 from pants.engine.unions import UnionRule
 from pants.util.logging import LogLevel
 from pants.backend.python.target_types import ConsoleScript
@@ -15,7 +15,7 @@ from pants.backend.python.target_types import ConsoleScript
 
 from experimental.ansible.deploy import DeploymentFieldSet, DeployResults, DeployResult
 from experimental.ansible.subsystem import Ansible, AnsibleLint
-from experimental.ansible.target_types import AnsibleDependenciesField, AnsiblePlaybook
+from experimental.ansible.target_types import AnsibleDependenciesField, AnsiblePlayContext, AnsiblePlaybook
 
 logger = logging.getLogger(__name__)
 
@@ -130,8 +130,20 @@ async def run_ansible_playbook(
     )
 
 
+
+
+
+
+@dataclass(frozen=True)
+class AnsibleLintFieldSet(FieldSet):
+    required_fields = (AnsiblePlaybook, AnsiblePlayContext,)
+
+    playbook: AnsiblePlaybook
+    ansiblecontext: AnsiblePlayContext
+
+
 class AnsibleLintRequest(LintTargetsRequest):
-    field_set_type = AnsibleFieldSet
+    field_set_type = AnsibleLintFieldSet
     name = "ansible-lint"
 
 

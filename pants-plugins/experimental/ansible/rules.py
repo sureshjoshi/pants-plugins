@@ -51,6 +51,8 @@ class AnsibleFieldSet(DeploymentFieldSet):
 
 class AnsibleCheckRequest(CheckRequest):
     field_set_type = AnsibleFieldSet
+    name = "ansible syntax check"
+
 
 
 @rule(level=LogLevel.DEBUG)

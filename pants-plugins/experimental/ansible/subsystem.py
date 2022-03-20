@@ -20,7 +20,7 @@ class AnsibleLint(PythonToolBase):
 
     default_version = "ansible-lint~=5.3.2"
     default_extra_requirements = [
-        "ansible==5.3.0"
+        "ansible==5.3.0",
     ]
     default_main = ConsoleScript("ansible-lint")
 

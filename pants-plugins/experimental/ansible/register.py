@@ -5,7 +5,11 @@ from experimental.ansible.target_types import AnsibleDeployment
 
 
 def rules():
-    return (*deploy_rules(), *ansible_rules(), *subsystem_rules(),)
+    return (
+        *deploy_rules(),
+        *ansible_rules(),
+        *subsystem_rules(),
+    )
 
 
 def target_types():

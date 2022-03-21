@@ -25,6 +25,7 @@ from pants.util.strutil import strip_v2_chroot_path
 
 logger = logging.getLogger(__name__)
 
+
 # TODO: Copied from LintResult/CheckResult - can this be inherited or composed?
 @dataclass(frozen=True)
 class DeployResult:
@@ -159,6 +160,7 @@ async def deploy(
     field_set = target_roots_to_deployment_field_sets.field_sets[0]
     request = await Get(DeployResults, DeploymentFieldSet, field_set)
     # TODO: Do something with the result
+    logger.info(request)
     return Deploy(exit_code=0)
 
 

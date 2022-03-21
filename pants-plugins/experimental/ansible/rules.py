@@ -8,30 +8,15 @@ from experimental.ansible.target_types import (
     AnsiblePlaybook,
     AnsiblePlayContext,
 )
-from pants.backend.python.target_types import ConsoleScript
-from pants.backend.python.util_rules.pex import (
-    Pex,
-    PexProcess,
-    PexRequest,
-    VenvPex,
-    VenvPexProcess,
-    VenvPexRequest,
-)
+from pants.backend.python.util_rules.pex import Pex, PexProcess, PexRequest
 from pants.core.goals.check import CheckRequest, CheckResult, CheckResults
 from pants.core.goals.lint import LintResult, LintResults, LintTargetsRequest
 from pants.core.util_rules.source_files import SourceFiles, SourceFilesRequest
 from pants.engine.collection import Collection
-from pants.engine.fs import Digest, MergeDigests, RemovePrefix
+from pants.engine.fs import Digest, MergeDigests
 from pants.engine.process import FallibleProcessResult, ProcessCacheScope
 from pants.engine.rules import Get, MultiGet, collect_rules, rule
-from pants.engine.target import (
-    Address,
-    FieldSet,
-    HydratedSources,
-    HydrateSourcesRequest,
-    SingleSourceField,
-    WrappedTarget,
-)
+from pants.engine.target import FieldSet, HydratedSources, HydrateSourcesRequest
 from pants.engine.unions import UnionRule
 from pants.util.logging import LogLevel
 
@@ -140,8 +125,7 @@ async def run_ansible_playbook(
 ) -> DeployResults:
     context_files_get = Get(
         Digest,
-        AnsibleContexts(
-        [request.ansiblecontext]),
+        AnsibleContexts([request.ansiblecontext]),
     )
 
     playbook_get = Get(

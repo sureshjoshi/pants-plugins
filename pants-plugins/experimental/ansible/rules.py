@@ -83,13 +83,13 @@ async def run_ansible_check(
     contexts = AnsibleContexts(
         [field_set.ansiblecontext for field_set in request.field_sets]
     )
-    context_files = await Get(
+    context_files_get = Get(
         Digest,
         AnsibleContexts,
         contexts,
     )
 
-    playbook: HydratedSources = await Get(
+    playbook_get = Get(
         HydratedSources,
         HydrateSourcesRequest(
             request.field_sets[0].playbook,
@@ -98,7 +98,7 @@ async def run_ansible_check(
     )
 
     # Install ansible
-    ansible_pex = await Get(
+    ansible_pex_get = Get(
         Pex,
         PexRequest(
             output_filename="ansible.pex",
@@ -107,6 +107,10 @@ async def run_ansible_check(
             interpreter_constraints=ansible.interpreter_constraints,
             main=ansible.main,
         ),
+    )
+
+    context_files, playbook, ansible_pex = await MultiGet(
+        context_files_get, playbook_get, ansible_pex_get
     )
 
     # Run the ansible syntax check on the passed-in playbook

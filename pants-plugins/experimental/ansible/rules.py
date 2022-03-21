@@ -136,27 +136,24 @@ async def run_ansible_check(
 
 @rule(level=LogLevel.DEBUG)
 async def run_ansible_playbook(
-    field_set: AnsibleFieldSet, ansible: Ansible
+    request: AnsibleFieldSet, ansible: Ansible
 ) -> DeployResults:
+    context_files_get = Get(
+        Digest,
+        AnsibleContexts(
+        [request.ansiblecontext]),
+    )
 
-    # TODO: Pull this out into separate rule to hydrate the playbook
-    wrapped_target = await Get(WrappedTarget, Address, field_set.address)
-    target = wrapped_target.target
-    sources = await Get(
+    playbook_get = Get(
         HydratedSources,
         HydrateSourcesRequest(
-            target.get(SingleSourceField),
+            request.playbook,
             for_sources_types=(AnsiblePlaybook,),
         ),
     )
 
-    # Drop the top-level directory
-    flattened_digest = await Get(
-        Digest, RemovePrefix(sources.snapshot.digest, sources.snapshot.dirs[0])
-    )
-
     # Install Ansible
-    ansible_pex = await Get(
+    ansible_pex_get = Get(
         Pex,
         PexRequest(
             output_filename="ansible.pex",
@@ -167,14 +164,18 @@ async def run_ansible_playbook(
         ),
     )
 
+    context_files, playbook, ansible_pex = await MultiGet(
+        context_files_get, playbook_get, ansible_pex_get
+    )
+
     # Run the passed-in playbook
     process_result = await Get(
         FallibleProcessResult,
         PexProcess(
             ansible_pex,
-            argv=[field_set.playbook.value or field_set.playbook.default],
+            argv=[playbook.snapshot.files[0]],
             description="Running Ansible Playbook...",
-            input_digest=flattened_digest,
+            input_digest=context_files,
             level=LogLevel.DEBUG,
             cache_scope=ProcessCacheScope.PER_RESTART_SUCCESSFUL,
         ),

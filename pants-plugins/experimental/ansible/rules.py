@@ -24,6 +24,11 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
+class AnsibleSourcesDigest:
+    digest: Digest
+
+
+@dataclass(frozen=True)
 class AnsibleFieldSet(DeploymentFieldSet):
     required_fields = (
         AnsibleDependenciesField,
@@ -58,21 +63,31 @@ async def resolve_ansible_context(contexts: AnsibleContexts) -> Digest:
     return await input_digest
 
 
+@rule
+async def resolve_ansible_context2(
+    request: AnsibleCheckRequest,
+) -> AnsibleSourcesDigest:
+    """Resolve Ansible play contexts into their Digests, ready for use as files"""
+    contexts = AnsibleContexts(
+        [field_set.ansiblecontext for field_set in request.field_sets]
+    )
+
+    source_files_get = Get(
+        SourceFiles,
+        SourceFilesRequest(contexts),
+    )
+    source_files = await source_files_get
+    input_digest = Get(Digest, MergeDigests((source_files.snapshot.digest,)))
+
+    return AnsibleSourcesDigest(await input_digest)
+
+
 @rule(level=LogLevel.DEBUG)
 async def run_ansible_check(
     request: AnsibleCheckRequest, ansible: Ansible
 ) -> CheckResults:
-    # if ansible.skip:
-    # return CheckResults([], checker_name="Ansible")
 
-    contexts = AnsibleContexts(
-        [field_set.ansiblecontext for field_set in request.field_sets]
-    )
-    context_files_get = Get(
-        Digest,
-        AnsibleContexts,
-        contexts,
-    )
+    context_files_get = Get(AnsibleSourcesDigest, AnsibleCheckRequest, request)
 
     playbook_get = Get(
         HydratedSources,
@@ -108,7 +123,7 @@ async def run_ansible_check(
                 playbook.snapshot.files[0],
             ],
             description="Running Ansible syntax check...",
-            input_digest=context_files,
+            input_digest=context_files.digest,
             level=LogLevel.DEBUG,
         ),
     )

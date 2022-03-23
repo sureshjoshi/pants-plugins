@@ -68,20 +68,7 @@ class AnsibleContexts(Collection[AnsiblePlayContext]):
 
 
 @rule
-async def resolve_ansible_context(contexts: AnsibleContexts) -> Digest:
-    """Resolve Ansible play contexts into their Digests, ready for use as files"""
-    source_files_get = Get(
-        SourceFiles,
-        SourceFilesRequest(contexts),
-    )
-    source_files = await source_files_get
-    input_digest = Get(Digest, MergeDigests((source_files.snapshot.digest,)))
-
-    return await input_digest
-
-
-@rule
-async def resolve_ansible_context2(
+async def resolve_ansible_context(
     contexts: AnsibleContexts,
 ) -> AnsibleSourcesDigest:
     """Resolve Ansible play contexts into their Digests, ready for use as files"""
@@ -154,7 +141,7 @@ async def run_ansible_playbook(
     request: AnsibleFieldSet, ansible: Ansible
 ) -> DeployResults:
     context_files_get = Get(
-        Digest,
+        AnsibleSourcesDigest,
         AnsibleContexts([request.ansiblecontext]),
     )
 
@@ -189,7 +176,7 @@ async def run_ansible_playbook(
             ansible_pex,
             argv=[playbook.snapshot.files[0]],
             description="Running Ansible Playbook...",
-            input_digest=context_files,
+            input_digest=context_files.digest,
             level=LogLevel.DEBUG,
             cache_scope=ProcessCacheScope.PER_RESTART_SUCCESSFUL,
         ),
@@ -217,21 +204,16 @@ class AnsibleLintRequest(LintTargetsRequest):
     name = "ansible-lint"
 
 
-def resolve_lint_request_to_contexts(request: AnsibleLintRequest) -> AnsibleContexts:
-    return AnsibleContexts(
-        [field_set.ansiblecontext for field_set in request.field_sets]
-    )
-
 
 @rule
 async def run_ansiblelint(
     request: AnsibleLintRequest, ansible_lint: AnsibleLint
 ) -> LintResults:
 
-    contexts = resolve_lint_request_to_contexts(request)
+    contexts = AnsibleContexts.from_request(request)
     input_digest, ansible_pex = await MultiGet(
         Get(
-            Digest,
+            AnsibleSourcesDigest,
             AnsibleContexts,
             contexts,
         ),
@@ -255,7 +237,7 @@ async def run_ansiblelint(
             ansible_pex,
             argv=[],
             description="Running Ansible syntax check...",
-            input_digest=input_digest,
+            input_digest=input_digest.digest,
             level=LogLevel.DEBUG,
         ),
     )

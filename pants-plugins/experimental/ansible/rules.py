@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import logging
 from dataclasses import dataclass
+from typing import Iterable, Protocol
 
 from experimental.ansible.deploy import DeploymentFieldSet, DeployResult, DeployResults
 from experimental.ansible.subsystem import Ansible, AnsibleLint
@@ -46,8 +49,22 @@ class AnsibleCheckRequest(CheckRequest):
     name = "ansible syntax check"
 
 
+class HasContext(Protocol):
+    ansiblecontext: AnsiblePlayContext
+
+
+class RequestHasContext(Protocol):
+    field_sets: Iterable[HasContext]
+
+
 class AnsibleContexts(Collection[AnsiblePlayContext]):
     ...
+
+    @classmethod
+    def from_request(cls, request: RequestHasContext) -> AnsibleContexts:
+        return AnsibleContexts(
+            [field_set.ansiblecontext for field_set in request.field_sets]
+        )
 
 
 @rule
@@ -65,13 +82,9 @@ async def resolve_ansible_context(contexts: AnsibleContexts) -> Digest:
 
 @rule
 async def resolve_ansible_context2(
-    request: AnsibleCheckRequest,
+    contexts: AnsibleContexts,
 ) -> AnsibleSourcesDigest:
     """Resolve Ansible play contexts into their Digests, ready for use as files"""
-    contexts = AnsibleContexts(
-        [field_set.ansiblecontext for field_set in request.field_sets]
-    )
-
     source_files_get = Get(
         SourceFiles,
         SourceFilesRequest(contexts),
@@ -87,7 +100,9 @@ async def run_ansible_check(
     request: AnsibleCheckRequest, ansible: Ansible
 ) -> CheckResults:
 
-    context_files_get = Get(AnsibleSourcesDigest, AnsibleCheckRequest, request)
+    context_files_get = Get(
+        AnsibleSourcesDigest, AnsibleContexts, AnsibleContexts.from_request(request)
+    )
 
     playbook_get = Get(
         HydratedSources,

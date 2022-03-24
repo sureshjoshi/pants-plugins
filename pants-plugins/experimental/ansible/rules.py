@@ -2,20 +2,19 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Iterable, Protocol
 
 from experimental.ansible.deploy import DeploymentFieldSet, DeployResult, DeployResults
-from experimental.ansible.subsystem import Ansible, AnsibleLint
-from experimental.ansible.target_types import (
-    AnsibleDependenciesField,
-    AnsiblePlaybook,
-    AnsiblePlayContext,
+from experimental.ansible.sources import (
+    AnsibleContexts,
+    AnsibleFieldSet,
+    AnsibleSourcesDigest,
 )
+from experimental.ansible.subsystem import Ansible, AnsibleLint
+from experimental.ansible.target_types import AnsiblePlaybook, AnsiblePlayContext
 from pants.backend.python.util_rules.pex import Pex, PexProcess, PexRequest
 from pants.core.goals.check import CheckRequest, CheckResult, CheckResults
 from pants.core.goals.lint import LintResult, LintResults, LintTargetsRequest
 from pants.core.util_rules.source_files import SourceFiles, SourceFilesRequest
-from pants.engine.collection import Collection
 from pants.engine.fs import Digest, MergeDigests
 from pants.engine.process import FallibleProcessResult, ProcessCacheScope
 from pants.engine.rules import Get, MultiGet, collect_rules, rule
@@ -24,47 +23,6 @@ from pants.engine.unions import UnionRule
 from pants.util.logging import LogLevel
 
 logger = logging.getLogger(__name__)
-
-
-@dataclass(frozen=True)
-class AnsibleSourcesDigest:
-    digest: Digest
-
-
-@dataclass(frozen=True)
-class AnsibleFieldSet(DeploymentFieldSet):
-    required_fields = (
-        AnsibleDependenciesField,
-        AnsiblePlaybook,
-        AnsiblePlayContext,
-    )
-
-    dependencies: AnsibleDependenciesField
-    playbook: AnsiblePlaybook
-    ansiblecontext: AnsiblePlayContext
-
-
-class AnsibleCheckRequest(CheckRequest):
-    field_set_type = AnsibleFieldSet
-    name = "ansible syntax check"
-
-
-class HasContext(Protocol):
-    ansiblecontext: AnsiblePlayContext
-
-
-class RequestHasContext(Protocol):
-    field_sets: Iterable[HasContext]
-
-
-class AnsibleContexts(Collection[AnsiblePlayContext]):
-    ...
-
-    @classmethod
-    def from_request(cls, request: RequestHasContext) -> AnsibleContexts:
-        return AnsibleContexts(
-            [field_set.ansiblecontext for field_set in request.field_sets]
-        )
 
 
 @rule
@@ -80,6 +38,11 @@ async def resolve_ansible_context(
     input_digest = Get(Digest, MergeDigests((source_files.snapshot.digest,)))
 
     return AnsibleSourcesDigest(await input_digest)
+
+
+class AnsibleCheckRequest(CheckRequest):
+    field_set_type = AnsibleFieldSet
+    name = "ansible syntax check"
 
 
 @rule(level=LogLevel.DEBUG)
@@ -190,9 +153,7 @@ async def run_ansible_playbook(
 
 @dataclass(frozen=True)
 class AnsibleLintFieldSet(FieldSet):
-    required_fields = (
-        AnsiblePlayContext,
-    )
+    required_fields = (AnsiblePlayContext,)
 
     ansiblecontext: AnsiblePlayContext
 
@@ -200,7 +161,6 @@ class AnsibleLintFieldSet(FieldSet):
 class AnsibleLintRequest(LintTargetsRequest):
     field_set_type = AnsibleLintFieldSet
     name = "ansible-lint"
-
 
 
 @rule

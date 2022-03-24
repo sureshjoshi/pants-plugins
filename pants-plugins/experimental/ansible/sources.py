@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Iterable, Protocol
+from typing import Iterable, List, Protocol, Tuple
 
 from experimental.ansible.deploy import DeploymentFieldSet
 from pants.engine.collection import Collection
@@ -22,17 +22,37 @@ class AnsiblePlaybook(SingleSourceField):
     )
 
 
+ansible_files = ("*.yml", "*.ansible")
+
+
+def ansible_dirs(dirnames: List[str]) -> Tuple[str]:
+    """Source globs where we expect Ansible files. eg: 'tasks/*' TODO: Actually filter Ansible files"""
+    return tuple([dirname + "/*" for dirname in dirnames])
+
+
+def files_dirs(dirnames: List[str]) -> Tuple[str]:
+    """Source globs where we expect any files. eg: 'files/*'"""
+    return tuple([dirname + "/*" for dirname in dirnames])
+
+
 class AnsiblePlayContext(MultipleSourcesField):
     alias = "ansiblecontext"
     default = (
-        "*.yml",
-        "*.ansible",
-        "files/*",
-        "tasks/*",
-        "templates/*",
-        "utils/*",
+        ansible_files
+        + ansible_dirs(["tasks"])
+        + files_dirs(["utils", "files", "templates"])
     )
+
     help = "Files reachable by an Ansible Play, such as tasks, templates, and files."
+
+
+class AnsibleRole(MultipleSourcesField):
+    alias = "ansible_role"
+    default = (
+        ansible_files
+        + ansible_dirs(["tasks", "handlers", "vars", "defaults", "meta"])
+        + files_dirs(["library", "files", "templates"])
+    )
 
 
 @dataclass(frozen=True)

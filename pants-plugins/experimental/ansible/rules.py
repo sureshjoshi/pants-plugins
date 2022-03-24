@@ -191,11 +191,9 @@ async def run_ansible_playbook(
 @dataclass(frozen=True)
 class AnsibleLintFieldSet(FieldSet):
     required_fields = (
-        AnsiblePlaybook,
         AnsiblePlayContext,
     )
 
-    playbook: AnsiblePlaybook
     ansiblecontext: AnsiblePlayContext
 
 

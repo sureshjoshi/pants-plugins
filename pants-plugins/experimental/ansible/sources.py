@@ -4,13 +4,35 @@ from dataclasses import dataclass
 from typing import Iterable, Protocol
 
 from experimental.ansible.deploy import DeploymentFieldSet
-from experimental.ansible.target_types import (
-    AnsibleDependenciesField,
-    AnsiblePlaybook,
-    AnsiblePlayContext,
-)
 from pants.engine.collection import Collection
 from pants.engine.fs import Digest
+from pants.engine.target import Dependencies, MultipleSourcesField, SingleSourceField
+
+
+class AnsibleDependenciesField(Dependencies):
+    pass
+
+
+class AnsiblePlaybook(SingleSourceField):
+    alias = "playbook"
+    default = "playbook.yml"
+    help = (
+        "The .yml file to use when running ansible-playbook.\n\n"
+        "Path is relative to the BUILD file's directory, e.g. `playbook='playbook.yml'`."
+    )
+
+
+class AnsiblePlayContext(MultipleSourcesField):
+    alias = "ansiblecontext"
+    default = (
+        "*.yml",
+        "*.ansible",
+        "files/*",
+        "tasks/*",
+        "templates/*",
+        "utils/*",
+    )
+    help = "Files reachable by an Ansible Play, such as tasks, templates, and files."
 
 
 @dataclass(frozen=True)

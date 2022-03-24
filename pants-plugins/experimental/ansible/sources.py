@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from abc import ABC
 from dataclasses import dataclass
 from typing import Iterable, List, Protocol, Tuple
 
@@ -35,8 +36,12 @@ def files_dirs(dirnames: List[str]) -> Tuple[str]:
     return tuple([dirname + "/*" for dirname in dirnames])
 
 
-class AnsiblePlayContext(MultipleSourcesField):
-    alias = "ansiblecontext"
+class AnsibleSources(MultipleSourcesField, ABC):
+    """All sources which Ansible will consider"""
+    ...
+
+
+class AnsiblePlayContext(AnsibleSources):
     default = (
         ansible_files
         + ansible_dirs(["tasks"])
@@ -46,8 +51,7 @@ class AnsiblePlayContext(MultipleSourcesField):
     help = "Files reachable by an Ansible Play, such as tasks, templates, and files."
 
 
-class AnsibleRole(MultipleSourcesField):
-    alias = "ansible_role"
+class AnsibleRole(AnsibleSources):
     default = (
         ansible_files
         + ansible_dirs(["tasks", "handlers", "vars", "defaults", "meta"])
@@ -70,22 +74,22 @@ class AnsibleFieldSet(DeploymentFieldSet):
 
     dependencies: AnsibleDependenciesField
     playbook: AnsiblePlaybook
-    ansiblecontext: AnsiblePlayContext
+    sources: AnsiblePlayContext
 
 
 class HasContext(Protocol):
-    ansiblecontext: AnsiblePlayContext
+    sources: AnsiblePlayContext
 
 
 class RequestHasContext(Protocol):
     field_sets: Iterable[HasContext]
 
 
-class AnsibleContexts(Collection[AnsiblePlayContext]):
+class AnsibleSourcesCollection(Collection[AnsibleSources]):
     ...
 
     @classmethod
-    def from_request(cls, request: RequestHasContext) -> AnsibleContexts:
-        return AnsibleContexts(
-            [field_set.ansiblecontext for field_set in request.field_sets]
+    def from_request(cls, request: RequestHasContext) -> AnsibleSourcesCollection:
+        return AnsibleSourcesCollection(
+            [field_set.sources for field_set in request.field_sets]
         )

@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 from experimental.ansible.deploy import DeploymentFieldSet, DeployResult, DeployResults
 from experimental.ansible.sources import (
-    AnsibleContexts,
+    AnsibleSourcesCollection,
     AnsibleFieldSet,
     AnsibleSourcesDigest,
 )
@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 @rule
 async def resolve_ansible_context(
-    contexts: AnsibleContexts,
+    contexts: AnsibleSourcesCollection,
 ) -> AnsibleSourcesDigest:
     """Resolve Ansible play contexts into their Digests, ready for use as files"""
     source_files_get = Get(
@@ -51,7 +51,7 @@ async def run_ansible_check(
 ) -> CheckResults:
 
     context_files_get = Get(
-        AnsibleSourcesDigest, AnsibleContexts, AnsibleContexts.from_request(request)
+        AnsibleSourcesDigest, AnsibleSourcesCollection, AnsibleSourcesCollection.from_request(request)
     )
 
     playbook_get = Get(
@@ -105,7 +105,7 @@ async def run_ansible_playbook(
 ) -> DeployResults:
     context_files_get = Get(
         AnsibleSourcesDigest,
-        AnsibleContexts([request.ansiblecontext]),
+        AnsibleSourcesCollection([request.sources]),
     )
 
     playbook_get = Get(
@@ -155,7 +155,7 @@ async def run_ansible_playbook(
 class AnsibleLintFieldSet(FieldSet):
     required_fields = (AnsiblePlayContext,)
 
-    ansiblecontext: AnsiblePlayContext
+    sources: AnsiblePlayContext
 
 
 class AnsibleLintRequest(LintTargetsRequest):
@@ -168,11 +168,11 @@ async def run_ansiblelint(
     request: AnsibleLintRequest, ansible_lint: AnsibleLint
 ) -> LintResults:
 
-    contexts = AnsibleContexts.from_request(request)
+    contexts = AnsibleSourcesCollection.from_request(request)
     input_digest, ansible_pex = await MultiGet(
         Get(
             AnsibleSourcesDigest,
-            AnsibleContexts,
+            AnsibleSourcesCollection,
             contexts,
         ),
         Get(

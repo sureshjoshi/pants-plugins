@@ -7,8 +7,8 @@ from experimental.ansible.deploy import DeploymentFieldSet, DeployResult, Deploy
 from experimental.ansible.sources import (
     AnsibleSourcesCollection,
     AnsibleFieldSet,
-    AnsibleSourcesDigest,
-)
+    AnsibleSourcesDigest, AnsibleSources,
+    )
 from experimental.ansible.subsystem import Ansible, AnsibleLint
 from experimental.ansible.target_types import AnsiblePlaybook, AnsiblePlayContext
 from pants.backend.python.util_rules.pex import Pex, PexProcess, PexRequest
@@ -153,9 +153,9 @@ async def run_ansible_playbook(
 
 @dataclass(frozen=True)
 class AnsibleLintFieldSet(FieldSet):
-    required_fields = (AnsiblePlayContext,)
+    required_fields = (AnsibleSources,)
 
-    sources: AnsiblePlayContext
+    sources: AnsibleSources
 
 
 class AnsibleLintRequest(LintTargetsRequest):

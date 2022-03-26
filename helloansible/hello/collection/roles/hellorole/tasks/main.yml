@@ -1,2 +1,17 @@
 ---
-# tasks file for hellorole
+- name: display in role
+  debug:
+    msg: |
+      Hello from role
+
+- name: trigger error in ansible-lint
+  shell: >-
+    echo "hello from shell in role"
+
+- name: trigger handler to test that handlers are included
+  debug:
+    msg: |
+      trigger handler in role
+  changed_when: true
+  notify:
+    - "trigger handler"

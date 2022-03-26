@@ -1,2 +1,5 @@
 ---
-# handlers file for hellorole
+- name: trigger handler
+  debug:
+    msg: |
+      handler triggered

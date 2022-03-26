@@ -51,7 +51,7 @@ class AnsiblePlayContext(AnsibleSources):
     help = "Files reachable by an Ansible Play, such as tasks, templates, and files."
 
 
-class AnsibleRole(AnsibleSources):
+class AnsibleRoleSource(AnsibleSources):
     default = (
         ansible_files
         + ansible_dirs(["tasks", "handlers", "vars", "defaults", "meta"])

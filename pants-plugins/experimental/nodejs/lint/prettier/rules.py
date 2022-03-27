@@ -6,6 +6,7 @@ from experimental.nodejs.rules import DownloadedNpxTool, NpxToolRequest
 from experimental.nodejs.target_types import NodeSourceField
 from pants.core.goals.fmt import FmtRequest, FmtResult
 from pants.core.goals.lint import LintResult, LintResults, LintTargetsRequest
+from pants.core.util_rules.config_files import ConfigFiles, ConfigFilesRequest
 from pants.core.util_rules.source_files import SourceFiles, SourceFilesRequest
 from pants.engine.fs import Digest, MergeDigests
 from pants.engine.process import FallibleProcessResult, Process, ProcessResult
@@ -59,9 +60,21 @@ async def setup_prettier(setup_request: SetupRequest, prettier: Prettier) -> Set
         else setup_request.request.prior_formatter_result
     )
 
+    config_files = await Get(
+        ConfigFiles,
+        ConfigFilesRequest,
+        prettier.config_request(source_files_snapshot.dirs),
+    )
+
     input_digest = await Get(
         Digest,
-        MergeDigests((source_files_snapshot.digest, prettier_tool.digest)),
+        MergeDigests(
+            (
+                source_files_snapshot.digest,
+                config_files.snapshot.digest,
+                prettier_tool.digest,
+            )
+        ),
     )
 
     argv = [

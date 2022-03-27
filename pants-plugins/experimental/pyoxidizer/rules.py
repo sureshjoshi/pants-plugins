@@ -102,7 +102,8 @@ async def package_pyoxidizer_binary(
         FieldSetsPerTarget, FieldSetsPerTargetRequest(PackageFieldSet, direct_deps)
     )
     built_packages = await MultiGet(
-        Get(BuiltPackage, PackageFieldSet, field_set) for field_set in deps_field_sets.field_sets
+        Get(BuiltPackage, PackageFieldSet, field_set)
+        for field_set in deps_field_sets.field_sets
     )
     wheel_paths = [
         artifact.relpath
@@ -123,7 +124,9 @@ async def package_pyoxidizer_binary(
         config_template_source = await Get(
             HydratedSources, HydrateSourcesRequest(field_set.template)
         )
-        digest_contents = await Get(DigestContents, Digest, config_template_source.snapshot.digest)
+        digest_contents = await Get(
+            DigestContents, Digest, config_template_source.snapshot.digest
+        )
         config_template = digest_contents[0].content.decode("utf-8")
 
     config = PyOxidizerConfig(
@@ -142,7 +145,12 @@ async def package_pyoxidizer_binary(
 
     pyoxidizer_pex, config_digest = await MultiGet(
         Get(Pex, PexRequest, pyoxidizer.to_pex_request()),
-        Get(Digest, CreateDigest([FileContent("pyoxidizer.bzl", rendered_config.encode("utf-8"))])),
+        Get(
+            Digest,
+            CreateDigest(
+                [FileContent("pyoxidizer.bzl", rendered_config.encode("utf-8"))]
+            ),
+        ),
     )
     input_digest = await Get(
         Digest,
@@ -179,7 +187,9 @@ async def package_pyoxidizer_binary(
     stripped_digest = await Get(Digest, RemovePrefix(result.output_digest, "build"))
     final_snapshot = await Get(
         Snapshot,
-        AddPrefix(stripped_digest, field_set.output_path.value_or_default(file_ending=None)),
+        AddPrefix(
+            stripped_digest, field_set.output_path.value_or_default(file_ending=None)
+        ),
     )
     return BuiltPackage(
         final_snapshot.digest,
@@ -210,7 +220,9 @@ async def run_pyoxidizer_binary(field_set: PyOxidizerFieldSet) -> RunRequest:
 
     binary = await Get(BuiltPackage, PackageFieldSet, field_set)
     executable_binaries = [
-        artifact for artifact in binary.artifacts if is_executable_binary(artifact.relpath)
+        artifact
+        for artifact in binary.artifacts
+        if is_executable_binary(artifact.relpath)
     ]
 
     assert len(executable_binaries) == 1, (
@@ -222,7 +234,9 @@ async def run_pyoxidizer_binary(field_set: PyOxidizerFieldSet) -> RunRequest:
 
     artifact = executable_binaries[0]
     assert artifact.relpath is not None
-    return RunRequest(digest=binary.digest, args=(os.path.join("{chroot}", artifact.relpath),))
+    return RunRequest(
+        digest=binary.digest, args=(os.path.join("{chroot}", artifact.relpath),)
+    )
 
 
 def rules():

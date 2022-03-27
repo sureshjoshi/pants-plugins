@@ -6,7 +6,6 @@ from core import greeter
 
 from . import talker
 
-from core import greeter
 
 def main():
     talker.say_hello()

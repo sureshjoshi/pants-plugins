@@ -76,7 +76,9 @@ class PyOxidizerConfig:
                 UNCLASSIFIED_RESOURCES_TEMPLATE
             ).safe_substitute(UNCLASSIFIED_RESOURCES=self.unclassified_resources)
 
-            unclassified_resource_snippet = indent(unclassified_resource_snippet, "    ")
+            unclassified_resource_snippet = indent(
+                unclassified_resource_snippet, "    "
+            )
 
         template = Template(self.template or DEFAULT_TEMPLATE)
         return template.safe_substitute(

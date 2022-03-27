@@ -1,0 +1,67 @@
+# Copyright 2020 Pants project contributors.
+# Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+# See https://pants.readme.io/docs/using-pants-in-ci for tips on how to set up your CI with Pants.
+
+name: Pants testing and packaging
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      PANTS_CONFIG_FILES: pants.ci.toml
+    strategy:
+      matrix:
+        python-version: [3.9]
+    
+    steps:
+    - uses: actions/checkout@v2
+    
+    - uses: actions/cache@v2
+      id: cache
+      with:
+        path: |
+          ~/.cache/pants/setup
+          ~/.cache/pants/lmdb_store
+          ~/.cache/pants/named_caches
+        key: ${{ runner.os }}-
+    
+    - name: Setup Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Bootstrap Pants
+      run: |
+        ./pants --version
+    
+    - name: Check BUILD files
+      run: |
+        ./pants update-build-files --check
+    
+    - name: Lint and (TODO) typecheck
+      run: |
+        ./pants lint ::
+    
+    # - name: Test (TODO Check failure - seems like internal Pants problem)
+    #   run: |
+    #     ./pants test ::
+    
+    # TODO: Speeding this up by only running one package - in reality, should build each on main only - tests should be enough otherwise
+    - name: Package / Run
+      run: |
+        ./pants package helloworld:
+        ./pants run helloworld:helloworld-bin
+    
+    - name: Upload pants log
+      uses: actions/upload-artifact@v2
+      with:
+        name: pants-log
+        path: .pants.d/pants.log
+      if: always()  # We want the log even on failures.

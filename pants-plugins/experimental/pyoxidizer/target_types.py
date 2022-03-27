@@ -88,6 +88,4 @@ class PyOxidizerTarget(Target):
         PyOxidizerEntryPointField,
         PyOxidizerUnclassifiedResources,
     )
-    help = (
-        "A single-file Python executable with a Python interpreter embedded, built via PyOxidizer."
-    )
+    help = "A single-file Python executable with a Python interpreter embedded, built via PyOxidizer."

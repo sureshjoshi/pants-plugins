@@ -12,7 +12,9 @@ def test_run_module_without_entry_point() -> None:
 
 
 def test_run_module_with_entry_point() -> None:
-    config = PyOxidizerConfig(executable_name="my-output", wheels=[], entry_point="helloworld.main")
+    config = PyOxidizerConfig(
+        executable_name="my-output", wheels=[], entry_point="helloworld.main"
+    )
     assert config.run_module == "python_config.run_module = 'helloworld.main'"
 
 

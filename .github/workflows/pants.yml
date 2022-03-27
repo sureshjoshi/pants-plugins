@@ -54,10 +54,10 @@ jobs:
     #     ./pants test ::
     
     # TODO: Speeding this up by only running one package - in reality, should build each on main only - tests should be enough otherwise
-    - name: Package / Run
-      run: |
-        ./pants package helloworld:
-        ./pants run helloworld:helloworld-bin
+    # - name: Package / Run
+    #   run: |
+    #     ./pants package helloworld:
+    #     ./pants run helloworld:helloworld-bin
     
     - name: Upload pants log
       uses: actions/upload-artifact@v2

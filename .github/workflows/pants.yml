@@ -7,7 +7,7 @@ name: Pants testing and packaging
 
 on:
   push:
-    branches: [ main, 38-fix-gh-ci ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 

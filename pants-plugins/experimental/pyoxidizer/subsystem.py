@@ -8,6 +8,7 @@ from pants.option.option_types import ArgsListOption
 
 class PyOxidizer(PythonToolBase):
     options_scope = "pyoxidizer"
+    name = "PyOxidizer"
     help = (
         "The PyOxidizer utility for packaging Python code in a Rust binary "
         "(https://pyoxidizer.readthedocs.io/en/stable/pyoxidizer.html).\n\n"
@@ -18,11 +19,6 @@ class PyOxidizer(PythonToolBase):
     default_main = ConsoleScript("pyoxidizer")
 
     register_interpreter_constraints = True
-    default_interpreter_constraints = ["CPython>=3.8"]
+    default_interpreter_constraints = ["CPython>=3.8,<4"]
 
-    args = ArgsListOption(
-        help=(
-            "Arguments to pass directly to PyOxidizer, e.g. "
-            f'`--{options_scope}-args="--release"`'
-        ),
-    )
+    args = ArgsListOption(example="--release")

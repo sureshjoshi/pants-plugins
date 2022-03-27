@@ -7,6 +7,7 @@ import dataclasses
 import logging
 import os
 from dataclasses import dataclass
+from pathlib import PurePath
 from textwrap import dedent
 
 from experimental.pyoxidizer.config import PyOxidizerConfig
@@ -16,11 +17,14 @@ from experimental.pyoxidizer.target_types import (
     PyOxidizerDependenciesField,
     PyOxidizerEntryPointField,
     PyOxidizerOutputPathField,
+    PyOxidizerTarget,
     PyOxidizerUnclassifiedResources,
 )
+from pants.backend.python.target_types import GenerateSetupField, WheelField
 from pants.backend.python.util_rules.pex import Pex, PexProcess, PexRequest
 from pants.core.goals.package import BuiltPackage, BuiltPackageArtifact, PackageFieldSet
 from pants.core.goals.run import RunFieldSet, RunRequest
+from pants.core.util_rules.system_binaries import BashBinary
 from pants.engine.fs import (
     AddPrefix,
     CreateDigest,
@@ -31,7 +35,7 @@ from pants.engine.fs import (
     RemovePrefix,
     Snapshot,
 )
-from pants.engine.process import BashBinary, Process, ProcessResult
+from pants.engine.process import Process, ProcessResult
 from pants.engine.rules import Get, MultiGet, collect_rules, rule
 from pants.engine.target import (
     DependenciesRequest,
@@ -39,9 +43,11 @@ from pants.engine.target import (
     FieldSetsPerTargetRequest,
     HydratedSources,
     HydrateSourcesRequest,
+    InvalidTargetException,
     Targets,
 )
 from pants.engine.unions import UnionRule
+from pants.util.docutil import doc_url
 from pants.util.logging import LogLevel
 
 logger = logging.getLogger(__name__)
@@ -91,11 +97,7 @@ async def package_pyoxidizer_binary(
     runner_script: PyoxidizerRunnerScript,
     bash: BashBinary,
 ) -> BuiltPackage:
-    direct_deps, pyoxidizer_pex = await MultiGet(
-        Get(Targets, DependenciesRequest(field_set.dependencies)),
-        Get(Pex, PexRequest, pyoxidizer.to_pex_request()),
-    )
-
+    direct_deps = await Get(Targets, DependenciesRequest(field_set.dependencies))
     deps_field_sets = await Get(
         FieldSetsPerTarget, FieldSetsPerTargetRequest(PackageFieldSet, direct_deps)
     )
@@ -109,6 +111,13 @@ async def package_pyoxidizer_binary(
         for artifact in built_pkg.artifacts
         if artifact.relpath is not None and artifact.relpath.endswith(".whl")
     ]
+    if not wheel_paths:
+        raise InvalidTargetException(
+            f"The `{PyOxidizerTarget.alias}` target {field_set.address} must include "
+            "in its `dependencies` field at least one `python_distribution` target that produces a "
+            f"`.whl` file. For example, if using `{GenerateSetupField.alias}=True`, then make sure "
+            f"`{WheelField.alias}=True`. See {doc_url('python-distributions')}."
+        )
 
     config_template = None
     if field_set.template.value is not None:
@@ -131,14 +140,18 @@ async def package_pyoxidizer_binary(
             else list(field_set.unclassified_resources.value)
         ),
     )
-
     rendered_config = config.render()
     logger.debug(f"Configuration used for {field_set.address}: {rendered_config}")
-    config_digest = await Get(
-        Digest,
-        CreateDigest([FileContent("pyoxidizer.bzl", rendered_config.encode("utf-8"))]),
-    )
 
+    pyoxidizer_pex, config_digest = await MultiGet(
+        Get(Pex, PexRequest, pyoxidizer.to_pex_request()),
+        Get(
+            Digest,
+            CreateDigest(
+                [FileContent("pyoxidizer.bzl", rendered_config.encode("utf-8"))]
+            ),
+        ),
+    )
     input_digest = await Get(
         Digest,
         MergeDigests(
@@ -186,11 +199,43 @@ async def package_pyoxidizer_binary(
 
 @rule
 async def run_pyoxidizer_binary(field_set: PyOxidizerFieldSet) -> RunRequest:
+    def is_executable_binary(artifact_relpath: str | None) -> bool:
+        """After packaging, the PyOxidizer plugin will place the executable in a location like this:
+        dist/{project}/{target_name}/{platform arch}/{compilation mode}/install/{binary name}
+
+        {binary name} will default to `target_name`, but can be modified with a custom PyOxidizer template.
+
+        e.g. dist/helloworld/helloworld-bin/x86_64-apple-darwin/debug/install/helloworld-bin.
+
+        PyOxidizer will place associated libraries in {...}/install/lib
+
+        To determine if the artifact we iterate over is the one we want to execute, we check that
+        the file's parent dir is "install". There should only be one of these files.
+        """
+        if not artifact_relpath:
+            return False
+
+        artifact_path = PurePath(artifact_relpath)
+        return artifact_path.parent.name == "install"
+
     binary = await Get(BuiltPackage, PackageFieldSet, field_set)
-    artifact_relpath = binary.artifacts[0].relpath
-    assert artifact_relpath is not None
+    executable_binaries = [
+        artifact
+        for artifact in binary.artifacts
+        if is_executable_binary(artifact.relpath)
+    ]
+
+    assert len(executable_binaries) == 1, (
+        "More than one executable binary discovered in the `install` directory, "
+        "which is a bug in the PyOxidizer plugin. "
+        "Please file a bug report at https://github.com/pantsbuild/pants/issues/new. "
+        f"Enumerated executable binaries: {executable_binaries}"
+    )
+
+    artifact = executable_binaries[0]
+    assert artifact.relpath is not None
     return RunRequest(
-        digest=binary.digest, args=(os.path.join("{chroot}", artifact_relpath),)
+        digest=binary.digest, args=(os.path.join("{chroot}", artifact.relpath),)
     )
 
 

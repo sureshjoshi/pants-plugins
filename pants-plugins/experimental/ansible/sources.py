@@ -25,6 +25,11 @@ class AnsiblePlaybook(SingleSourceField):
 
 ansible_files = ("*.yml", "*.ansible")
 
+def in_dir(dir: str):
+    def _in_dir(dirnames: Iterable[str]) -> Tuple[str]:
+        return tuple([dir + "/" + dirname for dirname in dirnames])
+    return _in_dir
+
 
 def ansible_dirs(dirnames: List[str]) -> Tuple[str]:
     """Source globs where we expect Ansible files. eg: 'tasks/*' TODO: Actually filter Ansible files"""
@@ -34,6 +39,9 @@ def ansible_dirs(dirnames: List[str]) -> Tuple[str]:
 def files_dirs(dirnames: List[str]) -> Tuple[str]:
     """Source globs where we expect any files. eg: 'files/*'"""
     return tuple([dirname + "/*" for dirname in dirnames])
+
+
+plugins = "plugins/**/*"
 
 
 class AnsibleSources(MultipleSourcesField, ABC):
@@ -56,6 +64,16 @@ class AnsibleRoleSource(AnsibleSources):
         ansible_files
         + ansible_dirs(["tasks", "handlers", "vars", "defaults", "meta"])
         + files_dirs(["library", "files", "templates"])
+    )
+
+
+class AnsibleCollectionSource(AnsibleSources):
+    default = (
+        ansible_files
+        + ("readme.md", "galaxy.yml", plugins)
+        + files_dirs(["docs", "meta", "plugins"])
+        + in_dir("roles/*")(AnsibleRoleSource.default)
+        + in_dir("playbooks")(AnsiblePlayContext.default)
     )
 
 

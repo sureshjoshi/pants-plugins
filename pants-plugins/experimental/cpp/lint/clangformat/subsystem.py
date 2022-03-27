@@ -17,12 +17,15 @@ class ClangFormat(PythonToolBase):
     default_interpreter_constraints = ["CPython>=3.7"]
 
     def config_request(self, dirs: Iterable[str]) -> ConfigFilesRequest:
-        check_existence = []
-        for d in ("", *dirs):
-            check_existence.append(os.path.join(d, ".clang-format"))
-
+        """clang-format will use the closest configuration file to the file currently being formatted, so add all of them"""
+        config_files = (
+            ".clang-format",
+            "_clang-format",
+        )
+        check_existence = [
+            os.path.join(d, file) for file in config_files for d in ("", *dirs)
+        ]
         return ConfigFilesRequest(
-            specified=("hellocpp/.clang-format",)
-            # check_existence=check_existence,
-            # discovery=True
+            discovery=True,
+            check_existence=check_existence,
         )

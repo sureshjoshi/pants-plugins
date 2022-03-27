@@ -6,7 +6,7 @@ from experimental.cpp.target_types import CppSourceField
 from pants.backend.python.util_rules.pex import Pex, PexProcess, PexRequest
 from pants.core.goals.fmt import FmtRequest, FmtResult
 from pants.core.goals.lint import LintResult, LintResults, LintTargetsRequest
-from pants.core.util_rules.config_files import ConfigFilesRequest, ConfigFiles
+from pants.core.util_rules.config_files import ConfigFiles, ConfigFilesRequest
 from pants.core.util_rules.source_files import SourceFiles, SourceFilesRequest
 from pants.engine.fs import Digest, MergeDigests
 from pants.engine.internals.selectors import Get
@@ -74,12 +74,20 @@ async def setup_clangformat(
     )
 
     config_files = await Get(
-        ConfigFiles, ConfigFilesRequest, clangformat.config_request(source_files_snapshot.dirs)
+        ConfigFiles,
+        ConfigFilesRequest,
+        clangformat.config_request(source_files_snapshot.dirs),
     )
     logger.warn(config_files)
     input_digest = await Get(
         Digest,
-        MergeDigests([source_files_snapshot.digest, config_files.snapshot.digest, clangformat_pex.digest]),
+        MergeDigests(
+            [
+                source_files_snapshot.digest,
+                config_files.snapshot.digest,
+                clangformat_pex.digest,
+            ]
+        ),
     )
 
     argv = [

@@ -78,7 +78,7 @@ async def setup_clangformat(
         ConfigFilesRequest,
         clangformat.config_request(source_files_snapshot.dirs),
     )
-    logger.warn(config_files)
+
     input_digest = await Get(
         Digest,
         MergeDigests(

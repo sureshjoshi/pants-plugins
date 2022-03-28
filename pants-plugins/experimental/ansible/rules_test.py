@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import List, Sequence
 
 import pytest
 import toml
@@ -86,6 +86,8 @@ class TestDeployment:
 
 
 class TestLint:
+    ansible_lint_output = List[str]
+
     @staticmethod
     def run_ansible_lint(rule_runner: RuleRunner, target: Target) -> LintResults:
         field_sets = [AnsibleLintFieldSet.create(target)]
@@ -94,13 +96,39 @@ class TestLint:
         )
         return lint_results.results
 
-    def test_lint_deployment(self, rule_runner: RuleRunner):
-        target = make_target(rule_runner, "helloansible", "helloansible")
-        lint_results = self.run_ansible_lint(rule_runner, target)
+    @staticmethod
+    def assert_ansible_lint_run(lint_results: LintResults) -> ansible_lint_output:
         assert len(lint_results) == 1
 
         result = lint_results[0]
         assert result.exit_code == 2
 
         stdout_lines = list(filter(bool, result.stdout.split("\n")))
-        assert len(stdout_lines) == 2  # TODO: might change if ansible-lint changes
+        return stdout_lines
+
+    def test_lint_deployment(self, rule_runner: RuleRunner):
+        target = make_target(rule_runner, "helloansible", "helloansible")
+        lint_results = self.run_ansible_lint(rule_runner, target)
+
+        output = self.assert_ansible_lint_run(lint_results)
+        assert len(output) == 2  # TODO: might change if ansible-lint changes
+
+    def test_lint_collection(self, rule_runner: RuleRunner):
+        target = make_target(
+            rule_runner, "helloansible/hello/collection/", "hello.collection"
+        )
+        lint_results = self.run_ansible_lint(rule_runner, target)
+
+        output = self.assert_ansible_lint_run(lint_results)
+        assert len(output) == 8  # TODO: might change if ansible-lint changes
+
+    def test_lint_role(self, rule_runner: RuleRunner):
+        target = make_target(
+            rule_runner,
+            "helloansible/hello/collection/roles/hellorole",
+            "helloansiblerole",
+        )
+        lint_results = self.run_ansible_lint(rule_runner, target)
+
+        output = self.assert_ansible_lint_run(lint_results)
+        assert len(output) == 6  # TODO: might change if ansible-lint changes

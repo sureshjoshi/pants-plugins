@@ -5,12 +5,13 @@ from dataclasses import dataclass
 
 from experimental.ansible.deploy import DeploymentFieldSet, DeployResult, DeployResults
 from experimental.ansible.sources import (
-    AnsibleSourcesCollection,
     AnsibleFieldSet,
-    AnsibleSourcesDigest, AnsibleSources,
-    )
+    AnsibleSources,
+    AnsibleSourcesCollection,
+    AnsibleSourcesDigest,
+)
 from experimental.ansible.subsystem import Ansible, AnsibleLint
-from experimental.ansible.target_types import AnsiblePlaybook, AnsiblePlayContext
+from experimental.ansible.target_types import AnsiblePlaybook
 from pants.backend.python.util_rules.pex import Pex, PexProcess, PexRequest
 from pants.core.goals.check import CheckRequest, CheckResult, CheckResults
 from pants.core.goals.lint import LintResult, LintResults, LintTargetsRequest
@@ -51,7 +52,9 @@ async def run_ansible_check(
 ) -> CheckResults:
 
     context_files_get = Get(
-        AnsibleSourcesDigest, AnsibleSourcesCollection, AnsibleSourcesCollection.from_request(request)
+        AnsibleSourcesDigest,
+        AnsibleSourcesCollection,
+        AnsibleSourcesCollection.from_request(request),
     )
 
     playbook_get = Get(
@@ -92,6 +95,8 @@ async def run_ansible_check(
             level=LogLevel.DEBUG,
         ),
     )
+
+    print(process_result)
 
     return CheckResults(
         [CheckResult.from_fallible_process_result(process_result)],
@@ -193,7 +198,7 @@ async def run_ansiblelint(
         FallibleProcessResult,
         PexProcess(
             ansible_pex,
-            argv=[],
+            argv=["-f", "pep8"],
             description="Running Ansible syntax check...",
             input_digest=input_digest.digest,
             level=LogLevel.DEBUG,

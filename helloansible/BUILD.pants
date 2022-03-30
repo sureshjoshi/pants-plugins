@@ -6,3 +6,10 @@ ansible_deployment(
     #tags="", # TODO: Might need a different name to not overlap
     #timeout="",
 )
+
+ansible_deployment(
+    name="helloansible_with_tags",
+    dependencies=[""],
+    playbook="playbook.yml",
+    ansible_playbook_args=["--tags", "hihello"],
+)

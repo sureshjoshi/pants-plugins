@@ -112,6 +112,20 @@ class TestDeployment:
             in result.stdout
         ), "summary does not match expected output"
 
+    def test_deploy_uses_args(self, rule_runner: RuleRunner):
+        """
+        Check that the extra args to ansible-playbook are passed
+
+        We do this by adding `--tags hihello`, which targets 0 tasks,
+        and then we check that no tasks ran.
+        """
+        target = make_target(rule_runner, "helloansible", "helloansible_with_tags")
+        deploy_results: DeployResults = self.run_ansible_deploy(rule_runner, target)
+        assert (
+            "localhost                  : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0"
+            in deploy_results[0].stdout
+        )
+
 
 class TestLint:
     ansible_lint_output = List[str]

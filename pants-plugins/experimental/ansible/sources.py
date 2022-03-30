@@ -7,7 +7,12 @@ from typing import Iterable, List, Protocol, Tuple
 from experimental.ansible.deploy import DeploymentFieldSet
 from pants.engine.collection import Collection
 from pants.engine.fs import Digest
-from pants.engine.target import Dependencies, MultipleSourcesField, SingleSourceField
+from pants.engine.target import (
+    Dependencies,
+    MultipleSourcesField,
+    SingleSourceField,
+    StringSequenceField,
+)
 
 
 class AnsibleDependenciesField(Dependencies):
@@ -21,6 +26,12 @@ class AnsiblePlaybook(SingleSourceField):
         "The .yml file to use when running ansible-playbook.\n\n"
         "Path is relative to the BUILD file's directory, e.g. `playbook='playbook.yml'`."
     )
+
+
+class AnsiblePlaybookArgs(StringSequenceField):
+    alias = "ansible_playbook_args"
+    help = "Extra arguments to supply to ansible-playbook."
+    default = ()
 
 
 ansible_files = ("*.yml", "*.ansible")
@@ -96,6 +107,7 @@ class AnsibleFieldSet(DeploymentFieldSet):
     dependencies: AnsibleDependenciesField
     playbook: AnsiblePlaybook
     sources: AnsiblePlayContext
+    ansible_playbook_args: AnsiblePlaybookArgs
 
 
 class HasContext(Protocol):

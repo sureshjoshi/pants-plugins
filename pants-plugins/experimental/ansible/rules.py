@@ -118,12 +118,15 @@ async def run_ansible_playbook(
         context_files_get, playbook_get, ansible_pex_get
     )
 
+    playbook_filename = playbook.snapshot.files[0]
+    argv = [playbook_filename]
+    argv.extend(request.ansible_playbook_args.value)
     # Run the passed-in playbook
     process_result = await Get(
         FallibleProcessResult,
         PexProcess(
             ansible_pex,
-            argv=[playbook.snapshot.files[0]],
+            argv=argv,
             description="Running Ansible Playbook...",
             input_digest=context_files.digest,
             level=LogLevel.DEBUG,

@@ -2,6 +2,7 @@ from experimental.ansible.sources import (
     AnsibleCollectionSource,
     AnsibleDependenciesField,
     AnsiblePlaybook,
+    AnsiblePlaybookArgs,
     AnsiblePlayContext,
     AnsibleRoleSource,
 )
@@ -15,6 +16,7 @@ class AnsibleDeployment(Target):
         AnsibleDependenciesField,
         AnsiblePlaybook,
         AnsiblePlayContext,
+        AnsiblePlaybookArgs,
     )
     help = ""
 

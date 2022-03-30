@@ -65,17 +65,7 @@ async def run_ansible_check(
         ),
     )
 
-    # Install ansible
-    ansible_pex_get = Get(
-        Pex,
-        PexRequest(
-            output_filename="ansible.pex",
-            internal_only=True,
-            requirements=ansible.pex_requirements(),
-            interpreter_constraints=ansible.interpreter_constraints,
-            main=ansible.main,
-        ),
-    )
+    ansible_pex_get = Get(Pex, PexRequest, ansible.to_pex_request())
 
     context_files, playbook, ansible_pex = await MultiGet(
         context_files_get, playbook_get, ansible_pex_get
@@ -122,16 +112,7 @@ async def run_ansible_playbook(
     )
 
     # Install Ansible
-    ansible_pex_get = Get(
-        Pex,
-        PexRequest(
-            output_filename="ansible.pex",
-            internal_only=True,
-            requirements=ansible.pex_requirements(),
-            interpreter_constraints=ansible.interpreter_constraints,
-            main=ansible.main,
-        ),
-    )
+    ansible_pex_get = Get(Pex, PexRequest, ansible.to_pex_request())
 
     context_files, playbook, ansible_pex = await MultiGet(
         context_files_get, playbook_get, ansible_pex_get

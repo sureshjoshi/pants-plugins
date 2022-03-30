@@ -1,6 +1,7 @@
 from pants.backend.python.subsystems.python_tool_base import PythonToolBase
 from pants.backend.python.target_types import ConsoleScript
 from pants.engine.rules import collect_rules
+from pants.option.custom_types import shell_str
 
 
 class Ansible(PythonToolBase):
@@ -26,6 +27,23 @@ class AnsibleLint(PythonToolBase):
 
     register_interpreter_constraints = True
     default_interpreter_constraints = ["CPython>=3.7"]
+
+    @classmethod
+    def register_options(cls, register):
+        super().register_options(register)
+        register(
+            "--args",
+            type=list,
+            member_type=shell_str,
+            help=(
+                "Arguments to pass directly to ansible-lint, e.g."
+                f"`--{cls.options_scope}-args='-f pep8'"
+            ),
+        )
+
+    @property
+    def args(self) -> tuple[str, ...]:
+        return tuple(self.options.args)
 
 
 def rules():

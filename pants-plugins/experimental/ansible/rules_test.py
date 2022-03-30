@@ -28,6 +28,11 @@ from pants.testutil.rule_runner import RuleRunner
 
 @pytest.fixture()
 def rule_runner() -> RuleRunner:
+    return make_rule_runner()
+
+
+def make_rule_runner() -> RuleRunner:
+
     rr = RuleRunner(
         target_types=(
             AnsibleDeployment,
@@ -120,11 +125,13 @@ class TestLint:
         return lint_results.results
 
     @staticmethod
-    def assert_ansible_lint_run(lint_results: LintResults) -> ansible_lint_output:
+    def assert_ansible_lint_run(
+        lint_results: LintResults, expected_exit_code=2
+    ) -> ansible_lint_output:
         assert len(lint_results) == 1
 
         result = lint_results[0]
-        assert result.exit_code == 2
+        assert result.exit_code == expected_exit_code
 
         stdout_lines = list(filter(bool, result.stdout.split("\n")))
         return stdout_lines
@@ -155,3 +162,25 @@ class TestLint:
 
         output = self.assert_ansible_lint_run(lint_results)
         assert len(output) == 6  # TODO: might change if ansible-lint changes
+
+    def test_lint_args_used(self):
+        """
+        Test that the global args for ansible-lint are used
+
+        We do this by shimming to use the `--version` argument,
+        which spits out an entirely different output.
+        """
+        rule_runner = make_rule_runner()
+        rule_runner.set_options(
+            ["--ansible-lint-args='--version'"],
+            env_inherit={"PATH"},
+        )
+
+        target = make_target(
+            rule_runner,
+            "helloansible/hello/collection/roles/hellorole",
+            "helloansiblerole",
+        )
+        lint_results = self.run_ansible_lint(rule_runner, target)
+        output = self.assert_ansible_lint_run(lint_results, 0)
+        assert "ansible-lint" in output[0] and "using ansible" in output[0]

@@ -174,12 +174,15 @@ async def run_ansiblelint(
         ),
     )
 
+    args = ["-f", "pep8"]
+    args.extend(ansible_lint.args)
+
     # Run the ansible syntax check on the passed-in playbook
     process_result = await Get(
         FallibleProcessResult,
         PexProcess(
             ansible_pex,
-            argv=["-f", "pep8"],
+            argv=args,
             description="Running Ansible syntax check...",
             input_digest=input_digest.digest,
             level=LogLevel.DEBUG,

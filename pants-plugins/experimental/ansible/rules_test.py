@@ -3,6 +3,7 @@ from typing import List, Sequence
 import pytest
 import toml
 from experimental.ansible import deploy, rules, subsystem
+from experimental.ansible.deploy import DeployResults
 from experimental.ansible.rules import (
     AnsibleCheckRequest,
     AnsibleLintFieldSet,
@@ -17,7 +18,7 @@ from experimental.ansible.target_types import (
 from pants.backend.python.util_rules import pex
 from pants.build_graph.address import Address
 from pants.core.goals.check import CheckResult, CheckResults
-from pants.core.goals.lint import LintResult, LintResults
+from pants.core.goals.lint import LintResults
 from pants.core.util_rules import external_tool, source_files
 from pants.core.util_rules.source_files import SourceFiles, SourceFilesRequest
 from pants.engine.rules import QueryRule
@@ -78,11 +79,33 @@ class TestDeployment:
         return check_results.results
 
     def test_check_runs(self, rule_runner: RuleRunner):
-        """Check that it just runs"""
+        """Check that check-mode just runs"""
         target = make_target(rule_runner, "helloansible", "helloansible")
         check_results = self.run_ansible_check(rule_runner, target)
         assert len(check_results) == 1
         assert check_results[0].stdout == "\nplaybook: helloansible/playbook.yml\n"
+
+    @staticmethod
+    def run_ansible_deploy(
+        rule_runner: RuleRunner, target: Target
+    ) -> Sequence[CheckResult]:
+        check_results = rule_runner.request(
+            DeployResults, (AnsibleFieldSet.create(target),)
+        )
+        return check_results.results
+
+    def test_deploy_runs(self, rule_runner: RuleRunner):
+        """Check that deployment runs"""
+        target = make_target(rule_runner, "helloansible", "helloansible")
+        deploy_results: DeployResults = self.run_ansible_deploy(rule_runner, target)
+        assert len(deploy_results) == 1
+        result = deploy_results[0]
+        assert result.exit_code == 0
+        print(result.stdout)
+        assert (
+            "localhost                  : ok=6    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0"
+            in result.stdout
+        ), "summary does not match expected output"
 
 
 class TestLint:

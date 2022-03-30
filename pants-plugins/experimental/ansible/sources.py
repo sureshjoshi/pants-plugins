@@ -25,9 +25,11 @@ class AnsiblePlaybook(SingleSourceField):
 
 ansible_files = ("*.yml", "*.ansible")
 
+
 def in_dir(dir: str):
     def _in_dir(dirnames: Iterable[str]) -> Tuple[str]:
         return tuple([dir + "/" + dirname for dirname in dirnames])
+
     return _in_dir
 
 
@@ -46,6 +48,7 @@ plugins = "plugins/**/*"
 
 class AnsibleSources(MultipleSourcesField, ABC):
     """All sources which Ansible will consider"""
+
     ...
 
 

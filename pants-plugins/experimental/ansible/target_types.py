@@ -1,8 +1,10 @@
 from experimental.ansible.sources import (
+    AnsibleCollectionSource,
     AnsibleDependenciesField,
     AnsiblePlaybook,
-    AnsiblePlayContext, AnsibleRoleSource, AnsibleCollectionSource,
-    )
+    AnsiblePlayContext,
+    AnsibleRoleSource,
+)
 from pants.engine.target import COMMON_TARGET_FIELDS, Target
 
 
@@ -32,6 +34,6 @@ class AnsibleCollection(Target):
     core_fields = (
         *COMMON_TARGET_FIELDS,
         AnsibleDependenciesField,
-        AnsibleCollectionSource
+        AnsibleCollectionSource,
     )
     help = "An Ansible Collection, see https://docs.ansible.com/ansible/latest/dev_guide/developing_collections.html"

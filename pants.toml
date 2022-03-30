@@ -35,7 +35,7 @@ interpreter_constraints = [">=3.9"]
 requirement_constraints = "requirements.constraints.txt"
 
 [flake8]
-args = ["--max-line-length 88", "--ignore=E501"]
+args = ["--max-line-length 88", "--extend-ignore=E501"]
 
 [isort]
 args = "--profile black"

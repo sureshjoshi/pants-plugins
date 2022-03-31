@@ -1,5 +1,5 @@
 [GLOBAL]
-pants_version = "2.11.0.dev2"
+pants_version = "2.11.0rc0"
 pantsd = true 
 build_patterns = ["BUILD.pants", "BUILD"]
 pythonpath = ["pants-plugins"]
@@ -13,8 +13,13 @@ backend_packages = [
     "pants.backend.python.lint.flake8",
     "pants.backend.python.lint.isort",
     "pants.backend.python.typecheck.mypy",
+    "pants.backend.experimental.python.lint.autoflake",
+    #"experimental.mypyc",
     "experimental.ansible",
-    #"experimental.mypyc", # If uncommenting this, ensure you're using pants_from_sources
+    "experimental.cpp",
+    "experimental.cpp.lint.clangformat",
+    "experimental.nodejs",
+    "experimental.nodejs.lint.prettier",
     "experimental.pyoxidizer",
 ]
 

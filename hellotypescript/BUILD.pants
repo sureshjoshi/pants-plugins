@@ -1,0 +1,4 @@
+node_sources(
+    name="libhellotypescript",
+    sources=["**/*.ts", "**/*.js"],
+)

@@ -158,7 +158,10 @@ async def deploy(
     )
 
     field_set = target_roots_to_deployment_field_sets.field_sets[0]
-    request = await Get(DeployResults, DeploymentFieldSet, field_set)
+    _ = await Get(
+        DeployResults, DeploymentFieldSet, field_set
+    )  # TODO: Make Flake happy
+    # request = await Get(DeployResults, DeploymentFieldSet, field_set)
     # TODO: Do something with the result
     return Deploy(exit_code=0)
 

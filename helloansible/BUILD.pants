@@ -1,6 +1,11 @@
+ansible_sources(
+    name="libansible",
+    sources=["**/*"],
+)
+
 ansible_deployment(
     name="helloansible",
-    dependencies=[""],
+    dependencies=[":libansible"],
     playbook="playbook.yml",
     # inventory="", # TODO: Could this be setup like the Docker registries? in pants.toml
     # tags="", # TODO: Might need a different name to not overlap

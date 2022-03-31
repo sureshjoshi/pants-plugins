@@ -5,12 +5,17 @@ from abc import ABCMeta
 from dataclasses import dataclass
 from typing import Any, Iterable
 
+from pants.core.goals.publish import (
+    NoApplicableTargetsBehavior,
+    TargetRootsToFieldSets,
+    TargetRootsToFieldSetsRequest,
+)
 from pants.engine.console import Console
 from pants.engine.engine_aware import EngineAwareReturnType
 from pants.engine.fs import EMPTY_DIGEST, Digest
 from pants.engine.goal import Goal, GoalSubsystem
 from pants.engine.process import FallibleProcessResult
-from pants.engine.rules import collect_rules, goal_rule
+from pants.engine.rules import Get, collect_rules, goal_rule
 from pants.engine.target import FieldSet
 from pants.engine.unions import union
 from pants.util.logging import LogLevel
@@ -142,18 +147,18 @@ async def deploy(
     console: Console,
     deploy: DeploySubsystem,
 ) -> Deploy:
-    # target_roots_to_deployment_field_sets = await Get(
-    #     TargetRootsToFieldSets,
-    #     TargetRootsToFieldSetsRequest(
-    #         DeploymentFieldSet,
-    #         goal_description="",
-    #         no_applicable_targets_behavior=NoApplicableTargetsBehavior.error,
-    #         expect_single_field_set=True,
-    #     ),
-    # )
+    target_roots_to_deployment_field_sets = await Get(
+        TargetRootsToFieldSets,
+        TargetRootsToFieldSetsRequest(
+            DeploymentFieldSet,
+            goal_description="",
+            no_applicable_targets_behavior=NoApplicableTargetsBehavior.error,
+            expect_single_field_set=True,
+        ),
+    )
 
-    # field_set = target_roots_to_deployment_field_sets.field_sets[0]
-    # request = await Get(DeployResults, DeploymentFieldSet, field_set)
+    field_set = target_roots_to_deployment_field_sets.field_sets[0]
+    request = await Get(DeployResults, DeploymentFieldSet, field_set)
     # TODO: Do something with the result
     return Deploy(exit_code=0)
 

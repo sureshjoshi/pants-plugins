@@ -7,7 +7,7 @@ class Ansible(PythonToolBase):
     options_scope = "ansible"
     help = """ """
 
-    default_version = "ansible==5.3.0"
+    default_version = "ansible==5.5.0"
     default_main = ConsoleScript("ansible-playbook")
 
     register_interpreter_constraints = True

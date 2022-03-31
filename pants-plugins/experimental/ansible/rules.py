@@ -35,6 +35,7 @@ class AnsibleFieldSet(DeploymentFieldSet):
 
 class AnsibleCheckRequest(CheckRequest):
     field_set_type = AnsibleFieldSet
+    name = Ansible.options_scope
 
 
 @rule(level=LogLevel.DEBUG)
@@ -91,7 +92,7 @@ async def run_ansible_check(
 
     return CheckResults(
         [CheckResult.from_fallible_process_result(process_result)],
-        checker_name="Ansible",
+        checker_name=request.name,
     )
 
 
@@ -118,13 +119,8 @@ async def run_ansible_playbook(
     # Install Ansible
     ansible_pex = await Get(
         Pex,
-        PexRequest(
-            output_filename="ansible.pex",
-            internal_only=True,
-            requirements=ansible.pex_requirements(),
-            interpreter_constraints=ansible.interpreter_constraints,
-            main=ansible.main,
-        ),
+        PexRequest,
+        ansible.to_pex_request(),
     )
 
     # Run the passed-in playbook
@@ -142,7 +138,7 @@ async def run_ansible_playbook(
 
     return DeployResults(
         [DeployResult.from_fallible_process_result(process_result)],
-        deployer_name="Ansible",
+        deployer_name=Ansible.options_scope,
     )
 
 

@@ -10,13 +10,8 @@ from pants.engine.engine_aware import EngineAwareReturnType
 from pants.engine.fs import EMPTY_DIGEST, Digest
 from pants.engine.goal import Goal, GoalSubsystem
 from pants.engine.process import FallibleProcessResult
-from pants.engine.rules import Get, collect_rules, goal_rule
-from pants.engine.target import (
-    FieldSet,
-    NoApplicableTargetsBehavior,
-    TargetRootsToFieldSets,
-    TargetRootsToFieldSetsRequest,
-)
+from pants.engine.rules import collect_rules, goal_rule
+from pants.engine.target import FieldSet
 from pants.engine.unions import union
 from pants.util.logging import LogLevel
 from pants.util.memo import memoized_property
@@ -24,6 +19,7 @@ from pants.util.meta import frozen_after_init
 from pants.util.strutil import strip_v2_chroot_path
 
 logger = logging.getLogger(__name__)
+
 
 # TODO: Copied from LintResult/CheckResult - can this be inherited or composed?
 @dataclass(frozen=True)
@@ -146,18 +142,18 @@ async def deploy(
     console: Console,
     deploy: DeploySubsystem,
 ) -> Deploy:
-    target_roots_to_deployment_field_sets = await Get(
-        TargetRootsToFieldSets,
-        TargetRootsToFieldSetsRequest(
-            DeploymentFieldSet,
-            goal_description="",
-            no_applicable_targets_behavior=NoApplicableTargetsBehavior.error,
-            expect_single_field_set=True,
-        ),
-    )
+    # target_roots_to_deployment_field_sets = await Get(
+    #     TargetRootsToFieldSets,
+    #     TargetRootsToFieldSetsRequest(
+    #         DeploymentFieldSet,
+    #         goal_description="",
+    #         no_applicable_targets_behavior=NoApplicableTargetsBehavior.error,
+    #         expect_single_field_set=True,
+    #     ),
+    # )
 
-    field_set = target_roots_to_deployment_field_sets.field_sets[0]
-    request = await Get(DeployResults, DeploymentFieldSet, field_set)
+    # field_set = target_roots_to_deployment_field_sets.field_sets[0]
+    # request = await Get(DeployResults, DeploymentFieldSet, field_set)
     # TODO: Do something with the result
     return Deploy(exit_code=0)
 

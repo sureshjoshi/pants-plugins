@@ -15,6 +15,7 @@ backend_packages = [
     "pants.backend.python.typecheck.mypy",
     "pants.backend.experimental.python.lint.autoflake",
     #"experimental.mypyc",
+    "experimental.ansible",
     "experimental.cpp",
     "experimental.cpp.lint.clangformat",
     "experimental.nodejs",
@@ -41,6 +42,7 @@ args = "--profile black"
 
 [pyoxidizer]
 interpreter_constraints = [">=3.9"]
+args = ["--release"]
 
 [anonymous-telemetry]
 enabled = false

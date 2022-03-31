@@ -6,14 +6,19 @@ from experimental.ansible.subsystem import Ansible
 from experimental.ansible.target_types import AnsibleDependenciesField, AnsiblePlaybook
 from pants.backend.python.util_rules.pex import Pex, PexProcess, PexRequest
 from pants.core.goals.check import CheckRequest, CheckResult, CheckResults
+from pants.core.util_rules.source_files import SourceFilesRequest
+from pants.core.util_rules.stripped_source_files import StrippedSourceFiles
 from pants.engine.fs import Digest, RemovePrefix
 from pants.engine.process import FallibleProcessResult, ProcessCacheScope
 from pants.engine.rules import Get, collect_rules, rule
 from pants.engine.target import (
     Address,
+    DependenciesRequest,
     HydratedSources,
     HydrateSourcesRequest,
     SingleSourceField,
+    SourcesField,
+    Targets,
     WrappedTarget,
 )
 from pants.engine.unions import UnionRule
@@ -100,20 +105,13 @@ async def run_ansible_check(
 async def run_ansible_playbook(
     field_set: AnsibleFieldSet, ansible: Ansible
 ) -> DeployResults:
-    # TODO: Pull this out into separate rule to hydrate the playbook
-    wrapped_target = await Get(WrappedTarget, Address, field_set.address)
-    target = wrapped_target.target
-    sources = await Get(
-        HydratedSources,
-        HydrateSourcesRequest(
-            target.get(SingleSourceField),
-            for_sources_types=(AnsiblePlaybook,),
-        ),
-    )
+    direct_deps = await Get(Targets, DependenciesRequest(field_set.dependencies))
 
-    # Drop the top-level directory
-    flattened_digest = await Get(
-        Digest, RemovePrefix(sources.snapshot.digest, sources.snapshot.dirs[0])
+    stripped_sources = await Get(
+        StrippedSourceFiles,
+        SourceFilesRequest(
+            sources_fields=[tgt.get(SourcesField) for tgt in direct_deps],
+        ),
     )
 
     # Install Ansible
@@ -130,7 +128,7 @@ async def run_ansible_playbook(
             ansible_pex,
             argv=[field_set.playbook.value or field_set.playbook.default],
             description="Running Ansible Playbook...",
-            input_digest=flattened_digest,
+            input_digest=stripped_sources.snapshot.digest,
             level=LogLevel.DEBUG,
             cache_scope=ProcessCacheScope.PER_RESTART_SUCCESSFUL,
         ),

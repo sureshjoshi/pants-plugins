@@ -1,24 +1,33 @@
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
 
+from experimental.ansible.deploy import DeploymentFieldSet, DeployResult, DeployResults
+from experimental.ansible.subsystem import Ansible
+from experimental.ansible.target_types import AnsibleDependenciesField, AnsiblePlaybook
 from pants.backend.python.util_rules.pex import Pex, PexProcess, PexRequest
 from pants.core.goals.check import CheckRequest, CheckResult, CheckResults
 from pants.engine.fs import Digest, RemovePrefix
 from pants.engine.process import FallibleProcessResult, ProcessCacheScope
 from pants.engine.rules import Get, collect_rules, rule
-from pants.engine.target import HydratedSources, HydrateSourcesRequest,SingleSourceField, WrappedTarget, Address
+from pants.engine.target import (
+    Address,
+    HydratedSources,
+    HydrateSourcesRequest,
+    SingleSourceField,
+    WrappedTarget,
+)
 from pants.engine.unions import UnionRule
 from pants.util.logging import LogLevel
 
-from experimental.ansible.deploy import DeploymentFieldSet, DeployResults, DeployResult
-from experimental.ansible.subsystem import Ansible
-from experimental.ansible.target_types import AnsibleDependenciesField, AnsiblePlaybook
-
 logger = logging.getLogger(__name__)
+
 
 @dataclass(frozen=True)
 class AnsibleFieldSet(DeploymentFieldSet):
-    required_fields = (AnsibleDependenciesField, AnsiblePlaybook,)
+    required_fields = (
+        AnsibleDependenciesField,
+        AnsiblePlaybook,
+    )
 
     dependencies: AnsibleDependenciesField
     playbook: AnsiblePlaybook
@@ -33,8 +42,8 @@ async def run_ansible_check(
     request: AnsibleCheckRequest, ansible: Ansible
 ) -> CheckResults:
     # if ansible.skip:
-        # return CheckResults([], checker_name="Ansible")
-    
+    # return CheckResults([], checker_name="Ansible")
+
     # TODO: Pull this out into separate rule to hydrate the playbook
     field_set: AnsibleFieldSet = request.field_sets[0]
     logger.info(field_set)
@@ -49,7 +58,9 @@ async def run_ansible_check(
     )
 
     # Drop the top-level directory
-    flattened_digest = await Get(Digest, RemovePrefix(sources.snapshot.digest, sources.snapshot.dirs[0]))
+    flattened_digest = await Get(
+        Digest, RemovePrefix(sources.snapshot.digest, sources.snapshot.dirs[0])
+    )
 
     # Install ansible
     ansible_pex = await Get(
@@ -68,16 +79,21 @@ async def run_ansible_check(
         FallibleProcessResult,
         PexProcess(
             ansible_pex,
-            argv=["--syntax-check", field_set.playbook.value or field_set.playbook.default],
+            argv=[
+                "--syntax-check",
+                field_set.playbook.value or field_set.playbook.default,
+            ],
             description="Running Ansible syntax check...",
             input_digest=flattened_digest,
             level=LogLevel.DEBUG,
-        )
+        ),
     )
 
     return CheckResults(
-        [CheckResult.from_fallible_process_result(process_result)], checker_name="Ansible"
+        [CheckResult.from_fallible_process_result(process_result)],
+        checker_name="Ansible",
     )
+
 
 @rule(level=LogLevel.DEBUG)
 async def run_ansible_playbook(
@@ -95,7 +111,9 @@ async def run_ansible_playbook(
     )
 
     # Drop the top-level directory
-    flattened_digest = await Get(Digest, RemovePrefix(sources.snapshot.digest, sources.snapshot.dirs[0]))
+    flattened_digest = await Get(
+        Digest, RemovePrefix(sources.snapshot.digest, sources.snapshot.dirs[0])
+    )
 
     # Install Ansible
     ansible_pex = await Get(
@@ -119,11 +137,12 @@ async def run_ansible_playbook(
             input_digest=flattened_digest,
             level=LogLevel.DEBUG,
             cache_scope=ProcessCacheScope.PER_RESTART_SUCCESSFUL,
-        )
+        ),
     )
 
     return DeployResults(
-        [DeployResult.from_fallible_process_result(process_result)], deployer_name="Ansible"
+        [DeployResult.from_fallible_process_result(process_result)],
+        deployer_name="Ansible",
     )
 
 

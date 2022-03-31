@@ -1,21 +1,25 @@
 from __future__ import annotations
 
+import logging
 from abc import ABCMeta
 from dataclasses import dataclass
-import logging
-from typing import Any, Iterable 
+from typing import Any, Iterable
 
 from pants.engine.console import Console
 from pants.engine.engine_aware import EngineAwareReturnType
 from pants.engine.fs import EMPTY_DIGEST, Digest
 from pants.engine.goal import Goal, GoalSubsystem
 from pants.engine.process import FallibleProcessResult
-from pants.engine.rules import collect_rules, goal_rule, Get
-from pants.engine.target import FieldSet, TargetRootsToFieldSets, TargetRootsToFieldSetsRequest, NoApplicableTargetsBehavior
+from pants.engine.rules import Get, collect_rules, goal_rule
+from pants.engine.target import (
+    FieldSet,
+    NoApplicableTargetsBehavior,
+    TargetRootsToFieldSets,
+    TargetRootsToFieldSetsRequest,
+)
 from pants.engine.unions import union
-
-from pants.util.memo import memoized_property
 from pants.util.logging import LogLevel
+from pants.util.memo import memoized_property
 from pants.util.meta import frozen_after_init
 from pants.util.strutil import strip_v2_chroot_path
 
@@ -53,6 +57,7 @@ class DeployResult:
     def metadata(self) -> dict[str, Any]:
         return {"partition": self.partition_description}
 
+
 # TODO: Copied from LintResult/CheckResult - can this be inherited or composed?
 @frozen_after_init
 @dataclass(unsafe_hash=True)
@@ -70,7 +75,9 @@ class DeployResults(EngineAwareReturnType):
 
     @memoized_property
     def exit_code(self) -> int:
-        return next((result.exit_code for result in self.results if result.exit_code != 0), 0)
+        return next(
+            (result.exit_code for result in self.results if result.exit_code != 0), 0
+        )
 
     def level(self) -> LogLevel | None:
         if self.skipped:
@@ -82,7 +89,9 @@ class DeployResults(EngineAwareReturnType):
             return f"{self.deployer_name} skipped."
         message = self.deployer_name
         message += (
-            " succeeded." if self.exit_code == 0 else f" failed (exit code {self.exit_code})."
+            " succeeded."
+            if self.exit_code == 0
+            else f" failed (exit code {self.exit_code})."
         )
 
         def msg_for_result(result: DeployResult) -> str:
@@ -102,7 +111,9 @@ class DeployResults(EngineAwareReturnType):
             for i, result in enumerate(self.results):
                 msg = f"Partition #{i + 1}"
                 msg += (
-                    f" - {result.partition_description}:" if result.partition_description else ":"
+                    f" - {result.partition_description}:"
+                    if result.partition_description
+                    else ":"
                 )
                 msg += msg_for_result(result) or "\n\n"
                 results_msg += msg
@@ -123,9 +134,7 @@ class DeploySubsystem(GoalSubsystem):
     name = "deploy"
     help = "Deploy packages to a remote."
 
-    required_union_implementations = (
-        DeploymentFieldSet,
-    )
+    required_union_implementations = (DeploymentFieldSet,)
 
 
 class Deploy(Goal):
@@ -151,6 +160,7 @@ async def deploy(
     request = await Get(DeployResults, DeploymentFieldSet, field_set)
     # TODO: Do something with the result
     return Deploy(exit_code=0)
+
 
 def rules():
     return collect_rules()

@@ -2,7 +2,7 @@ ansible_deployment(
     name="helloansible",
     dependencies=[""],
     playbook="playbook.yml",
-    #inventory="", # TODO: Could this be setup like the Docker registries? in pants.toml
-    #tags="", # TODO: Might need a different name to not overlap
-    #timeout="",
+    # inventory="", # TODO: Could this be setup like the Docker registries? in pants.toml
+    # tags="", # TODO: Might need a different name to not overlap
+    # timeout="",
 )

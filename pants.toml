@@ -30,6 +30,11 @@ root_patterns = [
     "pants-plugins",
 ]
 
+[ansible-galaxy]
+requirements = "requirements.yml" # Relative to the Ansible target BUILD
+collections = ["community.docker"]
+
+
 [python]
 interpreter_constraints = [">=3.9"]
 requirement_constraints = "requirements.constraints.txt"
@@ -44,9 +49,9 @@ args = "--profile black"
 interpreter_constraints = [">=3.9"]
 args = ["--release"]
 
-[anonymous-telemetry]
-enabled = false
-
 [setuptools]
 extra_requirements = ["wheel", "mypy"]
 lockfile = "build-support/setuptools.txt"
+
+[anonymous-telemetry]
+enabled = false

@@ -31,8 +31,8 @@ root_patterns = [
 ]
 
 [ansible-galaxy]
-#requirements = ""
-collections = ["geerlingguy.git"]
+requirements = "requirements.yml" # Relative to the Ansible target BUILD
+collections = ["community.docker"]
 
 
 [python]

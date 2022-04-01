@@ -2,3 +2,4 @@
 - hosts: localhost
   roles:
     - role: example
+    - role: collectionexample

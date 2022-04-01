@@ -56,7 +56,7 @@ class AnsiblePlaybook(SingleSourceField):
     help = (
         "The .yml file to use when running ansible-playbook.\n\n"
         "Path is relative to the BUILD file's directory, e.g. `playbook='playbook.yml'`."
-    )    
+    )
 
 
 class AnsibleDeployment(Target):

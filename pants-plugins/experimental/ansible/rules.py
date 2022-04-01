@@ -9,7 +9,7 @@ from pants.backend.python.util_rules.pex import Pex, PexProcess, PexRequest
 from pants.core.goals.check import CheckRequest, CheckResult, CheckResults
 from pants.core.util_rules.source_files import SourceFilesRequest
 from pants.core.util_rules.stripped_source_files import StrippedSourceFiles
-from pants.engine.fs import Digest, RemovePrefix, MergeDigests
+from pants.engine.fs import Digest, MergeDigests, RemovePrefix
 from pants.engine.process import FallibleProcessResult, ProcessCacheScope
 from pants.engine.rules import Get, collect_rules, rule
 from pants.engine.target import (
@@ -134,7 +134,14 @@ async def run_ansible_playbook(
         FallibleProcessResult,
         PexProcess(
             galaxy_pex,
-            argv=("collection", "install", "-r", galaxy.requirements, "-p", galaxy.collections_path,),
+            argv=(
+                "collection",
+                "install",
+                "-r",
+                galaxy.requirements,
+                "-p",
+                galaxy.collections_path,
+            ),
             description=f"Installing ansible-galaxy from {galaxy.requirements}",
             input_digest=stripped_sources.snapshot.digest,
             output_directories=(galaxy.collections_path,),
@@ -148,7 +155,13 @@ async def run_ansible_playbook(
         FallibleProcessResult,
         PexProcess(
             galaxy_pex,
-            argv=("collection", "install", *galaxy.collections, "-p", galaxy.collections_path,),
+            argv=(
+                "collection",
+                "install",
+                *galaxy.collections,
+                "-p",
+                galaxy.collections_path,
+            ),
             description="Installing ansible-galaxy collections",
             output_directories=(galaxy.collections_path,),
             level=LogLevel.DEBUG,
@@ -156,14 +169,26 @@ async def run_ansible_playbook(
         ),
     )
 
-    merged_digest = await Get(Digest, MergeDigests([stripped_sources.snapshot.digest, galaxy_requirements_process_result.output_digest, galaxy_process_result.output_digest]))
+    merged_digest = await Get(
+        Digest,
+        MergeDigests(
+            [
+                stripped_sources.snapshot.digest,
+                galaxy_requirements_process_result.output_digest,
+                galaxy_process_result.output_digest,
+            ]
+        ),
+    )
 
     # Run the passed-in playbook
     process_result = await Get(
         FallibleProcessResult,
         PexProcess(
             ansible_pex,
-            argv=[field_set.playbook.value or field_set.playbook.default, *ansible.args],
+            argv=[
+                field_set.playbook.value or field_set.playbook.default,
+                *ansible.args,
+            ],
             description="Running Ansible Playbook...",
             input_digest=merged_digest,
             level=LogLevel.DEBUG,

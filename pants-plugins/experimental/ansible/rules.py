@@ -2,7 +2,8 @@ import logging
 from dataclasses import dataclass
 
 from experimental.ansible.deploy import DeploymentFieldSet, DeployResult, DeployResults
-from experimental.ansible.subsystem import Ansible
+from experimental.ansible.subsystems.ansible import Ansible
+from experimental.ansible.subsystems.ansible_galaxy import AnsibleGalaxy
 from experimental.ansible.target_types import AnsibleDependenciesField, AnsiblePlaybook
 from pants.backend.python.util_rules.pex import Pex, PexProcess, PexRequest
 from pants.core.goals.check import CheckRequest, CheckResult, CheckResults
@@ -103,8 +104,9 @@ async def run_ansible_check(
 
 @rule(level=LogLevel.DEBUG)
 async def run_ansible_playbook(
-    field_set: AnsibleFieldSet, ansible: Ansible
+    field_set: AnsibleFieldSet, ansible: Ansible, galaxy: AnsibleGalaxy
 ) -> DeployResults:
+    logger.warn(galaxy)
     direct_deps = await Get(Targets, DependenciesRequest(field_set.dependencies))
 
     stripped_sources = await Get(
@@ -119,6 +121,26 @@ async def run_ansible_playbook(
         Pex,
         PexRequest,
         ansible.to_pex_request(),
+    )
+
+    # Install Ansible Galaxy
+    ansible_pex = await Get(
+        Pex,
+        PexRequest,
+        ansible.to_pex_request(),
+    )
+
+    # Download any top-level Galaxy requirements/collections
+    galaxy_process_result = await Get(
+        FallibleProcessResult,
+        PexProcess(
+            ansible_pex,
+            argv=[field_set.playbook.value or field_set.playbook.default],
+            description="Running Ansible Playbook...",
+            input_digest=stripped_sources.snapshot.digest,
+            level=LogLevel.DEBUG,
+            cache_scope=ProcessCacheScope.PER_RESTART_SUCCESSFUL,
+        ),
     )
 
     # Run the passed-in playbook

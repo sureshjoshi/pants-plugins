@@ -9,7 +9,7 @@ from pants.backend.python.util_rules.pex import Pex, PexProcess, PexRequest
 from pants.core.goals.check import CheckRequest, CheckResult, CheckResults
 from pants.core.util_rules.source_files import SourceFilesRequest
 from pants.core.util_rules.stripped_source_files import StrippedSourceFiles
-from pants.engine.fs import Digest, MergeDigests, RemovePrefix
+from pants.engine.fs import EMPTY_DIGEST, Digest, MergeDigests, RemovePrefix
 from pants.engine.process import FallibleProcessResult, ProcessCacheScope
 from pants.engine.rules import Get, collect_rules, rule
 from pants.engine.target import (
@@ -129,53 +129,59 @@ async def run_ansible_playbook(
         ansible.to_pex_request(main=galaxy.default_main),
     )
 
-    # Install any top-level Galaxy requirements
-    galaxy_requirements_process_result = await Get(
-        FallibleProcessResult,
-        PexProcess(
-            galaxy_pex,
-            argv=(
-                "collection",
-                "install",
-                "-r",
-                galaxy.requirements,
-                "-p",
-                galaxy.collections_path,
+    galaxy_requirements_digest = EMPTY_DIGEST
+    if galaxy.requirements:
+        # Install any top-level Galaxy requirements
+        galaxy_requirements_process_result = await Get(
+            FallibleProcessResult,
+            PexProcess(
+                galaxy_pex,
+                argv=(
+                    "collection",
+                    "install",
+                    "-r",
+                    galaxy.requirements,
+                    "-p",
+                    galaxy.collections_path,
+                ),
+                description=f"Installing ansible-galaxy from {galaxy.requirements}",
+                input_digest=stripped_sources.snapshot.digest,
+                output_directories=(galaxy.collections_path,),
+                level=LogLevel.DEBUG,
+                cache_scope=ProcessCacheScope.PER_RESTART_SUCCESSFUL,
             ),
-            description=f"Installing ansible-galaxy from {galaxy.requirements}",
-            input_digest=stripped_sources.snapshot.digest,
-            output_directories=(galaxy.collections_path,),
-            level=LogLevel.DEBUG,
-            cache_scope=ProcessCacheScope.PER_RESTART_SUCCESSFUL,
-        ),
-    )
+        )
+        galaxy_requirements_digest = galaxy_requirements_process_result.output_digest
 
-    # Install any top-level Galaxy collections
-    galaxy_process_result = await Get(
-        FallibleProcessResult,
-        PexProcess(
-            galaxy_pex,
-            argv=(
-                "collection",
-                "install",
-                *galaxy.collections,
-                "-p",
-                galaxy.collections_path,
+    galaxy_collections_digest = EMPTY_DIGEST
+    if galaxy.collections:
+        # Install any top-level Galaxy collections
+        galaxy_process_result = await Get(
+            FallibleProcessResult,
+            PexProcess(
+                galaxy_pex,
+                argv=(
+                    "collection",
+                    "install",
+                    *galaxy.collections,
+                    "-p",
+                    galaxy.collections_path,
+                ),
+                description="Installing ansible-galaxy collections",
+                output_directories=(galaxy.collections_path,),
+                level=LogLevel.DEBUG,
+                cache_scope=ProcessCacheScope.PER_RESTART_SUCCESSFUL,
             ),
-            description="Installing ansible-galaxy collections",
-            output_directories=(galaxy.collections_path,),
-            level=LogLevel.DEBUG,
-            cache_scope=ProcessCacheScope.PER_RESTART_SUCCESSFUL,
-        ),
-    )
+        )
+        galaxy_collections_digest = galaxy_process_result.output_digest
 
     merged_digest = await Get(
         Digest,
         MergeDigests(
             [
                 stripped_sources.snapshot.digest,
-                galaxy_requirements_process_result.output_digest,
-                galaxy_process_result.output_digest,
+                galaxy_requirements_digest,
+                galaxy_collections_digest,
             ]
         ),
     )

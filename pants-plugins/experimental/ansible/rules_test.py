@@ -51,7 +51,7 @@ def make_rule_runner() -> RuleRunner:
         ),
     )
     rr.set_options(
-        [],
+        ["--ansible-galaxy-collections=community.docker"],
         env_inherit={"PATH"},
     )
     files = toml.load("pants-plugins/experimental/ansible/helloansible.test.toml")
@@ -105,9 +105,8 @@ class TestDeployment:
         assert len(deploy_results) == 1
         result = deploy_results[0]
         assert result.exit_code == 0
-        print(result.stdout)
         assert (
-            "localhost                  : ok=6    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0"
+            "localhost                  : ok=10   changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0"
             in result.stdout
         ), "summary does not match expected output"
 

@@ -154,7 +154,7 @@ class TestLint:
         lint_results = self.run_ansible_lint(rule_runner, target)
 
         output = self.assert_ansible_lint_run(lint_results)
-        assert len(output) == 2  # TODO: might change if ansible-lint changes
+        assert len(output) == 4  # TODO: might change if ansible-lint changes
 
     def test_lint_collection(self, rule_runner: RuleRunner):
         target = make_target(

@@ -63,22 +63,23 @@ class AnsibleSources(MultipleSourcesField, ABC):
     ...
 
 
-class AnsiblePlayContext(AnsibleSources):
-    default = (
-        ansible_files
-        + ansible_dirs(["tasks"])
-        + files_dirs(["utils", "files", "templates"])
-    )
-
-    help = "Files reachable by an Ansible Play, such as tasks, templates, and files."
-
-
 class AnsibleRoleSource(AnsibleSources):
     default = (
         ansible_files
         + ansible_dirs(["tasks", "handlers", "vars", "defaults", "meta"])
         + files_dirs(["library", "files", "templates"])
     )
+
+
+class AnsiblePlayContext(AnsibleSources):
+    default = (
+        ansible_files
+        + ansible_dirs(["tasks"])
+        + in_dir("roles/*")(AnsibleRoleSource.default)
+        + files_dirs(["utils", "files", "templates"])
+    )
+
+    help = "Files reachable by an Ansible Play, such as tasks, templates, and files."
 
 
 class AnsibleCollectionSource(AnsibleSources):

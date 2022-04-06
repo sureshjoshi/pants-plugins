@@ -1,5 +1,9 @@
 ---
 - hosts: localhost
+  roles:
+    - role: example
+    - role: collectionexample
+
   tasks:
     - name: A do-nothing shell command
       ansible.builtin.shell: ls

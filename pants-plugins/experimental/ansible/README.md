@@ -2,7 +2,7 @@
 
 ## How to use
 
-In your `BUILD` file, use the new `ansible_deployment` target:
+In your `BUILD` file, use the new `ansible_sources` to pull in the entire target directory and `ansible_deployment` to support the new `./pants deploy` goal:
     
 ```python
 ansible_deployment(
@@ -17,8 +17,14 @@ ansible_deployment(
 
 You can run a syntax check on your playbook via `./pants check helloansible:`
 
+In `pants.toml`, you can setup your Ansible Galaxy collection installations:
+
+```toml
+[ansible-galaxy]
+requirements = "requirements.yml" # Relative to the Ansible target BUILD
+collections = ["community.docker"]
+```
+
 ## Next Steps
 
-1. Add support for pulling in entire Ansible deployment directory
-2. Create rule for running playbook
-3. Add tests
+1. Add tests

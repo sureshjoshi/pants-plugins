@@ -197,6 +197,7 @@ async def run_ansible_playbook(
             input_digest=merged_digest,
             level=LogLevel.DEBUG,
             cache_scope=ProcessCacheScope.PER_RESTART_SUCCESSFUL,
+            extra_env={"ANSIBLE_COLLECTIONS_PATHS": "./collections"},
         ),
     )
 

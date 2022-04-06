@@ -2,7 +2,7 @@ from typing import List, Sequence
 
 import pytest
 import toml
-from experimental.ansible import deploy, rules, subsystem
+from experimental.ansible import deploy, rules
 from experimental.ansible.deploy import DeployResults
 from experimental.ansible.rules import (
     AnsibleCheckRequest,
@@ -42,7 +42,6 @@ def make_rule_runner() -> RuleRunner:
         rules=(
             *external_tool.rules(),
             *rules.rules(),
-            *subsystem.rules(),
             *deploy.rules(),
             *source_files.rules(),
             *pex.rules(),

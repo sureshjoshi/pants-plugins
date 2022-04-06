@@ -10,7 +10,8 @@ from experimental.ansible.sources import (
     AnsibleSourcesCollection,
     AnsibleSourcesDigest,
 )
-from experimental.ansible.subsystem import Ansible, AnsibleLint
+from experimental.ansible.subsystems.ansible import Ansible
+from experimental.ansible.subsystems.ansible_lint import AnsibleLint
 from experimental.ansible.target_types import AnsiblePlaybook
 from pants.backend.python.util_rules.pex import Pex, PexProcess, PexRequest
 from pants.core.goals.check import CheckRequest, CheckResult, CheckResults

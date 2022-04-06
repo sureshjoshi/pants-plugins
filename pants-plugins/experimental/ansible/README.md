@@ -3,7 +3,7 @@
 ## How to use
 
 In your `BUILD` file, use the new `ansible_sources` to pull in the entire target directory and `ansible_deployment` to support the new `./pants deploy` goal:
-    
+
 ```python
 ansible_deployment(
     name="helloansible",

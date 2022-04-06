@@ -5,18 +5,18 @@ from abc import ABCMeta
 from dataclasses import dataclass
 from typing import Any, Iterable
 
+from pants.core.goals.publish import (
+    NoApplicableTargetsBehavior,
+    TargetRootsToFieldSets,
+    TargetRootsToFieldSetsRequest,
+)
 from pants.engine.console import Console
 from pants.engine.engine_aware import EngineAwareReturnType
 from pants.engine.fs import EMPTY_DIGEST, Digest
 from pants.engine.goal import Goal, GoalSubsystem
 from pants.engine.process import FallibleProcessResult
 from pants.engine.rules import Get, collect_rules, goal_rule
-from pants.engine.target import (
-    FieldSet,
-    NoApplicableTargetsBehavior,
-    TargetRootsToFieldSets,
-    TargetRootsToFieldSetsRequest,
-)
+from pants.engine.target import FieldSet
 from pants.engine.unions import union
 from pants.util.logging import LogLevel
 from pants.util.memo import memoized_property

@@ -44,7 +44,7 @@ async def resolve_ansible_context(
 
 class AnsibleCheckRequest(CheckRequest):
     field_set_type = AnsibleFieldSet
-    name = "ansible syntax check"
+    name = Ansible.options_scope
 
 
 @rule(level=LogLevel.DEBUG)

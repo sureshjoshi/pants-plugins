@@ -122,7 +122,7 @@ class AnsibleCheckRequest(CheckRequest):
 
 @rule(level=LogLevel.DEBUG)
 async def run_ansible_check(
-    request: AnsibleCheckRequest, ansible: Ansible
+    request: AnsibleCheckRequest, ansible: Ansible, galaxy: AnsibleGalaxy
 ) -> CheckResults:
 
     context_files_get = Get(
@@ -140,9 +140,33 @@ async def run_ansible_check(
     )
 
     ansible_pex_get = Get(Pex, PexRequest, ansible.to_pex_request())
+    galaxy_pex_get = Get(Pex, PexRequest, galaxy.to_pex_request())
 
-    context_files, playbook, ansible_pex = await MultiGet(
-        context_files_get, playbook_get, ansible_pex_get
+    context_files, playbook, ansible_pex, galaxy_pex = await MultiGet(
+        context_files_get, playbook_get, ansible_pex_get, galaxy_pex_get
+    )
+
+    galaxy_dependencies = await Get(
+        AnsibleGalaxyDependencies,
+        AnsibleGalaxyDependencyRequest(
+            galaxy.requirements,
+            galaxy.collections,
+            galaxy.collections_path,
+            context_files,
+            galaxy_pex,
+        ),
+    )
+
+    # Combine Galaxy dependencies and Playbook context
+    merged_digest = await Get(
+        Digest,
+        MergeDigests(
+            [
+                context_files.digest,
+                galaxy_dependencies.galaxy_requirements,
+                galaxy_dependencies.galaxy_collections,
+            ]
+        ),
     )
 
     # Run the ansible syntax check on the passed-in playbook
@@ -155,12 +179,11 @@ async def run_ansible_check(
                 playbook.snapshot.files[0],
             ],
             description="Running Ansible syntax check...",
-            input_digest=context_files.digest,
+            input_digest=merged_digest,
             level=LogLevel.DEBUG,
+            extra_env={"ANSIBLE_COLLECTIONS_PATHS": "./collections"},
         ),
     )
-
-    print(process_result)
 
     return CheckResults(
         [CheckResult.from_fallible_process_result(process_result)],

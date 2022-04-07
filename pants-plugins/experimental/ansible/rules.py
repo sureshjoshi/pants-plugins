@@ -24,6 +24,7 @@ from pants.engine.process import FallibleProcessResult, ProcessCacheScope
 from pants.engine.rules import Get, MultiGet, collect_rules, rule
 from pants.engine.target import FieldSet, HydratedSources, HydrateSourcesRequest
 from pants.engine.unions import UnionRule
+from pants.option.option_types import StrListOption, StrOption
 from pants.util.logging import LogLevel
 
 logger = logging.getLogger(__name__)
@@ -42,6 +43,76 @@ async def resolve_ansible_context(
     input_digest = Get(Digest, MergeDigests((source_files.snapshot.digest,)))
 
     return AnsibleSourcesDigest(await input_digest)
+
+
+@dataclass(frozen=True, unsafe_hash=True)
+class AnsibleGalaxyDependencyRequest:
+    requirements: StrOption
+    collections: StrListOption
+    collections_path: StrOption
+    existing_files: Digest  # TODO: Extract the requirements file only
+    pex: Pex
+
+
+@dataclass(frozen=True)
+class AnsibleGalaxyDependencies:
+    galaxy_requirements: Digest = EMPTY_DIGEST
+    galaxy_collections: Digest = EMPTY_DIGEST
+
+
+@rule
+async def resolve_ansible_galaxy_dependencies(
+    galaxy_request: AnsibleGalaxyDependencyRequest,
+) -> AnsibleGalaxyDependencies:
+    galaxy_requirements_digest = EMPTY_DIGEST
+    if galaxy_request.requirements:
+        # Install any top-level Galaxy requirements
+        galaxy_requirements_process_result = await Get(
+            FallibleProcessResult,
+            PexProcess(
+                galaxy_request.pex,
+                argv=(
+                    "collection",
+                    "install",
+                    "-r",
+                    galaxy_request.requirements,
+                    "-p",
+                    galaxy_request.collections_path,
+                ),
+                description=f"Installing ansible-galaxy from {galaxy_request.requirements}",
+                input_digest=galaxy_request.existing_files.digest,
+                output_directories=(galaxy_request.collections_path,),
+                level=LogLevel.DEBUG,
+                cache_scope=ProcessCacheScope.PER_RESTART_SUCCESSFUL,
+            ),
+        )
+        galaxy_requirements_digest = galaxy_requirements_process_result.output_digest
+
+    galaxy_collections_digest = EMPTY_DIGEST
+    if galaxy_request.collections:
+        # Install any top-level Galaxy collections
+        galaxy_process_result = await Get(
+            FallibleProcessResult,
+            PexProcess(
+                galaxy_request.pex,
+                argv=(
+                    "collection",
+                    "install",
+                    *galaxy_request.collections,
+                    "-p",
+                    galaxy_request.collections_path,
+                ),
+                description="Installing ansible-galaxy collections",
+                output_directories=(galaxy_request.collections_path,),
+                level=LogLevel.DEBUG,
+                cache_scope=ProcessCacheScope.PER_RESTART_SUCCESSFUL,
+            ),
+        )
+        galaxy_collections_digest = galaxy_process_result.output_digest
+
+    return AnsibleGalaxyDependencies(
+        galaxy_requirements_digest, galaxy_collections_digest
+    )
 
 
 class AnsibleCheckRequest(CheckRequest):
@@ -122,55 +193,16 @@ async def run_ansible_playbook(
         context_files_get, playbook_get, ansible_pex_get, galaxy_pex_get
     )
 
-    # Start Galaxy
-
-    galaxy_requirements_digest = EMPTY_DIGEST
-    if galaxy.requirements:
-        # Install any top-level Galaxy requirements
-        galaxy_requirements_process_result = await Get(
-            FallibleProcessResult,
-            PexProcess(
-                galaxy_pex,
-                argv=(
-                    "collection",
-                    "install",
-                    "-r",
-                    galaxy.requirements,
-                    "-p",
-                    galaxy.collections_path,
-                ),
-                description=f"Installing ansible-galaxy from {galaxy.requirements}",
-                input_digest=context_files.digest,
-                output_directories=(galaxy.collections_path,),
-                level=LogLevel.DEBUG,
-                cache_scope=ProcessCacheScope.PER_RESTART_SUCCESSFUL,
-            ),
-        )
-        galaxy_requirements_digest = galaxy_requirements_process_result.output_digest
-
-    galaxy_collections_digest = EMPTY_DIGEST
-    if galaxy.collections:
-        # Install any top-level Galaxy collections
-        galaxy_process_result = await Get(
-            FallibleProcessResult,
-            PexProcess(
-                galaxy_pex,
-                argv=(
-                    "collection",
-                    "install",
-                    *galaxy.collections,
-                    "-p",
-                    galaxy.collections_path,
-                ),
-                description="Installing ansible-galaxy collections",
-                output_directories=(galaxy.collections_path,),
-                level=LogLevel.DEBUG,
-                cache_scope=ProcessCacheScope.PER_RESTART_SUCCESSFUL,
-            ),
-        )
-        galaxy_collections_digest = galaxy_process_result.output_digest
-
-    # End Galaxy
+    galaxy_dependencies = await Get(
+        AnsibleGalaxyDependencies,
+        AnsibleGalaxyDependencyRequest(
+            galaxy.requirements,
+            galaxy.collections,
+            galaxy.collections_path,
+            context_files,
+            galaxy_pex,
+        ),
+    )
 
     # Combine Galaxy dependencies and Playbook context
     merged_digest = await Get(
@@ -178,8 +210,8 @@ async def run_ansible_playbook(
         MergeDigests(
             [
                 context_files.digest,
-                galaxy_requirements_digest,
-                galaxy_collections_digest,
+                galaxy_dependencies.galaxy_requirements,
+                galaxy_dependencies.galaxy_collections,
             ]
         ),
     )

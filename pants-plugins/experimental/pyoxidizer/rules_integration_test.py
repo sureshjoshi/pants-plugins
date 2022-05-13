@@ -1,7 +1,7 @@
 # Copyright 2022 Pants project contributors (see CONTRIBUTORS.md).
 # Licensed under the Apache License, Version 2.0 (see LICENSE).
 
-import subprocess
+import subprocess  # nosec
 from pathlib import Path
 from textwrap import dedent
 
@@ -72,7 +72,7 @@ def test_end_to_end() -> None:
         bin_path = next(
             Path("dist", f"{tmpdir}.hellotest", "bin").glob("*/debug/install/bin")
         )
-        bin_result = subprocess.run([bin_path], stdout=subprocess.PIPE)
+        bin_result = subprocess.run([bin_path], stdout=subprocess.PIPE)  # nosec
         assert bin_result.returncode == 42
         assert bin_result.stdout == b"Hello world!\n"
 

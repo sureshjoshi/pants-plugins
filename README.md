@@ -5,7 +5,7 @@ A small selection of custom PantsBuild plugins
 ## Plugins
 
 - [ansible](https://github.com/sureshjoshi/pants-plugins/blob/main/pants-plugins/experimental/ansible/README.md)
-- [cpp](https://github.com/sureshjoshi/pants-plugins/blob/main/pants-plugins/experimental/cpp/README.md)
+- ClangFormat - Mainlined via [PR #15395](https://github.com/pantsbuild/pants/pull/15395)
 - [mypyc](https://github.com/sureshjoshi/pants-plugins/blob/main/pants-plugins/experimental/mypyc/README.md)
 - [nodejs](https://github.com/sureshjoshi/pants-plugins/blob/main/pants-plugins/experimental/nodejs/README.md)
 - [PyOxidizer](https://www.pantsbuild.org/v2.10/docs/pyoxidizer) - Mainlined in 2.10 via [PR #14183](https://github.com/pantsbuild/pants/pull/14183)

@@ -1,33 +1,11 @@
 # pants-pyoxidizer-plugin
 
-## Gameplan
+# [Mainlined in 2.10](https://www.pantsbuild.org/v2.10/docs/pyoxidizer) via [PR #14183](https://github.com/pantsbuild/pants/pull/14183)
 
-1. ~~Scaffold a Pants plugin that does basically nothing~~
-2. ~~Refer to Docker plugin for inspiration on how to approach PyOx~~
-3. ~~Oxidize Pants emitted wheel or pex~~
-4. Oxidize source through Pants python_sources
+## Resources
 
-## Examples/Libraries to test
-
-These are some typical workflows, which also highlight some unique circumstances in [PyOx's packaging](https://pyoxidizer.readthedocs.io/en/stable/pyoxidizer_packaging_additional_files.html)
-
-1. ~~Hello World~~
-2. ~~FastAPI~~ -> Installing Classified Resources on the Filesystem
-3. ~~Numpy~~ -> Installing Unclassified Files on the Filesystem
-4. ~~GUI~~
-
-## Compilation Instructions
-
-```bash
-./pants --version
-./pants package ::
-```
-
-## Next Steps
-
-1. ~Take available PyOxidizer configuration or fallback to sane default~
-2. Save binary to flattened dist/
-3. ~Add debug and release build flags~
+- [Official docs](https://www.pantsbuild.org/v2.10/docs/pyoxidizer)
+- My [Packaging Python with the PyOxidizer Pants Plugin](https://blog.pantsbuild.org/packaging-python-with-the-pyoxidizer-pants-plugin/) blog post
 
 ## Workarounds
 

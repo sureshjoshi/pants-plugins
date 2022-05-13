@@ -10,12 +10,12 @@ backend_packages = [
     "pants.backend.python",
     "pants.backend.python.lint.bandit",
     "pants.backend.python.lint.black",
-    #"pants.backend.python.lint.docformatter", # Disabled because I won't add docs to this example
     "pants.backend.python.lint.flake8",
     "pants.backend.python.lint.isort",
     "pants.backend.python.typecheck.mypy",
     "pants.backend.experimental.python.lint.autoflake",
     "pants.backend.experimental.python.lint.pyupgrade",
+    "pants.backend.experimental.python.packaging.pyoxidizer",
     "pants.backend.shell",
     "pants.backend.shell.lint.shellcheck",
     "pants.backend.shell.lint.shfmt",
@@ -25,7 +25,6 @@ backend_packages = [
     "experimental.cpp.lint.clangformat",
     "experimental.nodejs",
     "experimental.nodejs.lint.prettier",
-    "experimental.pyoxidizer",
 ]
 
 [source]

@@ -5,11 +5,11 @@ app = FastAPI()
 
 
 @app.get("/")
-async def root():
+async def root() -> dict[str, str]:
     return {"message": "Hello World"}
 
 
-def main():
+def main() -> None:
     # Don't actually run FastAPI like this - it's just a PyOx proof-of-concept
     uvicorn.run(app, host="localhost", port=8000)
 

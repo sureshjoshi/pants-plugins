@@ -1,7 +1,7 @@
 import time
 
 
-def main():
+def main() -> None:
     def fib(n: int) -> int:
         if n <= 1:
             return n

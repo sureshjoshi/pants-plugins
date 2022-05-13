@@ -10,7 +10,7 @@ if sys.argv[0] is None:
 import typer
 
 
-def main(name: str):
+def main(name: str) -> None:
     typer.echo(f"Hello {name}")
 
 

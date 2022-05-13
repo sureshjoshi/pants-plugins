@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import logging
 from dataclasses import dataclass
+from typing import Iterable
 
 from experimental.ansible.deploy import DeploymentFieldSet, DeployResult, DeployResults
 from experimental.ansible.subsystems.ansible import Ansible
@@ -11,7 +14,7 @@ from pants.core.util_rules.source_files import SourceFilesRequest
 from pants.core.util_rules.stripped_source_files import StrippedSourceFiles
 from pants.engine.fs import EMPTY_DIGEST, Digest, MergeDigests, RemovePrefix
 from pants.engine.process import FallibleProcessResult, ProcessCacheScope
-from pants.engine.rules import Get, collect_rules, rule
+from pants.engine.rules import Get, Rule, collect_rules, rule
 from pants.engine.target import (
     Address,
     DependenciesRequest,
@@ -208,7 +211,7 @@ async def run_ansible_playbook(
     )
 
 
-def rules():
+def rules() -> Iterable[Rule | UnionRule]:
     return (
         *collect_rules(),
         UnionRule(CheckRequest, AnsibleCheckRequest),

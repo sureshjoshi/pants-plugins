@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+# Minimal spiritual child of: https://github.com/pantsbuild/pants/blob/main/build-support/githooks/pre-commit
+
+set -e
+
+COLOR_RED="\x1b[31m"
+COLOR_RESET="\x1b[0m"
+
+function git_merge_base() {
+    # This prints the tracking branch if set and otherwise falls back to the commit before HEAD.
+    # We fall back to the commit before HEAD to attempt to account for situations without a tracking
+    # branch, which might include `main` builds, but can also include branch-PR builds, where
+    # Travis checks out a specially crafted Github `+refs/pull/11516/merge` branch.
+    git rev-parse --symbolic-full-name --abbrev-ref HEAD@\{upstream\} 2> /dev/null || git rev-parse HEAD^
+}
+
+function log() {
+    echo -e "$@" 1>&2
+}
+
+function die() {
+    (($# > 0)) && log "\n${COLOR_RED}$*${COLOR_RESET}"
+    exit 1
+}
+
+MERGE_BASE="$(git_merge_base)"
+
+echo "* Build file checking"
+./pants --changed-since="${MERGE_BASE}" update-build-files --check ||
+    die "If there were errors, run \`./pants --changed-since=$(git rev-parse --symbolic "${MERGE_BASE}") update-build-files\`"
+
+echo "* Lint checking"
+./pants --changed-since="${MERGE_BASE}" lint ||
+    die "If there were formatting errors, run \`./pants --changed-since=$(git rev-parse --symbolic "${MERGE_BASE}") fmt\`"
+
+# echo "* Typechecking"
+# ./pants --changed-since="${MERGE_BASE}" --changed-dependees=transitive check

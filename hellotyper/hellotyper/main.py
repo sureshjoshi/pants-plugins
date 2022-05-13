@@ -6,6 +6,7 @@ if sys.argv[0] is None:
     sys.argv[0] = sys.executable
     print(f"Patched sys.argv to {sys.argv}")
 
+# pylint: disable=wrong-import-position
 import typer
 
 

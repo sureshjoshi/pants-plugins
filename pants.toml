@@ -9,6 +9,8 @@ backend_packages = [
     "pants.backend.plugin_development",
     # "pants.backend.experimental.cc",
     # "pants.backend.experimental.cc.lint.clangformat",
+    # "pants.backend.experimental.javascript",
+    # "pants.backend.experimental.javascript.lint.prettier"
     "pants.backend.python",
     "pants.backend.python.lint.bandit",
     "pants.backend.python.lint.black",
@@ -23,8 +25,6 @@ backend_packages = [
     "pants.backend.shell.lint.shfmt",
     #"experimental.mypyc",
     "experimental.ansible",
-    "experimental.nodejs",
-    "experimental.nodejs.lint.prettier",
 ]
 
 [source]

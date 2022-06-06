@@ -48,9 +48,9 @@ async def resolve_ansible_context(
 
 @dataclass(frozen=True, unsafe_hash=True)
 class AnsibleGalaxyDependencyRequest:
-    requirements: StrOption
-    collections: StrListOption
-    collections_path: StrOption
+    requirements: str
+    collections: tuple[str, ...]
+    collections_path: str
     existing_files: AnsibleSourcesDigest  # TODO: Extract the requirements file only
     pex: Pex
 

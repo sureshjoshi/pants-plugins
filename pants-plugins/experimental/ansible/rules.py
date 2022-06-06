@@ -23,11 +23,7 @@ from pants.engine.fs import Digest, MergeDigests
 from pants.engine.internals.native_engine import EMPTY_DIGEST
 from pants.engine.process import FallibleProcessResult, ProcessCacheScope
 from pants.engine.rules import Get, MultiGet, Rule, collect_rules, rule
-from pants.engine.target import (
-    FieldSet,
-    HydratedSources,
-    HydrateSourcesRequest,
-)
+from pants.engine.target import FieldSet, HydratedSources, HydrateSourcesRequest
 from pants.engine.unions import UnionRule
 from pants.option.option_types import StrListOption, StrOption
 from pants.util.logging import LogLevel
@@ -55,7 +51,7 @@ class AnsibleGalaxyDependencyRequest:
     requirements: StrOption
     collections: StrListOption
     collections_path: StrOption
-    existing_files: Digest  # TODO: Extract the requirements file only
+    existing_files: AnsibleSourcesDigest  # TODO: Extract the requirements file only
     pex: Pex
 
 
@@ -246,7 +242,9 @@ async def run_ansible_playbook(
 
     playbook_filename = playbook.snapshot.files[0]
     argv = [playbook_filename, *ansible.args]
-    argv.extend(request.ansible_playbook_args.value)
+    playbook_args = request.ansible_playbook_args.value
+    if playbook_args:
+        argv.extend(playbook_args)
     # Run the passed-in playbook
     process_result = await Get(
         FallibleProcessResult,

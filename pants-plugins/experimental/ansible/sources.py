@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC
 from dataclasses import dataclass
-from typing import Iterable, List, Protocol, Tuple
+from typing import Callable, Iterable, Protocol
 
 from experimental.ansible.deploy import DeploymentFieldSet
 from pants.engine.collection import Collection
@@ -37,19 +37,19 @@ class AnsiblePlaybookArgs(StringSequenceField):
 ansible_files = ("*.yml", "*.ansible")
 
 
-def in_dir(dir: str):
-    def _in_dir(dirnames: Iterable[str]) -> tuple[str]:
+def in_dir(dir: str) -> Callable[Iterable[str], tuple[str, ...]]:
+    def _in_dir(dirnames: Iterable[str]) -> tuple[str, ...]:
         return tuple(dir + "/" + dirname for dirname in dirnames)
 
     return _in_dir
 
 
-def ansible_dirs(dirnames: list[str]) -> tuple[str]:
+def ansible_dirs(dirnames: list[str]) -> tuple[str, ...]:
     """Source globs where we expect Ansible files. eg: 'tasks/*' TODO: Actually filter Ansible files"""
     return tuple(dirname + "/*" for dirname in dirnames)
 
 
-def files_dirs(dirnames: list[str]) -> tuple[str]:
+def files_dirs(dirnames: list[str]) -> tuple[str, ...]:
     """Source globs where we expect any files. eg: 'files/*'"""
     return tuple(dirname + "/*" for dirname in dirnames)
 

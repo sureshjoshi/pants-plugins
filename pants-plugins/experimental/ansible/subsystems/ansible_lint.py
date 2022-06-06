@@ -17,7 +17,7 @@ class AnsibleLint(PythonToolBase):
     default_interpreter_constraints = ["CPython>=3.7"]
 
     @classmethod
-    def register_options(cls, register):
+    def register_options(cls, register) -> None:
         super().register_options(register)
         register(
             "--args",

@@ -1,5 +1,5 @@
 [GLOBAL]
-pants_version = "2.11.0rc0"
+pants_version = "2.11.0"
 pantsd = true 
 build_patterns = ["BUILD.pants", "BUILD"]
 pythonpath = ["pants-plugins"]
@@ -7,20 +7,24 @@ print_stacktrace = true
 
 backend_packages = [
     "pants.backend.plugin_development",
+    # "pants.backend.experimental.cc",
+    # "pants.backend.experimental.cc.lint.clangformat",
+    # "pants.backend.experimental.javascript",
+    # "pants.backend.experimental.javascript.lint.prettier"
     "pants.backend.python",
+    "pants.backend.python.lint.bandit",
     "pants.backend.python.lint.black",
-    #"pants.backend.python.lint.docformatter",
     "pants.backend.python.lint.flake8",
     "pants.backend.python.lint.isort",
     "pants.backend.python.typecheck.mypy",
     "pants.backend.experimental.python.lint.autoflake",
+    "pants.backend.experimental.python.lint.pyupgrade",
+    "pants.backend.experimental.python.packaging.pyoxidizer",
+    "pants.backend.shell",
+    "pants.backend.shell.lint.shellcheck",
+    "pants.backend.shell.lint.shfmt",
     #"experimental.mypyc",
     "experimental.ansible",
-    "experimental.cpp",
-    "experimental.cpp.lint.clangformat",
-    "experimental.nodejs",
-    "experimental.nodejs.lint.prettier",
-    "experimental.pyoxidizer",
 ]
 
 [source]
@@ -34,16 +38,23 @@ root_patterns = [
 requirements = "requirements.yml" # Relative to the Ansible target BUILD
 collections = ["community.docker"]
 
-
 [python]
 interpreter_constraints = [">=3.9"]
 requirement_constraints = "requirements.constraints.txt"
+tailor_pex_binary_targets = false
+
+[bandit]
+# Skipping assertion warnings - because this is an example project
+args = ["--skip B101"]
 
 [flake8]
 args = ["--max-line-length 88", "--extend-ignore=E501"]
 
 [isort]
 args = "--profile black"
+
+[pyupgrade]
+args = "--py39-plus"
 
 [pyoxidizer]
 interpreter_constraints = [">=3.9"]
@@ -52,6 +63,10 @@ args = ["--release"]
 [setuptools]
 extra_requirements = ["wheel", "mypy"]
 lockfile = "build-support/setuptools.txt"
+
+[shfmt]
+# See https://github.com/mvdan/sh/blob/master/cmd/shfmt/shfmt.1.scd#printer-flags.
+args = ["-i 4", "-ci", "-sr"]
 
 [anonymous-telemetry]
 enabled = false

@@ -1,4 +1,6 @@
-node_sources(
-    name="libhellotypescript",
-    sources=["**/*.ts", "**/*.js"],
-)
+# TODO: Waiting until typescript backend released in a versioned package
+
+# typescript_sources(
+#    name="libhellotypescript",
+#    sources=["**/*.ts"],
+# )

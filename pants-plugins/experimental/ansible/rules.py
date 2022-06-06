@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import Iterable
 
 from experimental.ansible.deploy import DeploymentFieldSet, DeployResult, DeployResults
 from experimental.ansible.sources import (
@@ -21,8 +22,12 @@ from pants.core.util_rules.source_files import SourceFiles, SourceFilesRequest
 from pants.engine.fs import Digest, MergeDigests
 from pants.engine.internals.native_engine import EMPTY_DIGEST
 from pants.engine.process import FallibleProcessResult, ProcessCacheScope
-from pants.engine.rules import Get, MultiGet, collect_rules, rule
-from pants.engine.target import FieldSet, HydratedSources, HydrateSourcesRequest
+from pants.engine.rules import Get, MultiGet, Rule, collect_rules, rule
+from pants.engine.target import (
+    FieldSet,
+    HydratedSources,
+    HydrateSourcesRequest,
+)
 from pants.engine.unions import UnionRule
 from pants.option.option_types import StrListOption, StrOption
 from pants.util.logging import LogLevel
@@ -320,7 +325,7 @@ async def run_ansiblelint(
     )
 
 
-def rules():
+def rules() -> Iterable[Rule | UnionRule]:
     return (
         *collect_rules(),
         UnionRule(CheckRequest, AnsibleCheckRequest),

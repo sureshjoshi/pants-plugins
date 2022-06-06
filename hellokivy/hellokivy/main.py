@@ -16,7 +16,7 @@ class MyFirstKivyApp(App):
         return Label(text="Hello World !")
 
 
-def main():
+def main() -> None:
     kivy.require("2.0.0")
     MyFirstKivyApp().run()
 

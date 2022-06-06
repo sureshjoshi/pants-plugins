@@ -7,7 +7,7 @@ from core import greeter
 from . import talker
 
 
-def main():
+def main() -> None:
     talker.say_hello()
     say_bye()
     greeter.greet()

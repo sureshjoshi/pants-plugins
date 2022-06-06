@@ -38,20 +38,20 @@ ansible_files = ("*.yml", "*.ansible")
 
 
 def in_dir(dir: str):
-    def _in_dir(dirnames: Iterable[str]) -> Tuple[str]:
-        return tuple([dir + "/" + dirname for dirname in dirnames])
+    def _in_dir(dirnames: Iterable[str]) -> tuple[str]:
+        return tuple(dir + "/" + dirname for dirname in dirnames)
 
     return _in_dir
 
 
-def ansible_dirs(dirnames: List[str]) -> Tuple[str]:
+def ansible_dirs(dirnames: list[str]) -> tuple[str]:
     """Source globs where we expect Ansible files. eg: 'tasks/*' TODO: Actually filter Ansible files"""
-    return tuple([dirname + "/*" for dirname in dirnames])
+    return tuple(dirname + "/*" for dirname in dirnames)
 
 
-def files_dirs(dirnames: List[str]) -> Tuple[str]:
+def files_dirs(dirnames: list[str]) -> tuple[str]:
     """Source globs where we expect any files. eg: 'files/*'"""
-    return tuple([dirname + "/*" for dirname in dirnames])
+    return tuple(dirname + "/*" for dirname in dirnames)
 
 
 plugins = "plugins/**/*"

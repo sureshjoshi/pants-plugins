@@ -126,7 +126,7 @@ class TestDeployment:
 
 
 class TestLint:
-    ansible_lint_output = List[str]
+    ansible_lint_output = list[str]
 
     @staticmethod
     def run_ansible_lint(rule_runner: RuleRunner, target: Target) -> LintResults:

@@ -6,8 +6,8 @@ from __future__ import annotations
 from typing import Iterable
 
 from experimental.ansible.target_types import (
-    AnsibleSourceTarget,
     AnsibleSourcesGeneratorTarget,
+    AnsibleSourceTarget,
 )
 from pants.engine.rules import Rule
 from pants.engine.target import BoolField

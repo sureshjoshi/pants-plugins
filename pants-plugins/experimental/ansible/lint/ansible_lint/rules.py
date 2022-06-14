@@ -9,19 +9,12 @@ from typing import Iterable
 
 from experimental.ansible.lint.ansible_lint.subsystem import AnsibleLint
 from experimental.ansible.target_types import AnsibleSourceField
-from pants.backend.python.util_rules.pex import (
-    Pex,
-    PexProcess,
-    PexRequest,
-    VenvPex,
-    VenvPexProcess,
-)
-from pants.core.goals.fmt import FmtRequest, FmtResult
-from pants.core.goals.lint import LintTargetsRequest, LintResults, LintResult
+from pants.backend.python.util_rules.pex import PexRequest, VenvPex, VenvPexProcess
+from pants.core.goals.lint import LintResult, LintResults, LintTargetsRequest
 from pants.core.util_rules.config_files import ConfigFiles, ConfigFilesRequest
 from pants.core.util_rules.source_files import SourceFiles, SourceFilesRequest
-from pants.engine.fs import Digest, MergeDigests, Snapshot
-from pants.engine.process import FallibleProcessResult, Process, ProcessResult
+from pants.engine.fs import Digest, MergeDigests
+from pants.engine.process import FallibleProcessResult
 from pants.engine.rules import Get, MultiGet, Rule, collect_rules, rule
 from pants.engine.target import FieldSet
 from pants.engine.unions import UnionRule
@@ -36,6 +29,7 @@ class AnsibleLintFieldSet(FieldSet):
     required_fields = (AnsibleSourceField,)
 
     source: AnsibleSourceField
+
 
 class AnsibleLintRequest(LintTargetsRequest):
     field_set_type = AnsibleLintFieldSet

@@ -1,4 +1,3 @@
-
 # Copyright 2022 Pants project contributors (see CONTRIBUTORS.md).
 # Licensed under the Apache License, Version 2.0 (see LICENSE).
 
@@ -7,20 +6,23 @@ from __future__ import annotations
 from textwrap import dedent
 
 import pytest
-
 from experimental.ansible.lint.ansible_lint import rules as ansible_lint_rules
 from experimental.ansible.lint.ansible_lint import skip_field
-from experimental.ansible.lint.ansible_lint.rules import AnsibleLintFieldSet, AnsibleLintRequest
+from experimental.ansible.lint.ansible_lint.rules import (
+    AnsibleLintFieldSet,
+    AnsibleLintRequest,
+)
+
 # from pants.backend.javascript.subsystems import nodejs
 from experimental.ansible.target_types import AnsibleSourcesGeneratorTarget
 from pants.backend.python import target_types_rules
-from pants.core.goals.lint import LintTargetsRequest, LintResults
+from pants.core.goals.lint import LintResults, LintTargetsRequest
 from pants.core.util_rules import config_files, source_files
 from pants.core.util_rules.source_files import SourceFiles, SourceFilesRequest
 from pants.engine.addresses import Address
-from pants.engine.fs import CreateDigest, Digest, FileContent, Snapshot
 from pants.engine.target import Target
 from pants.testutil.rule_runner import QueryRule, RuleRunner
+
 
 @pytest.fixture
 def rule_runner() -> RuleRunner:
@@ -36,6 +38,7 @@ def rule_runner() -> RuleRunner:
         ],
         target_types=[AnsibleSourcesGeneratorTarget],
     )
+
 
 UNLINTED_FILE = dedent(
     """\
@@ -54,6 +57,7 @@ DEFAULT_LINTED_FILE = dedent(
             - role: example
     """
 )
+
 
 def run_ansible_lint(
     rule_runner: RuleRunner,
@@ -76,6 +80,7 @@ def run_ansible_lint(
         ],
     )
     return lint_result
+
 
 # def test_success_on_linted_file(rule_runner: RuleRunner) -> None:
 #     rule_runner.write_files(
@@ -106,8 +111,18 @@ def run_ansible_lint(
 #     assert fmt_result.output == get_snapshot(rule_runner, {"main.js": CONFIG_FORMATTED_FILE})
 #     assert fmt_result.did_change is True
 
+
 def test_skip(rule_runner: RuleRunner) -> None:
-    rule_runner.write_files({"playbook.yml": DEFAULT_LINTED_FILE, "BUILD": "ansible_sources(name='t',  sources=['**/*'])"})
-    tgt = rule_runner.get_target(Address("", target_name="t", relative_file_path="playbook.yml"))
-    lint_result = run_ansible_lint(rule_runner, [tgt], extra_args=["--ansible-lint-skip"])
+    rule_runner.write_files(
+        {
+            "playbook.yml": DEFAULT_LINTED_FILE,
+            "BUILD": "ansible_sources(name='t',  sources=['**/*'])",
+        }
+    )
+    tgt = rule_runner.get_target(
+        Address("", target_name="t", relative_file_path="playbook.yml")
+    )
+    lint_result = run_ansible_lint(
+        rule_runner, [tgt], extra_args=["--ansible-lint-skip"]
+    )
     assert lint_result.skipped is True

@@ -25,6 +25,7 @@ backend_packages = [
     "pants.backend.shell.lint.shfmt",
     #"experimental.mypyc",
     "experimental.ansible",
+    "experimental.ansible.lint.ansible_lint",
 ]
 
 [source]

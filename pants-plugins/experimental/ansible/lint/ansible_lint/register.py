@@ -16,7 +16,7 @@ from pants.engine.unions import UnionRule
 
 def rules() -> Iterable[Rule | UnionRule]:
     return (
-        *clangformat_rules.rules(),
+        *ansible_lint_rules.rules(),
         *skip_field.rules(),
         *subsystem.rules(),
     )

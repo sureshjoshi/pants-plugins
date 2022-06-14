@@ -16,10 +16,10 @@ from experimental.ansible.lint.ansible_lint.rules import (
 # from pants.backend.javascript.subsystems import nodejs
 from experimental.ansible.target_types import AnsibleSourcesGeneratorTarget
 from pants.backend.python import target_types_rules
-from pants.core.goals.lint import LintResults, LintTargetsRequest
+from pants.core.goals.lint import LintResult, LintResults
 from pants.core.util_rules import config_files, source_files
-from pants.core.util_rules.source_files import SourceFiles, SourceFilesRequest
 from pants.engine.addresses import Address
+from pants.engine.fs import EMPTY_DIGEST
 from pants.engine.target import Target
 from pants.testutil.rule_runner import QueryRule, RuleRunner
 
@@ -34,27 +34,35 @@ def rule_runner() -> RuleRunner:
             *config_files.rules(),
             *target_types_rules.rules(),
             QueryRule(LintResults, (AnsibleLintRequest,)),
-            QueryRule(SourceFiles, (SourceFilesRequest,)),
         ],
         target_types=[AnsibleSourcesGeneratorTarget],
     )
 
 
-UNLINTED_FILE = dedent(
+EMPTY_PLAYBOOK = dedent(
     """\
     ---
-    -hosts:localhost
-     roles:
-     - role: example
     """
 )
 
-DEFAULT_LINTED_FILE = dedent(
+VALID_FILE = dedent(
     """\
     ---
     - hosts: localhost
-        roles:
-            - role: example
+      tasks:
+        - name: A do-nothing task that touches a tmp file
+          ansible.builtin.file:
+            path: /tmp/ansible-lint.pants
+            state: touch
+            mode: u=r,g=r,o=r
+    """
+)
+
+ANSIBLE_LINT_CONFIG = dedent(
+    """\
+    ---
+    exclude_paths:
+      - playbook.yml
     """
 )
 
@@ -64,7 +72,7 @@ def run_ansible_lint(
     targets: list[Target],
     *,
     extra_args: list[str] | None = None,
-) -> LintTargetsRequest:
+) -> tuple[LintResult, ...]:
     rule_runner.set_options(
         [
             "--backend-packages=['experimental.ansible', 'experimental.ansible.lint.ansible_lint']",
@@ -79,43 +87,72 @@ def run_ansible_lint(
             AnsibleLintRequest(field_sets),
         ],
     )
-    return lint_result
+    return lint_result.results
 
 
-# def test_success_on_linted_file(rule_runner: RuleRunner) -> None:
-#     rule_runner.write_files(
-#         {"playbook.yml": DEFAULT_LINTED_FILE, "BUILD": "ansible_sources(name='t')"}
-#     )
-#     tgt = rule_runner.get_target(Address("", target_name="t", relative_file_path="main.js"))
-#     lint_result = run_ansible_lint(
-#         rule_runner,
-#         [tgt],
-#     )
-#     assert fmt_result.output == get_snapshot(rule_runner, {"main.js": DEFAULT_FORMATTED_FILE})
-#     assert lint_result.did_change is False
+def test_success(rule_runner: RuleRunner) -> None:
+    rule_runner.write_files(
+        {
+            "playbook.yml": VALID_FILE,
+            "BUILD": "ansible_sources(name='t', sources=['playbook.yml'])",
+        }
+    )
+    tgt = rule_runner.get_target(
+        Address("", target_name="t", relative_file_path="playbook.yml")
+    )
+    lint_results = run_ansible_lint(
+        rule_runner,
+        [tgt],
+    )
+    assert len(lint_results) == 1
+    assert lint_results[0].exit_code == 0
+    assert lint_results[0].report == EMPTY_DIGEST
 
-# def test_config(rule_runner: RuleRunner) -> None:
-#     rule_runner.write_files(
-#         {
-#             "main.js": UNFORMATTED_FILE,
-#             ".prettierrc": PRETTIERRC_FILE,
-#             "BUILD": "javascript_sources(name='t')",
-#         }
-#     )
-#     tgt = rule_runner.get_target(Address("", target_name="t", relative_file_path="main.js"))
-#     fmt_result = run_prettier(
-#         rule_runner,
-#         [tgt],
-#     )
-#     assert fmt_result.skipped is False
-#     assert fmt_result.output == get_snapshot(rule_runner, {"main.js": CONFIG_FORMATTED_FILE})
-#     assert fmt_result.did_change is True
+
+def test_failure(rule_runner: RuleRunner) -> None:
+    rule_runner.write_files(
+        {
+            "playbook.yml": EMPTY_PLAYBOOK,
+            "BUILD": "ansible_sources(name='t', sources=['playbook.yml'])",
+        }
+    )
+    tgt = rule_runner.get_target(
+        Address("", target_name="t", relative_file_path="playbook.yml")
+    )
+    lint_results = run_ansible_lint(
+        rule_runner,
+        [tgt],
+    )
+    assert len(lint_results) == 1
+    assert lint_results[0].exit_code == 2
+    assert lint_results[0].report == EMPTY_DIGEST
+    assert "syntax-check: Empty playbook" in lint_results[0].stdout
+
+
+def test_config(rule_runner: RuleRunner) -> None:
+    rule_runner.write_files(
+        {
+            "playbook.yml": EMPTY_PLAYBOOK,
+            ".ansible-lint": ANSIBLE_LINT_CONFIG,
+            "BUILD": "ansible_sources(name='t', sources=['playbook.yml'])",
+        }
+    )
+    tgt = rule_runner.get_target(
+        Address("", target_name="t", relative_file_path="playbook.yml")
+    )
+    lint_results = run_ansible_lint(
+        rule_runner,
+        [tgt],
+    )
+    assert len(lint_results) == 1
+    assert lint_results[0].exit_code == 0
+    assert lint_results[0].report == EMPTY_DIGEST
 
 
 def test_skip(rule_runner: RuleRunner) -> None:
     rule_runner.write_files(
         {
-            "playbook.yml": DEFAULT_LINTED_FILE,
+            "playbook.yml": VALID_FILE,
             "BUILD": "ansible_sources(name='t',  sources=['**/*'])",
         }
     )
@@ -125,4 +162,4 @@ def test_skip(rule_runner: RuleRunner) -> None:
     lint_result = run_ansible_lint(
         rule_runner, [tgt], extra_args=["--ansible-lint-skip"]
     )
-    assert lint_result.skipped is True
+    assert not lint_result

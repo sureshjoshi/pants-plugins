@@ -70,6 +70,8 @@ async def ansible_lint_fmt(
         PexProcess(
             ansiblelint_pex,
             argv=(
+                "--parseable",  # Output formatting (same as "-f pep8")
+                "--write",
                 *ansible_lint.args,  # User-added arguments
                 # *request.snapshot.files,
             ),

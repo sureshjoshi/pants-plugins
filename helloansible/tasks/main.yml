@@ -1,0 +1,5 @@
+---
+- name: log from tasks folder
+  debug:
+    msg: >-
+      Hello I am in the tasks folder

@@ -5,9 +5,9 @@ from typing import Iterable
 from experimental.ansible.deploy import rules as deploy_rules
 from experimental.ansible.rules import rules as ansible_rules
 from experimental.ansible.target_types import (
+    AnsibleCollection,
     AnsibleDeployment,
-    AnsibleSourcesGeneratorTarget,
-    AnsibleSourceTarget,
+    AnsibleRole,
 )
 from pants.engine.rules import Rule
 from pants.engine.target import Target
@@ -22,8 +22,4 @@ def rules() -> Iterable[Rule | UnionRule]:
 
 
 def target_types() -> Iterable[type[Target]]:
-    return (
-        AnsibleDeployment,
-        AnsibleSourceTarget,
-        AnsibleSourcesGeneratorTarget,
-    )
+    return (AnsibleDeployment, AnsibleRole, AnsibleCollection)

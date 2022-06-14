@@ -1,0 +1,6 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Create an error in the collection lints
+      ansible.builtin.shell: ls
+      register: shell_result

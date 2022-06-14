@@ -1,62 +1,12 @@
-from pants.engine.target import (
-    COMMON_TARGET_FIELDS,
-    Dependencies,
-    MultipleSourcesField,
-    SingleSourceField,
-    Target,
-    TargetFilesGenerator,
+from experimental.ansible.sources import (
+    AnsibleCollectionSource,
+    AnsibleDependenciesField,
+    AnsiblePlaybook,
+    AnsiblePlaybookArgs,
+    AnsiblePlayContext,
+    AnsibleRoleSource,
 )
-
-
-class AnsibleSourceField(SingleSourceField):
-    pass
-    # expected_file_extensions = (
-    # ".yml",
-    # ".yaml",
-    # )
-
-
-class AnsibleGeneratorSourcesField(MultipleSourcesField):
-    pass
-    # expected_file_extensions = (
-    # ".yml",
-    #     # ".yaml",
-    # )
-
-
-class AnsibleSourceTarget(Target):
-    alias = "ansible_source"
-    core_fields = (
-        *COMMON_TARGET_FIELDS,
-        Dependencies,
-        AnsibleSourceField,
-    )
-    help = "A single ansible source file containing tasks or support code."
-
-
-class AnsibleSourcesGeneratorTarget(TargetFilesGenerator):
-    alias = "ansible_sources"
-    core_fields = (
-        *COMMON_TARGET_FIELDS,
-        AnsibleGeneratorSourcesField,
-    )
-    generated_target_cls = AnsibleSourceTarget
-    copied_fields = COMMON_TARGET_FIELDS
-    moved_fields = (Dependencies,)
-    help = "Generate a `ansible_source` target for each file in the `sources` field."
-
-
-class AnsibleDependenciesField(Dependencies):
-    pass
-
-
-class AnsiblePlaybook(SingleSourceField):
-    alias = "playbook"
-    default = "playbook.yml"
-    help = (
-        "The .yml file to use when running ansible-playbook.\n\n"
-        "Path is relative to the BUILD file's directory, e.g. `playbook='playbook.yml'`."
-    )
+from pants.engine.target import COMMON_TARGET_FIELDS, Target
 
 
 class AnsibleDeployment(Target):
@@ -65,5 +15,27 @@ class AnsibleDeployment(Target):
         *COMMON_TARGET_FIELDS,
         AnsibleDependenciesField,
         AnsiblePlaybook,
+        AnsiblePlayContext,
+        AnsiblePlaybookArgs,
     )
     help = ""
+
+
+class AnsibleRole(Target):
+    alias = "ansible_role"
+    core_fields = (
+        *COMMON_TARGET_FIELDS,
+        AnsibleDependenciesField,
+        AnsibleRoleSource,
+    )
+    help = "An Ansible Role, see https://docs.ansible.com/ansible/latest/user_guide/playbooks_reuse_roles.html"
+
+
+class AnsibleCollection(Target):
+    alias = "ansible_collection"
+    core_fields = (
+        *COMMON_TARGET_FIELDS,
+        AnsibleDependenciesField,
+        AnsibleCollectionSource,
+    )
+    help = "An Ansible Collection, see https://docs.ansible.com/ansible/latest/dev_guide/developing_collections.html"

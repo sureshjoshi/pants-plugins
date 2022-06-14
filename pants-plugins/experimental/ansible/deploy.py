@@ -15,9 +15,9 @@ from pants.engine.engine_aware import EngineAwareReturnType
 from pants.engine.fs import EMPTY_DIGEST, Digest
 from pants.engine.goal import Goal, GoalSubsystem
 from pants.engine.process import FallibleProcessResult
-from pants.engine.rules import Get, collect_rules, goal_rule
+from pants.engine.rules import Get, Rule, collect_rules, goal_rule
 from pants.engine.target import FieldSet
-from pants.engine.unions import union
+from pants.engine.unions import UnionRule, union
 from pants.util.logging import LogLevel
 from pants.util.memo import memoized_property
 from pants.util.meta import frozen_after_init
@@ -158,13 +158,11 @@ async def deploy(
     )
 
     field_set = target_roots_to_deployment_field_sets.field_sets[0]
-    _ = await Get(
-        DeployResults, DeploymentFieldSet, field_set
-    )  # TODO: Make Flake happy
-    # request = await Get(DeployResults, DeploymentFieldSet, field_set)
+    request = await Get(DeployResults, DeploymentFieldSet, field_set)
     # TODO: Do something with the result
+    logger.info(request)
     return Deploy(exit_code=0)
 
 
-def rules():
+def rules() -> Iterable[Rule | UnionRule]:
     return collect_rules()

@@ -1,14 +1,18 @@
-from pants.option.subsystem import Subsystem
-from pants.option.option_types import StrListOption, StrOption, FileOption
+from pants.backend.python.subsystems.python_tool_base import PythonToolBase
 from pants.backend.python.target_types import ConsoleScript
-from pants.option.option_types import ArgsListOption
+from pants.option.option_types import ArgsListOption, StrListOption, StrOption
 
-class AnsibleGalaxy(Subsystem):
+
+class AnsibleGalaxy(PythonToolBase):
     options_scope = "ansible-galaxy"
     name = "Ansible Galaxy"
     help = """ """
 
+    default_version = "ansible-core==2.12.4"
     default_main = ConsoleScript("ansible-galaxy")
+
+    register_interpreter_constraints = True
+    default_interpreter_constraints = ["CPython>=3.7"]
 
     requirements = StrOption(
         "--requirements",
@@ -28,16 +32,7 @@ class AnsibleGalaxy(Subsystem):
     )
 
     collections_path = StrOption(
-        "--collections-path",
-        default="./collections",
-        help=(
-            ""
-        ),
-        advanced=True
+        "--collections-path", default="./collections", help=(""), advanced=True
     )
 
     args = ArgsListOption(example="--token API_KEY")
-
-
-
-    

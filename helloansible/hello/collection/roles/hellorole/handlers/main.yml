@@ -1,0 +1,5 @@
+---
+- name: trigger handler
+  debug:
+    msg: |
+      handler triggered

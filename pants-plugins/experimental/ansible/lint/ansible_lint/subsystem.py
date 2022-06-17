@@ -41,7 +41,7 @@ class AnsibleLint(PythonToolBase):
     # default_lockfile_url = git_url(default_lockfile_path)
 
     def config_request(self, dirs: Iterable[str]) -> ConfigFilesRequest:
-        """ansible-lint will use the closest configuration file to the file currently being formatted, so add all of them."""
+        """Refer to https://ansible-lint.readthedocs.io/en/latest/configuring/#configuration-file for how Ansible Lint discovers configurations"""
         config_files = (
             ".ansible-lint",
             ".config/ansible-lint.yml",

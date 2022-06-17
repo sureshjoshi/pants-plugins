@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from textwrap import dedent
+from typing import Iterable
 
 import pytest
 from experimental.ansible.lint.ansible_lint import rules as ansible_lint_rules
@@ -45,7 +46,7 @@ EMPTY_PLAYBOOK = dedent(
     """
 )
 
-VALID_FILE = dedent(
+VALID_PLAYBOOK = dedent(
     """\
     ---
     - hosts: localhost
@@ -69,7 +70,7 @@ ANSIBLE_LINT_CONFIG = dedent(
 
 def run_ansible_lint(
     rule_runner: RuleRunner,
-    targets: list[Target],
+    targets: Iterable[Target],
     *,
     extra_args: list[str] | None = None,
 ) -> tuple[LintResult, ...]:
@@ -93,7 +94,7 @@ def run_ansible_lint(
 def test_success(rule_runner: RuleRunner) -> None:
     rule_runner.write_files(
         {
-            "playbook.yml": VALID_FILE,
+            "playbook.yml": VALID_PLAYBOOK,
             "BUILD": "ansible_sources(name='t', sources=['playbook.yml'])",
         }
     )
@@ -152,7 +153,7 @@ def test_config(rule_runner: RuleRunner) -> None:
 def test_skip(rule_runner: RuleRunner) -> None:
     rule_runner.write_files(
         {
-            "playbook.yml": VALID_FILE,
+            "playbook.yml": VALID_PLAYBOOK,
             "BUILD": "ansible_sources(name='t',  sources=['**/*'])",
         }
     )

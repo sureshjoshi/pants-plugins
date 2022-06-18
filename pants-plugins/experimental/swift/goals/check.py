@@ -6,6 +6,7 @@ from __future__ import annotations
 import logging
 from typing import Iterable
 
+from experimental.swift.subsystems.swiftc import SwiftcSubsystem
 from experimental.swift.target_types import (
     SwiftFieldSet,
 )
@@ -19,11 +20,11 @@ logger = logging.getLogger(__name__)
 
 class SwiftCheckRequest(CheckRequest):
     field_set_type = SwiftFieldSet
-    name = "swiftcp"
+    name = SwiftcSubsystem.options_scope
 
 
 @rule(desc="Check Swift compilation", level=LogLevel.DEBUG)
-async def swiftc_check(request: SwiftCheckRequest) -> CheckResults:
+async def swiftc_check(swiftc: SwiftcSubsystem, request: SwiftCheckRequest) -> CheckResults:
     logger.warning(request)
     return CheckResults([], checker_name=request.name)
 

@@ -70,7 +70,7 @@ class SwiftBinaryTarget(Target):
 
 @dataclass(frozen=True)
 class SwiftFieldSet(FieldSet):
-    required_fields = (SwiftSourceTarget,)
+    required_fields = (SwiftSourceField,)
 
     source: SwiftSourceField
 

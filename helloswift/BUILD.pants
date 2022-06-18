@@ -1,0 +1,9 @@
+swift_sources(
+    name="lib",
+    sources=["**/*.swift"]
+)
+
+swift_binary(
+    name="bin",
+    dependencies=[":lib"]
+)

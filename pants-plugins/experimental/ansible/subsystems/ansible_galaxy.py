@@ -1,7 +1,11 @@
-from pants.option.subsystem import Subsystem
-from pants.option.option_types import StrListOption, StrOption, FileOption
 from pants.backend.python.target_types import ConsoleScript
-from pants.option.option_types import ArgsListOption
+from pants.option.option_types import (
+    ArgsListOption,
+    StrListOption,
+    StrOption,
+)
+from pants.option.subsystem import Subsystem
+
 
 class AnsibleGalaxy(Subsystem):
     options_scope = "ansible-galaxy"
@@ -28,16 +32,7 @@ class AnsibleGalaxy(Subsystem):
     )
 
     collections_path = StrOption(
-        "--collections-path",
-        default="./collections",
-        help=(
-            ""
-        ),
-        advanced=True
+        "--collections-path", default="./collections", help=(""), advanced=True
     )
 
     args = ArgsListOption(example="--token API_KEY")
-
-
-
-    

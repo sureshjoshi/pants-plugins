@@ -1,1 +1,4 @@
-print("Hello world")
+sayHello()
+sayBye()
+// TODO: Importing other modules
+// greet()

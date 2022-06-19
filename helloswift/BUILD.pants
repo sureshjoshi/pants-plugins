@@ -1,6 +1,11 @@
 swift_sources(
-    name="lib",
-    sources=["**/*.swift"]
+    name="libcore",
+    sources=["Core/*.swift"]
+)
+
+swift_sources(
+    name="libhelloworld",
+    sources=["Sources/*.swift"]
 )
 
 swift_binary(

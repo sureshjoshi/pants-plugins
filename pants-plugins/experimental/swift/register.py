@@ -12,6 +12,7 @@ from experimental.swift.target_types import (
     SwiftSourceTarget,
 )
 from experimental.swift.util_rules import compile
+from experimental.swift.subsystems import toolchain
 from pants.engine.rules import Rule
 from pants.engine.target import Target
 from pants.engine.unions import UnionRule
@@ -22,6 +23,7 @@ def rules() -> Iterable[Rule | UnionRule]:
         *check.rules(),
         *compile.rules(),
         *tailor.rules(),
+        *toolchain.rules(),
     )
 
 

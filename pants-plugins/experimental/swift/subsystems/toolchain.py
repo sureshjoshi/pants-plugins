@@ -23,8 +23,8 @@ from pants.util.logging import LogLevel
 class SwiftSubsystem(Subsystem):
     options_scope = "swift"
     name = "swift"
-    help = """The Swift programming language (https://www.swift.org/). 
-    Compilation occurs via the underlying LLVM front-end. ie. "swift-frontend -frontend" 
+    help = """The Swift programming language (https://www.swift.org/).
+    Compilation occurs via the underlying LLVM front-end. ie. "swift-frontend -frontend"
     """
 
     args = ArgsListOption(example="-target x86_64-apple-macosx12.0")

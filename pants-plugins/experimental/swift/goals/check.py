@@ -15,10 +15,7 @@ from experimental.swift.util_rules.compile import (
 )
 from pants.core.goals.check import CheckRequest, CheckResult, CheckResults
 from pants.engine.rules import Get, MultiGet, Rule, collect_rules, rule
-from pants.engine.target import (
-    AllTargets,
-    AllTargetsRequest,
-)
+from pants.engine.target import AllTargets, AllTargetsRequest
 from pants.engine.unions import UnionRule
 from pants.util.logging import LogLevel
 

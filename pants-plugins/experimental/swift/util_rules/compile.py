@@ -5,12 +5,8 @@ from dataclasses import dataclass
 from typing import Iterable
 
 from experimental.swift.subsystems.toolchain import SwiftToolchain
-from experimental.swift.target_types import (
-    SwiftFieldSet,
-    SwiftSourceField,
-)
+from experimental.swift.target_types import SwiftFieldSet, SwiftSourceField
 from pants.core.util_rules.source_files import SourceFiles, SourceFilesRequest
-from pants.engine.internals.selectors import Get
 from pants.engine.process import FallibleProcessResult, Process
 from pants.engine.rules import Get, Rule, collect_rules, rule
 from pants.engine.target import SourcesField, Target

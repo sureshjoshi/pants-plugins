@@ -1,9 +1,5 @@
 from pants.backend.python.target_types import ConsoleScript
-from pants.option.option_types import (
-    ArgsListOption,
-    StrListOption,
-    StrOption,
-)
+from pants.option.option_types import ArgsListOption, StrListOption, StrOption
 from pants.option.subsystem import Subsystem
 
 

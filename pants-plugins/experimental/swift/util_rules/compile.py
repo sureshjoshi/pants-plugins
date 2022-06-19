@@ -1,31 +1,22 @@
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import Iterable
-import logging
 
-from experimental.swift.subsystems.toolchain import SwiftToolchain, SwiftSubsystem
+from experimental.swift.subsystems.toolchain import SwiftToolchain
 from experimental.swift.target_types import (
     SwiftFieldSet,
-    SwiftGeneratorFieldSet,
+    SwiftSourceField,
 )
+from pants.core.util_rules.source_files import SourceFiles, SourceFilesRequest
 from pants.engine.internals.selectors import Get
 from pants.engine.process import FallibleProcessResult, Process
-from pants.engine.rules import Rule, collect_rules, rule
+from pants.engine.rules import Get, Rule, collect_rules, rule
+from pants.engine.target import SourcesField, Target
 from pants.engine.unions import UnionRule
 from pants.util.logging import LogLevel
-from pants.core.goals.check import CheckRequest, CheckResults
-from pants.engine.rules import Rule, collect_rules, rule
-from pants.engine.unions import UnionRule
-from pants.engine.process import FallibleProcessResult, Process
-from pants.util.logging import LogLevel
-from pants.core.util_rules.source_files import SourceFiles, SourceFilesRequest
-from pants.engine.rules import Get, MultiGet, Rule, collect_rules, rule
-from pants.engine.target import CoarsenedTargets
 from pants.util.strutil import pluralize
-from pants.engine.engine_aware import EngineAwareParameter, EngineAwareReturnType
-from pants.engine.target import Target, SourcesField
-from experimental.swift.target_types import SwiftSourceField, SwiftGeneratorSourcesField
 
 logger = logging.getLogger(__name__)
 

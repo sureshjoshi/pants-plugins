@@ -3,47 +3,24 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import logging
-from typing import Iterable
 from itertools import groupby
+from typing import Iterable
 
-from experimental.swift.subsystems.toolchain import SwiftSubsystem, SwiftToolchain
-from experimental.swift.target_types import (
-    SwiftFieldSet,
-)
+from experimental.swift.subsystems.toolchain import SwiftSubsystem
+from experimental.swift.target_types import SwiftFieldSet, SwiftSourceField
 from experimental.swift.util_rules.compile import (
     FallibleTypecheckedSwiftModule,
     TypecheckSwiftModuleRequest,
 )
-from experimental.swift.target_types import SwiftSourceField
-from pants.core.goals.check import CheckRequest, CheckResults, CheckResult
-from pants.engine.rules import Rule, collect_rules, rule
-from pants.build_graph.address import Address
-from pants.engine.unions import UnionRule
-from pants.engine.process import FallibleProcessResult, Process
-from pants.util.logging import LogLevel
-from pants.core.util_rules.source_files import SourceFiles, SourceFilesRequest
+from pants.core.goals.check import CheckRequest, CheckResult, CheckResults
 from pants.engine.rules import Get, MultiGet, Rule, collect_rules, rule
 from pants.engine.target import (
-    CoarsenedTargets,
-    CoarsenedTargetsRequest,
-    TransitiveTargetsRequest,
-    TransitiveTargets,
-)
-from pants.util.strutil import pluralize
-from pants.engine.engine_aware import EngineAwareParameter, EngineAwareReturnType
-from pants.engine.target import (
-    Dependencies,
-    DependenciesRequest,
-    SourcesField,
-    Target,
-    Targets,
-    WrappedTarget,
     AllTargets,
     AllTargetsRequest,
 )
-from pants.engine.addresses import Addresses
+from pants.engine.unions import UnionRule
+from pants.util.logging import LogLevel
 
 logger = logging.getLogger(__name__)
 
@@ -61,9 +38,9 @@ async def swift_typecheck(request: SwiftCheckRequest) -> CheckResults:
     # TODO: Each module should be typechecked in isolation (unless explicitly imported)
 
     # From the list of field sets, extract a single address per target (to later retrieve the target)
-    requested_target_names = set(
-        [field_set.address.target_name for field_set in request.field_sets]
-    )
+    requested_target_names = {
+        field_set.address.target_name for field_set in request.field_sets
+    }
 
     # TODO: There is no way this is correct - there must be a simpler way to grab all the swift_sources
     all_targets = await Get(AllTargets, AllTargetsRequest())

@@ -15,9 +15,8 @@ from pants.core.util_rules.system_binaries import (
 from pants.engine.internals.selectors import Get
 from pants.engine.rules import Rule, collect_rules, rule
 from pants.engine.unions import UnionRule
-from pants.option.subsystem import Subsystem
-from pants.core.util_rules.external_tool import ExternalTool
 from pants.option.option_types import ArgsListOption
+from pants.option.subsystem import Subsystem
 from pants.util.logging import LogLevel
 
 

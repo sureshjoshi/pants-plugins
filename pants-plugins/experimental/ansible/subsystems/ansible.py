@@ -2,6 +2,7 @@ from pants.backend.python.subsystems.python_tool_base import PythonToolBase
 from pants.backend.python.target_types import ConsoleScript
 from pants.option.option_types import ArgsListOption
 
+
 class Ansible(PythonToolBase):
     options_scope = "ansible"
     name = "Ansible"

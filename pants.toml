@@ -7,25 +7,27 @@ print_stacktrace = true
 
 backend_packages = [
     "pants.backend.plugin_development",
-    # "pants.backend.experimental.cc",
-    # "pants.backend.experimental.cc.lint.clangformat",
-    # "pants.backend.experimental.javascript",
-    # "pants.backend.experimental.javascript.lint.prettier"
+    #"pants.backend.experimental.cc",
+    #"pants.backend.experimental.cc.lint.clangformat",
+    #"pants.backend.experimental.javascript",
+    #"pants.backend.experimental.javascript.lint.prettier"
     "pants.backend.python",
     "pants.backend.python.lint.bandit",
     "pants.backend.python.lint.black",
     "pants.backend.python.lint.flake8",
     "pants.backend.python.lint.isort",
-    "pants.backend.python.typecheck.mypy",
+    #"pants.backend.python.typecheck.mypy",
     "pants.backend.experimental.python.lint.autoflake",
     "pants.backend.experimental.python.lint.pyupgrade",
     "pants.backend.experimental.python.packaging.pyoxidizer",
     "pants.backend.shell",
     "pants.backend.shell.lint.shellcheck",
     "pants.backend.shell.lint.shfmt",
+    #"pants.backend.experimental.swift",
     #"experimental.mypyc",
     "experimental.ansible",
     "experimental.ansible.lint.ansible_lint",
+    "experimental.swift",
 ]
 
 [source]
@@ -49,7 +51,7 @@ tailor_pex_binary_targets = false
 args = ["--skip B101"]
 
 [flake8]
-args = ["--max-line-length 88", "--ignore=E501"]
+args = ["--max-line-length 88", "--ignore=E501,W503"]
 
 [isort]
 args = "--profile black"

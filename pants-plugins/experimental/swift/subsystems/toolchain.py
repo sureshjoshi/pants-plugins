@@ -27,12 +27,25 @@ from pants.util.strutil import softwrap
 class SwiftSubsystem(Subsystem):
     options_scope = "swift"
     name = "swift"
-    help = """The Swift programming language (https://www.swift.org/).
-    Compilation occurs via the underlying LLVM front-end. ie. "swift-frontend -frontend", through `swiftc`
-    See https://www.swift.org/swift-compiler/ for more information.
-    """
+    help = softwrap(
+        """
+        The Swift programming language (https://www.swift.org/).
+        
+        Compilation occurs via the underlying LLVM front-end. ie. "swift-frontend -frontend", through `swiftc`
+        See https://www.swift.org/swift-compiler/ for more information.
+        """
+    )
 
-    args = ArgsListOption(example="-target x86_64-apple-macosx12.0")
+    # TODO: Add in a later implementation step
+    # args = ArgsListOption(
+    #     example="-target x86_64-apple-macosx12.0", 
+    #     extra_help=softwrap(
+    #     """
+    #     Arguments will be passed to the swiftc binary during compilation-time.
+    #     Refer to `swiftc --help` for the options supported by swiftc.
+    #     """
+    #     ),
+    # )
 
     _swiftc_search_paths = StrListOption(
         "--swiftc-search-paths",

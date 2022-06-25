@@ -17,7 +17,7 @@ from pants.engine.environment import Environment, EnvironmentRequest
 from pants.engine.internals.selectors import Get
 from pants.engine.rules import Rule, collect_rules, rule
 from pants.engine.unions import UnionRule
-from pants.option.option_types import ArgsListOption, StrListOption
+from pants.option.option_types import StrListOption
 from pants.option.subsystem import Subsystem
 from pants.util.logging import LogLevel
 from pants.util.ordered_set import OrderedSet
@@ -30,7 +30,7 @@ class SwiftSubsystem(Subsystem):
     help = softwrap(
         """
         The Swift programming language (https://www.swift.org/).
-        
+
         Compilation occurs via the underlying LLVM front-end. ie. "swift-frontend -frontend", through `swiftc`
         See https://www.swift.org/swift-compiler/ for more information.
         """
@@ -38,7 +38,7 @@ class SwiftSubsystem(Subsystem):
 
     # TODO: Add in a later implementation step
     # args = ArgsListOption(
-    #     example="-target x86_64-apple-macosx12.0", 
+    #     example="-target x86_64-apple-macosx12.0",
     #     extra_help=softwrap(
     #     """
     #     Arguments will be passed to the swiftc binary during compilation-time.

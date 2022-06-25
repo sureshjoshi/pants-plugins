@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Iterable
 
 from experimental.ansible.deploy import rules as deploy_rules
+from experimental.ansible.goals import tailor
 from experimental.ansible.rules import rules as ansible_rules
 from experimental.ansible.target_types import (
     AnsibleDeployment,
@@ -18,6 +19,7 @@ def rules() -> Iterable[Rule | UnionRule]:
     return (
         *deploy_rules(),
         *ansible_rules(),
+        *tailor.rules(),
     )
 
 

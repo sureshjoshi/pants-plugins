@@ -6,4 +6,3 @@
 - name: Print out the results of the docker command
   ansible.builtin.debug:
     var: docker_result
-

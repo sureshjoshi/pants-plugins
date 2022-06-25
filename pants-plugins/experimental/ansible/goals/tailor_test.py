@@ -1,3 +1,5 @@
+import os
+
 from experimental.ansible.goals import tailor
 from experimental.ansible.goals.tailor import PutativeAnsibleTargetsRequest
 from experimental.ansible.target_types import AnsibleDeployment
@@ -5,8 +7,10 @@ from pants.core.goals.tailor import AllOwnedSources, PutativeTarget, PutativeTar
 from pants.engine.rules import QueryRule
 from pants.testutil.rule_runner import RuleRunner
 
+FileInfos = tuple[tuple[str, str], ...]
 
-def test_find_putative_targets() -> None:
+
+def run_tailor(files: FileInfos, owned: FileInfos) -> PutativeTargets:
     rule_runner = RuleRunner(
         rules=[
             *tailor.rules(),
@@ -16,27 +20,32 @@ def test_find_putative_targets() -> None:
         ],
         target_types=[AnsibleDeployment],
     )
+
     rule_runner.write_files(
-        {
-            "src/ansible_normal/playbook.yml": "",
-            "src/ansible_more_names/named_playbook.yml": "",
-            "src/ansible_file_extension/playbook.ansible": "",
-        }
+        {os.path.join(directory, fname): "" for directory, fname in files}
     )
 
     pts = rule_runner.request(
         PutativeTargets,
         [
-            PutativeAnsibleTargetsRequest(
-                (
-                    "src/ansible_normal",
-                    "src/ansible_more_names",
-                    "src/ansible_file_extension",
-                )
+            PutativeAnsibleTargetsRequest(tuple(directory for directory, _ in files)),
+            AllOwnedSources(
+                [os.path.join(directory, fname) for directory, fname in owned]
             ),
-            AllOwnedSources(["src/ansible_normal/playbook.yml"]),
         ],
     )
+    return pts
+
+
+def test_find_putative_targets() -> None:
+    files = (
+        ("src/ansible_normal", "playbook.yml"),
+        ("src/ansible_more_names", "named_playbook.yml"),
+        ("src/ansible_file_extension", "playbook.ansible"),
+    )
+
+    pts = run_tailor(files, (files[0],))
+
     assert pts == (
         PutativeTargets(
             [
@@ -46,8 +55,7 @@ def test_find_putative_targets() -> None:
                     name="ansible_playbook",
                     triggering_sources=["named_playbook.yml"],
                     kwargs={"playbook": "named_playbook.yml"},
-
-                    ),
+                ),
                 PutativeTarget.for_target_type(
                     AnsibleDeployment,
                     path="src/ansible_file_extension",

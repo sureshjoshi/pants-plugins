@@ -2,9 +2,6 @@ import os
 from dataclasses import dataclass
 
 from experimental.ansible.target_types import AnsibleDeployment, AnsiblePlaybook
-
-# from pants.backend.docker.subsystems.docker_options import DockerOptions
-# from pants.backend.docker.target_types import DockerImageSourceField, DockerImageTarget
 from pants.core.goals.tailor import (
     AllOwnedSources,
     PutativeTarget,

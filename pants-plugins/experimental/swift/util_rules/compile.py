@@ -21,6 +21,7 @@ from pants.util.strutil import pluralize
 class CompileSwiftSourceRequest:
     field_sets = (SwiftFieldSet,)
 
+
 @dataclass(frozen=True)
 class TypecheckSwiftModuleRequest:
     name: str

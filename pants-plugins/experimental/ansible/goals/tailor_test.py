@@ -66,3 +66,61 @@ def test_find_putative_targets() -> None:
             ]
         )
     )
+
+
+def test_find_normal_name() -> None:
+    files = (("src/ansible", "playbook.yml"),)
+    pts = run_tailor(files, tuple())
+    assert pts == (
+        PutativeTargets(
+            [
+                PutativeTarget.for_target_type(
+                    AnsibleDeployment,
+                    path=files[0][0],
+                    name="ansible_playbook",
+                    triggering_sources=[files[0][1]],
+                ),
+            ]
+        )
+    )
+
+
+def test_find_extended_name() -> None:
+    files = (("src/ansible", "extended_playbook.yml"),)
+    pts = run_tailor(files, tuple())
+    assert pts == (
+        PutativeTargets(
+            [
+                PutativeTarget.for_target_type(
+                    AnsibleDeployment,
+                    path=files[0][0],
+                    name="ansible_playbook",
+                    triggering_sources=[files[0][1]],
+                    kwargs={
+                        "playbook": files[0][1]
+                    },  # assert that the playbook field is set
+                ),
+            ]
+        )
+    )
+
+
+def test_find_alternate_extension() -> None:
+    """the `.ansible` extension helps with syntax highlighters as `.yml` often isn't picked up"""
+    files = (("src/ansible", "playbook.ansible"),)
+    pts = run_tailor(files, tuple())
+    assert pts == (
+        PutativeTargets(
+            [
+                PutativeTarget.for_target_type(
+                    AnsibleDeployment,
+                    path=files[0][0],
+                    name="ansible_playbook",
+                    triggering_sources=[files[0][1]],
+                    kwargs={
+                        "playbook": files[0][1]
+                    },  # assert that the playbook field is set
+                ),
+            ]
+        )
+    )

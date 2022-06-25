@@ -1,0 +1,4 @@
+all:
+  hosts:
+    localhost:
+      overridden_var: "overridden_value"

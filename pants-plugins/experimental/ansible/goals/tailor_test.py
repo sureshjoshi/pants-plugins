@@ -124,3 +124,9 @@ def test_find_alternate_extension() -> None:
             ]
         )
     )
+
+
+def test_ignore_owned_sources() -> None:
+    files = (("src/ansible", "playbook.ansible"),)
+    pts = run_tailor(files, files)
+    assert pts == (PutativeTargets([]))

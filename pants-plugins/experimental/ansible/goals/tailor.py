@@ -1,7 +1,7 @@
 import os
 from dataclasses import dataclass
 
-from experimental.ansible.target_types import AnsibleDeployment, AnsiblePlaybook
+from experimental.ansible.target_types import AnsibleDeployment
 from pants.core.goals.tailor import (
     AllOwnedSources,
     PutativeTarget,
@@ -40,9 +40,10 @@ async def find_putative_targets(
 
 def playbook_to_target(playbook: str) -> PutativeTarget:
     dirname, filename = os.path.split(playbook)
-    kwargs = {}
-    if filename != AnsiblePlaybook.default:
-        kwargs["playbook"] = filename
+    kwargs = {"playbook": filename}
+    # TODO: This doesn't populate the playbook field, and causes a runtime failure
+    # if filename != AnsiblePlaybook.default:
+    #   kwargs["playbook"] = filename
     return PutativeTarget.for_target_type(
         AnsibleDeployment,
         path=dirname,

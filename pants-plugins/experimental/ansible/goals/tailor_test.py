@@ -79,6 +79,7 @@ def test_find_normal_name() -> None:
                     path=files[0][0],
                     name="ansible_playbook",
                     triggering_sources=[files[0][1]],
+                    kwargs={"playbook": "playbook.yml"},
                 ),
             ]
         )

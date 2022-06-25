@@ -1,5 +1,5 @@
 ---
 - hosts: localhost
   roles:
-    - role: example
+    - role: local_role
     - role: collectionexample

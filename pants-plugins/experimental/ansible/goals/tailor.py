@@ -29,14 +29,13 @@ class PutativeAnsibleTargetsRequest(PutativeTargetsRequest):
 async def find_putative_targets(
     req: PutativeAnsibleTargetsRequest, all_owned_sources: AllOwnedSources
 ) -> PutativeTargets:
-    yaml_playbooks = await Get(Paths, PathGlobs, req.path_globs("*playbook*.yml"))
-    ansible_playbooks = await Get(
-        Paths, PathGlobs, req.path_globs("*playbook*.ansible")
+    playbooks = await Get(
+        Paths,
+        PathGlobs,
+        req.path_globs("*playbook*.yml", "*playbook*.yml", "*playbook*.ansible"),
     )
 
-    unowned_playbooks = (
-        set(yaml_playbooks.files) | set(ansible_playbooks.files)
-    ) - set(all_owned_sources)
+    unowned_playbooks = set(playbooks.files) - set(all_owned_sources)
     return PutativeTargets(
         [playbook_to_target(playbook) for playbook in sorted(unowned_playbooks)]
     )

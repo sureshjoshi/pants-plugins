@@ -2,4 +2,4 @@
 - hosts: localhost
   roles:
     - role: local_role
-    - role: collectionexample
+    - role: my_namespace.my_collection.collection_role

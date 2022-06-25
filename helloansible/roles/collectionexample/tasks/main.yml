@@ -1,8 +1,0 @@
----
-- name: Get info on docker host
-  community.docker.docker_host_info:
-  register: docker_result
-
-- name: Print out the results of the docker command
-  ansible.builtin.debug:
-    var: docker_result

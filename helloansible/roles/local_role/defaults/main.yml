@@ -1,2 +1,2 @@
 ---
-# defaults file for local_role
+parent: "none"

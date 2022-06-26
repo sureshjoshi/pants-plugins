@@ -1,0 +1,6 @@
+---
+- hosts: localhost
+  tasks:
+    - name: in other playbook
+      ansible.builtin.debug:
+        msg: "in other playbook"

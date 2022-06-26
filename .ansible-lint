@@ -1,0 +1,4 @@
+mock_modules:
+  - "community.docker.docker_host_info" # TODO: requires dependency fetching
+mock_roles:
+  - "my_namespace.my_collection.collection_role" # TODO: requires building local collections

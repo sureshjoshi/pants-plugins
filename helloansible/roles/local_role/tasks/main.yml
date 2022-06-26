@@ -7,3 +7,6 @@
   ansible.builtin.debug:
     var: shell_result
 
+- name: Print parent
+  ansible.builtin.debug:
+    var: parent

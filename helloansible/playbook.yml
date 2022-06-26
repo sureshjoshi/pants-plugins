@@ -1,5 +1,8 @@
 ---
 - hosts: localhost
   roles:
-    - role: example
-    - role: collectionexample
+    - role: local_role
+    - role: my_namespace.local_collection.no_install
+    - role: my_namespace.my_collection.collection_role
+
+- import_playbook: other_playbook.yml

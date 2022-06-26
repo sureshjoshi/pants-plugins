@@ -1,14 +1,14 @@
 swift_sources(
     name="libcore",
-    sources=["Core/*.swift"]
+    sources=["Core/*.swift"],
 )
 
 swift_sources(
     name="libhelloworld",
-    sources=["Sources/*.swift"]
+    sources=["Sources/*.swift"],
 )
 
 swift_binary(
     name="bin",
-    dependencies=[":lib"]
+    dependencies=[":lib"],
 )

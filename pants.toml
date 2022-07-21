@@ -1,5 +1,5 @@
 [GLOBAL]
-pants_version = "2.13.0.dev5"
+pants_version = "2.13.0rc0"
 pantsd = true 
 build_patterns = ["BUILD.pants", "BUILD"]
 pythonpath = ["pants-plugins"]
@@ -7,10 +7,10 @@ print_stacktrace = true
 
 backend_packages = [
     "pants.backend.plugin_development",
-    #"pants.backend.experimental.cc",
-    #"pants.backend.experimental.cc.lint.clangformat",
+    "pants.backend.experimental.cc",
+    "pants.backend.experimental.cc.lint.clangformat",
     #"pants.backend.experimental.javascript",
-    #"pants.backend.experimental.javascript.lint.prettier"
+    #"pants.backend.experimental.javascript.lint.prettier",
     "pants.backend.python",
     "pants.backend.python.lint.bandit",
     "pants.backend.python.lint.black",
@@ -25,9 +25,9 @@ backend_packages = [
     "pants.backend.shell.lint.shfmt",
     #"pants.backend.experimental.swift",
     #"experimental.mypyc",
-    "experimental.ansible",
-    "experimental.ansible.lint.ansible_lint",
-    "experimental.swift",
+    #"experimental.ansible",
+    #"experimental.ansible.lint.ansible_lint",
+    #"experimental.swift",
 ]
 
 [source]
@@ -37,9 +37,9 @@ root_patterns = [
     "pants-plugins",
 ]
 
-[ansible-galaxy]
-requirements = "requirements.yml" # Relative to the Ansible target BUILD
-collections = ["community.docker"]
+#[ansible-galaxy]
+#requirements = "requirements.yml" # Relative to the Ansible target BUILD
+#collections = ["community.docker"]
 
 [python]
 interpreter_constraints = [">=3.9"]

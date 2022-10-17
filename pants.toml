@@ -1,5 +1,5 @@
 [GLOBAL]
-pants_version = "2.13.0.dev5"
+pants_version = "2.15.0.dev4"
 pantsd = true 
 build_patterns = ["BUILD.pants", "BUILD"]
 pythonpath = ["pants-plugins"]
@@ -25,9 +25,9 @@ backend_packages = [
     "pants.backend.shell.lint.shfmt",
     #"pants.backend.experimental.swift",
     #"experimental.mypyc",
-    "experimental.ansible",
-    "experimental.ansible.lint.ansible_lint",
-    "experimental.swift",
+    #"experimental.ansible",
+    #"experimental.ansible.lint.ansible_lint",
+    #"experimental.swift",
 ]
 
 [source]
@@ -37,14 +37,21 @@ root_patterns = [
     "pants-plugins",
 ]
 
-[ansible-galaxy]
-requirements = "requirements.yml" # Relative to the Ansible target BUILD
-collections = ["community.docker"]
+#[ansible-galaxy]
+#requirements = "requirements.yml" # Relative to the Ansible target BUILD
+#collections = ["community.docker"]
 
 [python]
+enable_resolves = true
 interpreter_constraints = [">=3.9"]
-requirement_constraints = "requirements.constraints.txt"
 tailor_pex_binary_targets = false
+
+[python.resolves]
+pants-plugins = "build-support/pants-plugins/lock.txt"
+python-default = "build-support/python/default_lock.txt"
+
+[python.resolves_to_interpreter_constraints]
+pants-plugins = [">=3.9,<3.10"]
 
 [bandit]
 # Skipping assertion warnings - because this is an example project

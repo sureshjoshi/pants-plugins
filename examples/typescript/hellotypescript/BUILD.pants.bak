@@ -1,0 +1,4 @@
+typescript_sources(
+   name="libhellotypescript",
+   sources=["**/*.ts"],
+)

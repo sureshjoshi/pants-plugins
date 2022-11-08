@@ -1,0 +1,4 @@
+cc_sources(
+   name="libhellocpp",
+   sources=["**/*.cpp", "**/*.h"],
+)

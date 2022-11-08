@@ -1,8 +1,7 @@
 # Testing relative imports inside Rust binary
 # Testing absolute imports inside Rust binary
-from helloworld.speaker import say_bye
-
 from core import greeter
+from helloworld.speaker import say_bye
 
 from . import talker
 

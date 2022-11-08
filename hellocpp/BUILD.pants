@@ -1,6 +1,0 @@
-# TODO: Waiting until clang-format plugin released in a versioned package
-
-# cc_sources(
-#    name="libhellocpp",
-#    sources=["**/*.cpp", "**/*.h"],
-# )

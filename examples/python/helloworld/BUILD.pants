@@ -2,7 +2,7 @@ python_sources(
     name="libhelloworld",
     sources=["**/*.py"],
     dependencies=[
-        "core:libcore",
+        "examples/python/core:libcore",
     ],
 )
 
@@ -20,7 +20,7 @@ python_distribution(
 pyoxidizer_binary(
     name="helloworld-bin",
     entry_point="helloworld.main",
-    dependencies=[":helloworld-dist", "core:core-dist"],
+    dependencies=[":helloworld-dist", "examples/python/core:core-dist"],
 )
 
 

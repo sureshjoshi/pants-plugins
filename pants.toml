@@ -1,5 +1,5 @@
 [GLOBAL]
-pants_version = "2.13.0.dev5"
+pants_version = "2.15.0a0"
 pantsd = true 
 build_patterns = ["BUILD.pants", "BUILD"]
 pythonpath = ["pants-plugins"]
@@ -7,44 +7,49 @@ print_stacktrace = true
 
 backend_packages = [
     "pants.backend.plugin_development",
-    #"pants.backend.experimental.cc",
-    #"pants.backend.experimental.cc.lint.clangformat",
-    #"pants.backend.experimental.javascript",
-    #"pants.backend.experimental.javascript.lint.prettier"
+    "pants.backend.experimental.cc",
+    "pants.backend.experimental.cc.lint.clangformat",
+    "pants.backend.experimental.javascript",
+    "pants.backend.experimental.javascript.lint.prettier",
     "pants.backend.python",
+    "pants.backend.python.lint.autoflake",
     "pants.backend.python.lint.bandit",
     "pants.backend.python.lint.black",
     "pants.backend.python.lint.flake8",
     "pants.backend.python.lint.isort",
-    #"pants.backend.python.typecheck.mypy",
-    "pants.backend.experimental.python.lint.autoflake",
-    "pants.backend.experimental.python.lint.pyupgrade",
+    "pants.backend.python.lint.pyupgrade",
+    "pants.backend.python.typecheck.mypy",
     "pants.backend.experimental.python.packaging.pyoxidizer",
     "pants.backend.shell",
     "pants.backend.shell.lint.shellcheck",
     "pants.backend.shell.lint.shfmt",
-    #"pants.backend.experimental.swift",
-    #"experimental.mypyc",
-    "experimental.ansible",
-    "experimental.ansible.lint.ansible_lint",
+    # "experimental.mypyc",
+    #"experimental.ansible",
+    #"experimental.ansible.lint.ansible_lint",
     "experimental.swift",
 ]
 
 [source]
 marker_filenames = ["BUILD.pants"]
 root_patterns = [
-    "/",
     "pants-plugins",
 ]
 
-[ansible-galaxy]
-requirements = "requirements.yml" # Relative to the Ansible target BUILD
-collections = ["community.docker"]
+#[ansible-galaxy]
+#requirements = "requirements.yml" # Relative to the Ansible target BUILD
+#collections = ["community.docker"]
 
 [python]
+enable_resolves = true
 interpreter_constraints = [">=3.9"]
-requirement_constraints = "requirements.constraints.txt"
 tailor_pex_binary_targets = false
+
+[python.resolves]
+pants-plugins = "build-support/pants-plugins/lock.txt"
+python-default = "build-support/python/default_lock.txt"
+
+[python.resolves_to_interpreter_constraints]
+pants-plugins = [">=3.9,<3.10"]
 
 [bandit]
 # Skipping assertion warnings - because this is an example project
@@ -62,6 +67,8 @@ args = "--py39-plus"
 [pyoxidizer]
 interpreter_constraints = [">=3.9"]
 args = ["--release"]
+lockfile = "build-support/python/pyoxidizer_lock.txt"
+version = "pyoxidizer==0.22.0"
 
 [setuptools]
 extra_requirements = ["wheel", "mypy"]

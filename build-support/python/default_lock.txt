@@ -36,13 +36,13 @@
           "artifacts": [
             {
               "algorithm": "sha256",
-              "hash": "cb29b9c70620506a9a8f87a309591713446953302d7d995344d0d7c6c0c9a7be",
-              "url": "https://files.pythonhosted.org/packages/c3/22/4cba7e1b4f45ffbefd2ca817a6800ba1c671c26f288d7705f20289872012/anyio-3.6.1-py3-none-any.whl"
+              "hash": "fbbe32bd270d2a2ef3ed1c5d45041250284e31fc0a4df4a5a6071842051a51e3",
+              "url": "https://files.pythonhosted.org/packages/77/2b/b4c0b7a3f3d61adb1a1e0b78f90a94e2b6162a043880704b7437ef297cad/anyio-3.6.2-py3-none-any.whl"
             },
             {
               "algorithm": "sha256",
-              "hash": "413adf95f93886e442aea925f3ee43baa5a765a64a0f52c6081894f9992fdd0b",
-              "url": "https://files.pythonhosted.org/packages/67/c4/fd50bbb2fb72532a4b778562e28ba581da15067cfb2537dbd3a2e64689c1/anyio-3.6.1.tar.gz"
+              "hash": "25ea0d673ae30af41a0c442f81cf3b38c7e79fdc7b60335a4c14e05eb0947421",
+              "url": "https://files.pythonhosted.org/packages/8b/94/6928d4345f2bc1beecbff03325cad43d320717f51ab74ab5a571324f4f5a/anyio-3.6.2.tar.gz"
             }
           ],
           "project_name": "anyio",
@@ -60,14 +60,14 @@
             "sniffio>=1.1",
             "sphinx-autodoc-typehints>=1.2.0; extra == \"doc\"",
             "sphinx-rtd-theme; extra == \"doc\"",
-            "trio>=0.16; extra == \"trio\"",
+            "trio<0.22,>=0.16; extra == \"trio\"",
             "trustme; extra == \"test\"",
             "typing-extensions; python_version < \"3.8\"",
             "uvloop<0.15; (python_version < \"3.7\" and (platform_python_implementation == \"CPython\" and platform_system != \"Windows\")) and extra == \"test\"",
             "uvloop>=0.15; (python_version >= \"3.7\" and (platform_python_implementation == \"CPython\" and platform_system != \"Windows\")) and extra == \"test\""
           ],
           "requires_python": ">=3.6.2",
-          "version": "3.6.1"
+          "version": "3.6.2"
         },
         {
           "artifacts": [
@@ -150,13 +150,13 @@
           "artifacts": [
             {
               "algorithm": "sha256",
-              "hash": "de3166b6b1163dc22da4dc4ebdc3192fcbac7700dd1870a1afa44de636a636b5",
-              "url": "https://files.pythonhosted.org/packages/bf/54/6eb1882b5cb29e6647df92ee74d0a93dab149234ec914563cab955fa667f/fastapi-0.85.1-py3-none-any.whl"
+              "hash": "1020d7ca205d8b95813881fb3282e9c3656e47993531af3aa4ae11065b61dd2c",
+              "url": "https://files.pythonhosted.org/packages/7b/d6/aa8078112b5bd15b716bb431b25f00e5befc23a05cb3fa66ca4e425b6682/fastapi-0.86.0-py3-none-any.whl"
             },
             {
               "algorithm": "sha256",
-              "hash": "1facd097189682a4ff11cbd01334a992e51b56be663b2bd50c2c09523624f144",
-              "url": "https://files.pythonhosted.org/packages/76/06/167f461067a95fb631fdf65657089364dc43844bc38d8c39374c3abbc746/fastapi-0.85.1.tar.gz"
+              "hash": "cdcaff84ecf7ae939b9579f0c98b0a0989ee3dd855710a32bc985260d92612f6",
+              "url": "https://files.pythonhosted.org/packages/3d/c4/0cbe3b1213cdb4b3dd8692ed30788b01bf49d88d71afcb1c296a608f6029/fastapi-0.86.0.tar.gz"
             }
           ],
           "project_name": "fastapi",
@@ -164,6 +164,7 @@
             "anyio[trio]<4.0.0,>=3.2.1; extra == \"test\"",
             "autoflake<2.0.0,>=1.4.0; extra == \"dev\"",
             "black==22.8.0; extra == \"test\"",
+            "coverage[toml]<7.0,>=6.5.0; extra == \"test\"",
             "databases[sqlite]<0.7.0,>=0.3.2; extra == \"test\"",
             "email-validator<2.0.0,>=1.1.1; extra == \"all\"",
             "email-validator<2.0.0,>=1.1.1; extra == \"test\"",
@@ -178,14 +179,13 @@
             "mkdocs-markdownextradata-plugin<0.3.0,>=0.1.7; extra == \"doc\"",
             "mkdocs-material<9.0.0,>=8.1.4; extra == \"doc\"",
             "mkdocs<2.0.0,>=1.1.2; extra == \"doc\"",
-            "mypy==0.971; extra == \"test\"",
+            "mypy==0.982; extra == \"test\"",
             "orjson<4.0.0,>=3.2.1; extra == \"all\"",
             "orjson<4.0.0,>=3.2.1; extra == \"test\"",
             "passlib[bcrypt]<2.0.0,>=1.7.2; extra == \"test\"",
             "peewee<4.0.0,>=3.13.3; extra == \"test\"",
             "pre-commit<3.0.0,>=2.17.0; extra == \"dev\"",
             "pydantic!=1.7,!=1.7.1,!=1.7.2,!=1.7.3,!=1.8,!=1.8.1,<2.0.0,>=1.6.2",
-            "pytest-cov<4.0.0,>=2.12.0; extra == \"test\"",
             "pytest<8.0.0,>=7.1.3; extra == \"test\"",
             "python-jose[cryptography]<4.0.0,>=3.3.0; extra == \"test\"",
             "python-multipart<0.0.6,>=0.0.5; extra == \"all\"",
@@ -195,18 +195,18 @@
             "pyyaml<7.0.0,>=5.3.1; extra == \"test\"",
             "requests<3.0.0,>=2.24.0; extra == \"all\"",
             "requests<3.0.0,>=2.24.0; extra == \"test\"",
-            "sqlalchemy<1.5.0,>=1.3.18; extra == \"test\"",
+            "sqlalchemy<=1.4.41,>=1.3.18; extra == \"test\"",
             "starlette==0.20.4",
-            "typer<0.7.0,>=0.4.1; extra == \"doc\"",
+            "typer[all]<0.7.0,>=0.6.1; extra == \"doc\"",
             "types-orjson==3.6.2; extra == \"test\"",
-            "types-ujson==5.4.0; extra == \"test\"",
+            "types-ujson==5.5.0; extra == \"test\"",
             "ujson!=4.0.2,!=4.1.0,!=4.2.0,!=4.3.0,!=5.0.0,!=5.1.0,<6.0.0,>=4.0.1; extra == \"all\"",
             "ujson!=4.0.2,!=4.1.0,!=4.2.0,!=4.3.0,!=5.0.0,!=5.1.0,<6.0.0,>=4.0.1; extra == \"test\"",
             "uvicorn[standard]<0.19.0,>=0.12.0; extra == \"all\"",
             "uvicorn[standard]<0.19.0,>=0.12.0; extra == \"dev\""
           ],
           "requires_python": ">=3.7",
-          "version": "0.85.1"
+          "version": "0.86.0"
         },
         {
           "artifacts": [
@@ -226,7 +226,7 @@
             "typing-extensions; python_version < \"3.8\""
           ],
           "requires_python": ">=3.7",
-          "version": "0.14"
+          "version": "0.14.0"
         },
         {
           "artifacts": [
@@ -335,7 +335,7 @@
             "sphinxcontrib-seqdiag; extra == \"dev\""
           ],
           "requires_python": ">=3.7",
-          "version": "2.1"
+          "version": "2.1.0"
         },
         {
           "artifacts": [
@@ -555,7 +555,7 @@
             "importlib-metadata; python_version < \"3.8\" and extra == \"plugins\""
           ],
           "requires_python": ">=3.6",
-          "version": "2.13"
+          "version": "2.13.0"
         },
         {
           "artifacts": [
@@ -598,7 +598,7 @@
           "project_name": "sniffio",
           "requires_dists": [],
           "requires_python": ">=3.7",
-          "version": "1.3"
+          "version": "1.3.0"
         },
         {
           "artifacts": [
@@ -630,40 +630,42 @@
           "artifacts": [
             {
               "algorithm": "sha256",
-              "hash": "54b19e5df18654070a82f8c2aa1da456a4ac16a2a83e6dcd9f170e291c56338e",
-              "url": "https://files.pythonhosted.org/packages/e8/9b/7470461c68588ed09c2e53cbb16b802815232796d95f7b4744cc8842f19d/typer-0.6.1-py3-none-any.whl"
+              "hash": "b5e704f4e48ec263de1c0b3a2387cd405a13767d2f907f44c1a08cbad96f606d",
+              "url": "https://files.pythonhosted.org/packages/0d/44/56c3f48d2bb83d76f5c970aef8e2c3ebd6a832f09e3621c5395371fe6999/typer-0.7.0-py3-none-any.whl"
             },
             {
               "algorithm": "sha256",
-              "hash": "2d5720a5e63f73eaf31edaa15f6ab87f35f0690f8ca233017d7d23d743a91d73",
-              "url": "https://files.pythonhosted.org/packages/cf/f9/27c5cd9ab067e3ece4cecb920c33f38cc986f839b12de19650fd49dc3c63/typer-0.6.1.tar.gz"
+              "hash": "ff797846578a9f2a201b53442aedeb543319466870fbe1c701eab66dd7681165",
+              "url": "https://files.pythonhosted.org/packages/e1/45/bcbc581f87c8d8f2a56b513eb994d07ea4546322818d95dc6a3caf2c928b/typer-0.7.0.tar.gz"
             }
           ],
           "project_name": "typer",
           "requires_dists": [
             "autoflake<2.0.0,>=1.3.1; extra == \"dev\"",
             "black<23.0.0,>=22.3.0; extra == \"test\"",
+            "cairosvg<3.0.0,>=2.5.2; extra == \"doc\"",
             "click<9.0.0,>=7.1.1",
             "colorama<0.5.0,>=0.4.3; extra == \"all\"",
-            "coverage<6.0,>=5.2; extra == \"test\"",
+            "coverage<7.0,>=6.2; extra == \"test\"",
             "flake8<4.0.0,>=3.8.3; extra == \"dev\"",
             "isort<6.0.0,>=5.0.6; extra == \"test\"",
             "mdx-include<2.0.0,>=1.4.1; extra == \"doc\"",
             "mkdocs-material<9.0.0,>=8.1.4; extra == \"doc\"",
             "mkdocs<2.0.0,>=1.1.2; extra == \"doc\"",
             "mypy==0.910; extra == \"test\"",
+            "pillow<10.0.0,>=9.3.0; extra == \"doc\"",
             "pre-commit<3.0.0,>=2.17.0; extra == \"dev\"",
-            "pytest-cov<3.0.0,>=2.10.0; extra == \"test\"",
+            "pytest-cov<5.0.0,>=2.10.0; extra == \"test\"",
             "pytest-sugar<0.10.0,>=0.9.4; extra == \"test\"",
-            "pytest-xdist<2.0.0,>=1.32.0; extra == \"test\"",
-            "pytest<5.4.0,>=4.4.0; extra == \"test\"",
+            "pytest-xdist<4.0.0,>=1.32.0; extra == \"test\"",
+            "pytest<8.0.0,>=4.4.0; extra == \"test\"",
             "rich<13.0.0,>=10.11.0; extra == \"all\"",
             "rich<13.0.0,>=10.11.0; extra == \"test\"",
             "shellingham<2.0.0,>=1.3.0; extra == \"all\"",
             "shellingham<2.0.0,>=1.3.0; extra == \"test\""
           ],
           "requires_python": ">=3.6",
-          "version": "0.6.1"
+          "version": "0.7.0"
         },
         {
           "artifacts": [
@@ -681,7 +683,7 @@
           "project_name": "typing-extensions",
           "requires_dists": [],
           "requires_python": ">=3.7",
-          "version": "4.4"
+          "version": "4.4.0"
         },
         {
           "artifacts": [
@@ -716,13 +718,13 @@
           "artifacts": [
             {
               "algorithm": "sha256",
-              "hash": "0abd429ebb41e604ed8d2be6c60530de3408f250e8d2d84967d85ba9e86fe3af",
-              "url": "https://files.pythonhosted.org/packages/64/82/3fdff66fca901b30e42c88e0c37ada35e181074e0c4fd8d7d7525107329d/uvicorn-0.18.3-py3-none-any.whl"
+              "hash": "cc277f7e73435748e69e075a721841f7c4a95dba06d12a72fe9874acced16f6f",
+              "url": "https://files.pythonhosted.org/packages/2b/3f/e3a8b7d42f058e0d50e76b8d41cc18a5d1f989feb17c882e1c61e7403f52/uvicorn-0.19.0-py3-none-any.whl"
             },
             {
               "algorithm": "sha256",
-              "hash": "9a66e7c42a2a95222f76ec24a4b754c158261c4696e683b9dadc72b590e0311b",
-              "url": "https://files.pythonhosted.org/packages/6b/36/20d18a00a14d331f491340bc3a793f902a7de6b908f5b1dec74e066b80b8/uvicorn-0.18.3.tar.gz"
+              "hash": "cf538f3018536edb1f4a826311137ab4944ed741d52aeb98846f52215de57f25",
+              "url": "https://files.pythonhosted.org/packages/7b/dd/e7d5d8a7018db6ec652c3412b1d5e328c8fbb0fe96947438937ac7dbe0b1/uvicorn-0.19.0.tar.gz"
             }
           ],
           "project_name": "uvicorn",
@@ -730,7 +732,7 @@
             "click>=7.0",
             "colorama>=0.4; sys_platform == \"win32\" and extra == \"standard\"",
             "h11>=0.8",
-            "httptools>=0.4.0; extra == \"standard\"",
+            "httptools>=0.5.0; extra == \"standard\"",
             "python-dotenv>=0.13; extra == \"standard\"",
             "pyyaml>=5.1; extra == \"standard\"",
             "typing-extensions; python_version < \"3.8\"",
@@ -739,14 +741,14 @@
             "websockets>=10.0; extra == \"standard\""
           ],
           "requires_python": ">=3.7",
-          "version": "0.18.3"
+          "version": "0.19.0"
         }
       ],
       "platform_tag": null
     }
   ],
   "path_mappings": {},
-  "pex_version": "2.1.108",
+  "pex_version": "2.1.111",
   "pip_version": "20.3.4-patched",
   "prefer_older_binary": false,
   "requirements": [

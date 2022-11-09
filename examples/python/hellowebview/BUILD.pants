@@ -1,0 +1,26 @@
+python_sources(
+    name="libhellowebview",
+    sources=["**/*.py"],
+)
+
+python_distribution(
+    name="hellowebview-dist",
+    dependencies=[":libhellowebview"],
+    provides=python_artifact(
+        name="hellowebview-dist",
+        version="0.0.1",
+        description="A distribution for the hello world library.",
+    ),
+)
+
+pex_binary(
+    name="hellowebview-bin",
+    entry_point="hellowebview.main",
+    dependencies=[":hellowebview-dist"],
+)
+
+pyoxidizer_binary(
+    name="hellowebviewox-bin",
+    entry_point="hellowebview.main",
+    dependencies=[":hellowebview-dist"],
+)

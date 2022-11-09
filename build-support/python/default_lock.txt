@@ -13,6 +13,7 @@
 //     "kivy",
 //     "numpy",
 //     "pydantic",
+//     "pywebview",
 //     "typer",
 //     "uvicorn"
 //   ],
@@ -429,6 +430,19 @@
           "artifacts": [
             {
               "algorithm": "sha256",
+              "hash": "ccb3751f529c047e2d8a58440d86b205303cf0fe8146f784d1cbcd94f0a28010",
+              "url": "https://files.pythonhosted.org/packages/f2/cf/77d3e19b7fabd03895caca7857ef51e4c409e0ca6b37ee6e9f7daa50b642/proxy_tools-0.1.0.tar.gz"
+            }
+          ],
+          "project_name": "proxy-tools",
+          "requires_dists": [],
+          "requires_python": null,
+          "version": "0.1.0"
+        },
+        {
+          "artifacts": [
+            {
+              "algorithm": "sha256",
               "hash": "1b6ee725bd6e83ec78b1aa32c5b1fa67a3a65badddde3976bca5fe4568f27709",
               "url": "https://files.pythonhosted.org/packages/d4/ec/230ab377c457cd68cfda78759e2a57f8c08a9e9adb4cd53c4d2fc9100b15/pydantic-1.10.2-py3-none-any.whl"
             },
@@ -556,6 +570,130 @@
           ],
           "requires_python": ">=3.6",
           "version": "2.13.0"
+        },
+        {
+          "artifacts": [
+            {
+              "algorithm": "sha256",
+              "hash": "4296f7b11912709e5aa3d60e1cce6e1731abb7cda47fce72619804c7892b22c3",
+              "url": "https://files.pythonhosted.org/packages/d2/3a/9a7f0e7d00bd95f243d415e4c5fe575bc41c27a07d3bad69ef2028c4634f/pyobjc_core-9.0-cp39-cp39-macosx_10_9_universal2.whl"
+            },
+            {
+              "algorithm": "sha256",
+              "hash": "3e7010c648eb94b16dd37a55f7719ed3bef6559edf4cf8fd741f46869dc223b1",
+              "url": "https://files.pythonhosted.org/packages/39/ab/c30a65bd163d51c62cd223a5d75b46d32da6edf2dee6a7e69cfd65b42cf6/pyobjc-core-9.0.tar.gz"
+            },
+            {
+              "algorithm": "sha256",
+              "hash": "548a069666ac07686ac3d987f7d006abd3e713738ec1b9dbcc9195c74cb60eae",
+              "url": "https://files.pythonhosted.org/packages/45/c5/82cfb614d147f58c280fd3271c647342b09a0451515f0161b3f8e3271a93/pyobjc_core-9.0-cp310-cp310-macosx_10_9_universal2.whl"
+            },
+            {
+              "algorithm": "sha256",
+              "hash": "b1eee6099b5b480cedee3803f1be75131d12509f8e0228758954df150ab15dcd",
+              "url": "https://files.pythonhosted.org/packages/8f/38/a692ebe289fbb8ceee7c7b21999b1f7735a5062eab36ac6d8f355cf27cfa/pyobjc_core-9.0-cp311-cp311-macosx_10_9_universal2.whl"
+            }
+          ],
+          "project_name": "pyobjc-core",
+          "requires_dists": [],
+          "requires_python": ">=3.7",
+          "version": "9.0"
+        },
+        {
+          "artifacts": [
+            {
+              "algorithm": "sha256",
+              "hash": "dc801d2a5d25bf834a78438446a9c9bd0baee6006a540fdd2f4efb5b8536ed41",
+              "url": "https://files.pythonhosted.org/packages/4c/2a/6c6c925f90f0c7b5fc601c9d5a275837c382ec4a7cd04a5cee9efccb1d3c/pyobjc_framework_Cocoa-9.0-cp39-cp39-macosx_10_9_universal2.whl"
+            },
+            {
+              "algorithm": "sha256",
+              "hash": "1a511c620e9b7ef22f2f4fa68572902cb614e66d3dbfa9e46a1a05f000f30084",
+              "url": "https://files.pythonhosted.org/packages/0a/fd/56c07379311e3c877b601ec3d192a9ca6c605edbb363394408d44e907769/pyobjc-framework-Cocoa-9.0.tar.gz"
+            },
+            {
+              "algorithm": "sha256",
+              "hash": "c36e357641f7a6ee44fd4c21bf8b72882b74c64f9489858fa35b6edfde49b6bf",
+              "url": "https://files.pythonhosted.org/packages/bf/c7/0e3230207ad938609672f4209b02f6228cc13601d9737705d32add0bdd38/pyobjc_framework_Cocoa-9.0-cp310-cp310-macosx_10_9_universal2.whl"
+            },
+            {
+              "algorithm": "sha256",
+              "hash": "b1dd493665319e526a269f57052ae7acd331efb5e5f1b854ae8e1f10ad446698",
+              "url": "https://files.pythonhosted.org/packages/e5/8d/f5246a7022bbe7810fd30e2e0739f58d27014fb9aad5ea235f49ad01d79b/pyobjc_framework_Cocoa-9.0-cp311-cp311-macosx_10_9_universal2.whl"
+            }
+          ],
+          "project_name": "pyobjc-framework-cocoa",
+          "requires_dists": [
+            "pyobjc-core>=9.0"
+          ],
+          "requires_python": ">=3.7",
+          "version": "9.0"
+        },
+        {
+          "artifacts": [
+            {
+              "algorithm": "sha256",
+              "hash": "52bf63919e0029a496f53410bfa0f83b74bc55d09486a65e7b37de7bc7c6f425",
+              "url": "https://files.pythonhosted.org/packages/6e/af/848cc79262686bee33d9fb41cb117d52c858e484193ea8cfd14b89406dd4/pyobjc_framework_WebKit-9.0-cp36-abi3-macosx_11_0_universal2.whl"
+            },
+            {
+              "algorithm": "sha256",
+              "hash": "7265812f8869b48fd9e801e3cfb070f8c6a4b2f0ed0e05bf18aebaba9462fc67",
+              "url": "https://files.pythonhosted.org/packages/69/0d/7768508b33afb0bccdc7022fe46e88c8041d52c2ccda53f8e862bd7dee1f/pyobjc_framework_WebKit-9.0-cp36-abi3-macosx_10_9_universal2.whl"
+            },
+            {
+              "algorithm": "sha256",
+              "hash": "0624f3da6c55e425d20fcbb0f1ef08a421486bd9d0bb0f9fd14604b82133b36b",
+              "url": "https://files.pythonhosted.org/packages/b7/61/4e0ab0548a0313cd657a339885ada625a6b98f4daddce3e8514afd2eebb4/pyobjc-framework-WebKit-9.0.tar.gz"
+            },
+            {
+              "algorithm": "sha256",
+              "hash": "729150289376a4895156be0a08b63e96ed5af216eb7e7f381dbe134c93544f79",
+              "url": "https://files.pythonhosted.org/packages/ec/76/fcf5138a19bcc4b349ea63d542d42e808f8bd2b51d184ff80282d3dc2a44/pyobjc_framework_WebKit-9.0-cp36-abi3-macosx_10_9_x86_64.whl"
+            }
+          ],
+          "project_name": "pyobjc-framework-webkit",
+          "requires_dists": [
+            "pyobjc-core>=9.0",
+            "pyobjc-framework-Cocoa>=9.0"
+          ],
+          "requires_python": ">=3.7",
+          "version": "9.0"
+        },
+        {
+          "artifacts": [
+            {
+              "algorithm": "sha256",
+              "hash": "fea1d2b4638ca9841db7dccf936884ca84ba6b0aa3a18833b15dc4e4a50e7323",
+              "url": "https://files.pythonhosted.org/packages/ed/a4/b20f490e26d111ae48d696869723b533808c62555727ec8c92c3c9e76ee3/pywebview-3.7-py3-none-any.whl"
+            },
+            {
+              "algorithm": "sha256",
+              "hash": "b913159a66bbc37f41c74cdb79625a067bd7c5e29f91eb3108a2ff4ab6a99661",
+              "url": "https://files.pythonhosted.org/packages/5c/8e/d1cb4218136dcfb68edf994fc102ce2916806d4231a51fa6f2a76e157ee1/pywebview-3.7.tar.gz"
+            }
+          ],
+          "project_name": "pywebview",
+          "requires_dists": [
+            "PyGObject; extra == \"gtk\"",
+            "PyQt5; extra == \"qt\"",
+            "PySide2; extra == \"pyside2\"",
+            "PySide6; extra == \"pyside6\"",
+            "QtPy; extra == \"pyside2\"",
+            "QtPy; extra == \"pyside6\"",
+            "QtPy; extra == \"qt\"",
+            "QtPy; sys_platform == \"openbsd6\"",
+            "cefpython3; extra == \"cef\"",
+            "importlib-resources; python_version < \"3.7\"",
+            "proxy-tools",
+            "pyobjc-core; sys_platform == \"darwin\"",
+            "pyobjc-framework-Cocoa; sys_platform == \"darwin\"",
+            "pyobjc-framework-WebKit; sys_platform == \"darwin\"",
+            "pyqtwebengine; extra == \"qt\"",
+            "pythonnet; sys_platform == \"win32\""
+          ],
+          "requires_python": null,
+          "version": "3.7"
         },
         {
           "artifacts": [
@@ -756,6 +894,7 @@
     "kivy",
     "numpy",
     "pydantic",
+    "pywebview",
     "typer",
     "uvicorn"
   ],

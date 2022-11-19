@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 class SwiftCheckRequest(CheckRequest):
     field_set_type = SwiftFieldSet
-    name = SwiftSubsystem.options_scope
+    tool_name = SwiftSubsystem.options_scope
 
 
 @rule(desc="Typecheck Swift compilation", level=LogLevel.DEBUG)

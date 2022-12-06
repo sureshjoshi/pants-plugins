@@ -1,0 +1,9 @@
+cc_sources(
+    name="sources",
+    compile_flags=["-std=c++98"]
+)
+
+cc_binary(
+    name="exe",
+    dependencies=[":sources"],
+)

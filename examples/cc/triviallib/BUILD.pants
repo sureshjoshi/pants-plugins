@@ -1,0 +1,5 @@
+cc_library(
+    name="lib",
+    dependencies=["./src:sources"],
+    headers=["./include/triviallib:headers"]
+)

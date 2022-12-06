@@ -1,0 +1,6 @@
+cc_sources(name="sources")
+
+cc_binary(
+    name="exe",
+    dependencies=[":sources"]
+)

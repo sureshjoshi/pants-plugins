@@ -1,0 +1,4 @@
+cc_binary(
+    name="tests",
+    dependencies=["./src:sources", "./tests:tests"]
+)

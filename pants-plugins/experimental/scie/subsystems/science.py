@@ -24,8 +24,9 @@ class Science(TemplatedExternalTool):
     ]
 
     default_url_template = (
-        "https://github.com/a-scie/jump/releases/download/{version}/science-{platform}"
+        "https://github.com/sureshjoshi/scie-lift/releases/download/{version}/science-{platform}"
     )
+
     default_url_platform_mapping = {
         "linux_arm64": "linux-aarch64",
         "linux_x86_64": "linux-x86_64",
@@ -39,5 +40,5 @@ class Science(TemplatedExternalTool):
 def rules() -> Iterable[Rule | UnionRule]:
     return (
         *collect_rules(),
-        *ScieJump.rules(),  # type: ignore[call-arg]
+        *Science.rules(),  # type: ignore[call-arg]
     )

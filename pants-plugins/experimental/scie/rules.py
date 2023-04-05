@@ -1,19 +1,26 @@
-# Copyright 2022 Pants project contributors (see CONTRIBUTORS.md).
+# Copyright 2023 Pants project contributors (see CONTRIBUTORS.md).
 # Licensed under the Apache License, Version 2.0 (see LICENSE).
 
 from __future__ import annotations
 
 import logging
 import os
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import Iterable
+from pathlib import PurePath
 
-from experimental.scie.config import Boot, Command, File, Lift
+from pants.backend.python.target_types import PythonSourceField
+from pants.backend.python.util_rules.pex_from_targets import InterpreterConstraintsRequest, interpreter_constraints_for_targets
+from pants.core.target_types import EnvironmentAwarePackageRequest, RemovePrefix
+from pants.init.plugin_resolver import InterpreterConstraints
+
+from experimental.scie.config import Config, ScienceConfig, Interpreter, File, Command
 from experimental.scie.subsystems.science import Science
 from experimental.scie.target_types import (
     ScieBinaryNameField,
     ScieDependenciesField,
 )
+import toml
 from experimental.scie.subsystems.standalone import PythonStandaloneInterpreter
 from pants.core.goals.package import BuiltPackage, BuiltPackageArtifact, PackageFieldSet
 from pants.core.goals.run import RunFieldSet, RunRequest, RunInSandboxBehavior
@@ -36,6 +43,7 @@ from pants.engine.target import (
     FieldSetsPerTargetRequest,
     Targets,
 )
+from pants.engine.fs import EMPTY_DIGEST
 from pants.engine.unions import UnionRule
 from pants.util.logging import LogLevel
 from pants.backend.python.goals.package_pex_binary import rules as pex_binary_rules
@@ -53,127 +61,106 @@ class ScieFieldSet(PackageFieldSet, RunFieldSet):
 
 
 @rule(level=LogLevel.DEBUG)
-async def scie_jump_binary(
+async def scie_binary(
     science: Science,
     field_set: ScieFieldSet,
-    standalone_interpreter: PythonStandaloneInterpreter,
+    # standalone_interpreter: PythonStandaloneInterpreter,
     platform: Platform,
 ) -> BuiltPackage:
-    # 1. Grab the dependencies of this target (start with 1 pex file)
-    # 2. Get the interpreter_constraints for the Pex to determine which version of the Python Standalone to use
-    # 3. Run science to generate the Scie Jump binaries (depending on the `platforms` setting)
-    # 4. Profit?
-    
+    # Grab the dependencies of this target, and build them
     direct_deps = await Get(Targets, DependenciesRequest(field_set.dependencies))
+    deps_field_sets = await Get(
+        FieldSetsPerTarget, FieldSetsPerTargetRequest(PackageFieldSet, direct_deps)
+    )
+    built_packages = await MultiGet(
+        Get(BuiltPackage, EnvironmentAwarePackageRequest(field_set))
+        for field_set in deps_field_sets.field_sets
+    )
+    logger.warning(built_packages)
 
-    # deps_field_sets = await Get(
-    #     FieldSetsPerTarget, FieldSetsPerTargetRequest(PackageFieldSet, direct_deps)
-    # )
-    # built_packages = await MultiGet(
-    #     Get(BuiltPackage, PackageFieldSet, field_set) for field_set in deps_field_sets.field_sets
-    # )
+    # Get the interpreter_constraints for the Pex to determine which version of the Python Standalone to use
+    constraints = await Get(InterpreterConstraints, InterpreterConstraintsRequest([dep.address for dep in direct_deps]))
+    # TODO: Pull the interpreter_universe from somewhere else (Python Build standalone?)
+    minimum_version = constraints.minimum_python_version(["3.8", "3.9", "3.10", "3.11"])
+    assert minimum_version is not None, "No minimum python version found"
+    logger.warning(f"Minimum version: {minimum_version}, constraints: {constraints}")
 
-    # # Download the Scie Jump tool
-    # downloaded_tool = await Get(
-    #     DownloadedExternalTool, ExternalToolRequest, scie_jump.get_request(platform)
-    # )
+    # TODO: These target platforms should be part of the target_type
+    target_platforms = ["linux-x86_64", "macos-aarch64"]
 
-    # # Download the standalone python interpreter for this architecture
-    # downloaded_interpreter = await Get(
-    #     Digest, DownloadFile, standalone_interpreter.get_request(platform)
-    # )
-    # logger.error(downloaded_interpreter)
+    # Create a toml configuration from the input targets and the minimum_version
+    interpreter = Interpreter(version=minimum_version)
 
-    # digest_entries = await Get(DigestEntries, Digest, downloaded_interpreter)
-    # assert (
-    #     len(digest_entries) == 1
-    # ), "downloaded_interpreter should only contain a single compressed archive file"
-    # downloaded_interpreter_filename = digest_entries[0].path
+    # Enumerate the files to add to the configuration
+    artifact_names = [PurePath(artifact.relpath).name for built_pkg in built_packages for artifact in built_pkg.artifacts if artifact.relpath is not None]
+    packagable_files = [File(name) for name in artifact_names]
 
-    # pex_name = built_packages[0].artifacts[0].relpath
-    # assert pex_name is not None, "PEX dependency must exist"
+    binary_name = field_set.binary_name.value or field_set.address.target_name
 
-    # binary_name = field_set.binary_name.value or field_set.address.target_name
+    # Create a toml configuration from the input targets and the minimum_version, and place that into a Digest for later usage
+    config = Config(
+        science=ScienceConfig(
+            name=binary_name,
+            description="My awesome tool",
+            platforms=target_platforms,
+            interpreters=[interpreter],
+            files=packagable_files,
+            commands=[Command(exe="#{cpython:python}", args="{science.pex}")],
+        )
+    )
+    logger.warning(config)
+    config_filename = "config.toml"
+    config_digest = await Get(Digest, CreateDigest([FileContent(config_filename, toml.dumps(asdict(config)).encode())]))
 
-    # # TODO: Config is going to be the trickiest part of scie-jump integration, at least until Lift
-    # # For now, just creating a complicated example
-    # lift_config = Lift(
-    #     name=binary_name,
-    #     description="Some generated field?",
-    #     boot=Boot(
-    #         commands={
-    #             "": Command(
-    #                 exe="{scie.bindings.venv}/venv/bin/python3.9",
-    #                 args=["{scie.bindings.venv}/venv/pex"],
-    #                 env={"=PATH": "{cpython}/python/bin:{scie.env.PATH}"},
-    #                 description="My awesome tool",
-    #             )
-    #         },
-    #         bindings={
-    #             "venv": Command(
-    #                 exe="{cpython}/python/bin/python3.9",
-    #                 args=[
-    #                     "{pexecutable}",
-    #                     "venv",
-    #                     "--bin-path",
-    #                     "prepend",
-    #                     "--compile",
-    #                     "--rm",
-    #                     "all",
-    #                     "{scie.bindings}/venv",
-    #                 ],
-    #                 env={
-    #                     "=PATH": "{cpython}/python/bin:{scie.env.PATH}",
-    #                     "PEX_TOOLS": "1",
-    #                     "PEX_ROOT": "{scie.bindings}/pex_root",
-    #                 },
-    #                 description="Installs Pants in a venv and pre-compiles .pyc.",
-    #             )
-    #         },
-    #     ),
-    #     files=[
-    #         File(
-    #             name=downloaded_interpreter_filename,
-    #             key="cpython",
-    #             # size=downloaded_interpreter.serialized_bytes_length,
-    #             # hash=downloaded_interpreter.fingerprint
-    #         ),
-    #         File(name=pex_name, key="pexecutable"),
-    #     ],
-    # )
+    # Download the Science tool for this platform
+    downloaded_tool = await Get(
+        DownloadedExternalTool, ExternalToolRequest, science.get_request(platform)
+    )
 
-    # lift_file = await Get(
-    #     Digest, CreateDigest([FileContent("lift.json", lift_config.to_json().encode("utf-8"))])
-    # )
-    # input_digest = await Get(
-    #     Digest,
-    #     MergeDigests(
-    #         (
-    #             downloaded_tool.digest,
-    #             downloaded_interpreter,
-    #             lift_file,
-    #             *(built_package.digest for built_package in built_packages),
-    #         )
-    #     ),
-    # )
+    stripped_packages_digests = await MultiGet(
+        Get(Digest, RemovePrefix(built_package.digest, "examples.python.hellotyper"))
+        for built_package in built_packages
+    )
 
-    # process = Process(
-    #     argv=(downloaded_tool.exe,),
-    #     input_digest=input_digest,
-    #     description="Run scie-jump on the input digests ",
-    #     output_files=[binary_name],
-    # )
-    # result = await Get(ProcessResult, Process, process)
-    # snapshot = await Get(
-    #     Snapshot,
-    #     Digest,
-    #     result.output_digest,
-    # )
-    # return BuiltPackage(
-    #     result.output_digest,
-    #     artifacts=tuple(BuiltPackageArtifact(file) for file in snapshot.files),
-    # )
+    # Put the dependencies and toml configuration into a digest
+    input_digest = await Get(
+        Digest,
+        MergeDigests(
+            (
+                config_digest,
+                downloaded_tool.digest,
+                *stripped_packages_digests,
+            )
+        ),
+    )
+    snapshot = await Get(
+        Snapshot,
+        Digest,
+        input_digest,
+    )
+    logger.error(snapshot.files)
 
+    # The output files are the binary name followed by each of the platforms
+    output_files = [f"{binary_name}-{platform}" for platform in target_platforms]
+    
+    # Run science to generate the scie binaries (depending on the `platforms` setting)
+    process = Process(
+        argv=(downloaded_tool.exe, "build", config_filename),
+        input_digest=input_digest,
+        description="Run science on the input digests",
+        output_files=output_files,
+    )
+    result = await Get(ProcessResult, Process, process)
+    snapshot = await Get(
+        Snapshot,
+        Digest,
+        result.output_digest,
+    )
+    logger.error(snapshot.files)
+    return BuiltPackage(
+        result.output_digest,
+        artifacts=tuple(BuiltPackageArtifact(file) for file in snapshot.files),
+    )
 
 @rule
 async def run_scie_binary(field_set: ScieFieldSet) -> RunRequest:

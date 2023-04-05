@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from typing import Iterable
 
 from experimental.scie.config import Boot, Command, File, Lift
-from experimental.scie.subsystems.jump import ScieJump
+from experimental.scie.subsystems.science import Science
 from experimental.scie.target_types import (
     ScieBinaryNameField,
     ScieDependenciesField,
@@ -54,120 +54,125 @@ class ScieFieldSet(PackageFieldSet, RunFieldSet):
 
 @rule(level=LogLevel.DEBUG)
 async def scie_jump_binary(
-    scie_jump: ScieJump,
+    science: Science,
     field_set: ScieFieldSet,
     standalone_interpreter: PythonStandaloneInterpreter,
     platform: Platform,
 ) -> BuiltPackage:
-    # TODO: Copied and pasted from PyOx - check if it's still valid
+    # 1. Grab the dependencies of this target (start with 1 pex file)
+    # 2. Get the interpreter_constraints for the Pex to determine which version of the Python Standalone to use
+    # 3. Run science to generate the Scie Jump binaries (depending on the `platforms` setting)
+    # 4. Profit?
+    
     direct_deps = await Get(Targets, DependenciesRequest(field_set.dependencies))
-    deps_field_sets = await Get(
-        FieldSetsPerTarget, FieldSetsPerTargetRequest(PackageFieldSet, direct_deps)
-    )
-    built_packages = await MultiGet(
-        Get(BuiltPackage, PackageFieldSet, field_set) for field_set in deps_field_sets.field_sets
-    )
 
-    # Download the Scie Jump tool
-    downloaded_tool = await Get(
-        DownloadedExternalTool, ExternalToolRequest, scie_jump.get_request(platform)
-    )
+    # deps_field_sets = await Get(
+    #     FieldSetsPerTarget, FieldSetsPerTargetRequest(PackageFieldSet, direct_deps)
+    # )
+    # built_packages = await MultiGet(
+    #     Get(BuiltPackage, PackageFieldSet, field_set) for field_set in deps_field_sets.field_sets
+    # )
 
-    # Download the standalone python interpreter for this architecture
-    downloaded_interpreter = await Get(
-        Digest, DownloadFile, standalone_interpreter.get_request(platform)
-    )
-    logger.error(downloaded_interpreter)
+    # # Download the Scie Jump tool
+    # downloaded_tool = await Get(
+    #     DownloadedExternalTool, ExternalToolRequest, scie_jump.get_request(platform)
+    # )
 
-    digest_entries = await Get(DigestEntries, Digest, downloaded_interpreter)
-    assert (
-        len(digest_entries) == 1
-    ), "downloaded_interpreter should only contain a single compressed archive file"
-    downloaded_interpreter_filename = digest_entries[0].path
+    # # Download the standalone python interpreter for this architecture
+    # downloaded_interpreter = await Get(
+    #     Digest, DownloadFile, standalone_interpreter.get_request(platform)
+    # )
+    # logger.error(downloaded_interpreter)
 
-    pex_name = built_packages[0].artifacts[0].relpath
-    assert pex_name is not None, "PEX dependency must exist"
+    # digest_entries = await Get(DigestEntries, Digest, downloaded_interpreter)
+    # assert (
+    #     len(digest_entries) == 1
+    # ), "downloaded_interpreter should only contain a single compressed archive file"
+    # downloaded_interpreter_filename = digest_entries[0].path
 
-    binary_name = field_set.binary_name.value or field_set.address.target_name
+    # pex_name = built_packages[0].artifacts[0].relpath
+    # assert pex_name is not None, "PEX dependency must exist"
 
-    # TODO: Config is going to be the trickiest part of scie-jump integration, at least until Lift
-    # For now, just creating a complicated example
-    lift_config = Lift(
-        name=binary_name,
-        description="Some generated field?",
-        boot=Boot(
-            commands={
-                "": Command(
-                    exe="{scie.bindings.venv}/venv/bin/python3.9",
-                    args=["{scie.bindings.venv}/venv/pex"],
-                    env={"=PATH": "{cpython}/python/bin:{scie.env.PATH}"},
-                    description="My awesome tool",
-                )
-            },
-            bindings={
-                "venv": Command(
-                    exe="{cpython}/python/bin/python3.9",
-                    args=[
-                        "{pexecutable}",
-                        "venv",
-                        "--bin-path",
-                        "prepend",
-                        "--compile",
-                        "--rm",
-                        "all",
-                        "{scie.bindings}/venv",
-                    ],
-                    env={
-                        "=PATH": "{cpython}/python/bin:{scie.env.PATH}",
-                        "PEX_TOOLS": "1",
-                        "PEX_ROOT": "{scie.bindings}/pex_root",
-                    },
-                    description="Installs Pants in a venv and pre-compiles .pyc.",
-                )
-            },
-        ),
-        files=[
-            File(
-                name=downloaded_interpreter_filename,
-                key="cpython",
-                # size=downloaded_interpreter.serialized_bytes_length,
-                # hash=downloaded_interpreter.fingerprint
-            ),
-            File(name=pex_name, key="pexecutable"),
-        ],
-    )
+    # binary_name = field_set.binary_name.value or field_set.address.target_name
 
-    lift_file = await Get(
-        Digest, CreateDigest([FileContent("lift.json", lift_config.to_json().encode("utf-8"))])
-    )
-    input_digest = await Get(
-        Digest,
-        MergeDigests(
-            (
-                downloaded_tool.digest,
-                downloaded_interpreter,
-                lift_file,
-                *(built_package.digest for built_package in built_packages),
-            )
-        ),
-    )
+    # # TODO: Config is going to be the trickiest part of scie-jump integration, at least until Lift
+    # # For now, just creating a complicated example
+    # lift_config = Lift(
+    #     name=binary_name,
+    #     description="Some generated field?",
+    #     boot=Boot(
+    #         commands={
+    #             "": Command(
+    #                 exe="{scie.bindings.venv}/venv/bin/python3.9",
+    #                 args=["{scie.bindings.venv}/venv/pex"],
+    #                 env={"=PATH": "{cpython}/python/bin:{scie.env.PATH}"},
+    #                 description="My awesome tool",
+    #             )
+    #         },
+    #         bindings={
+    #             "venv": Command(
+    #                 exe="{cpython}/python/bin/python3.9",
+    #                 args=[
+    #                     "{pexecutable}",
+    #                     "venv",
+    #                     "--bin-path",
+    #                     "prepend",
+    #                     "--compile",
+    #                     "--rm",
+    #                     "all",
+    #                     "{scie.bindings}/venv",
+    #                 ],
+    #                 env={
+    #                     "=PATH": "{cpython}/python/bin:{scie.env.PATH}",
+    #                     "PEX_TOOLS": "1",
+    #                     "PEX_ROOT": "{scie.bindings}/pex_root",
+    #                 },
+    #                 description="Installs Pants in a venv and pre-compiles .pyc.",
+    #             )
+    #         },
+    #     ),
+    #     files=[
+    #         File(
+    #             name=downloaded_interpreter_filename,
+    #             key="cpython",
+    #             # size=downloaded_interpreter.serialized_bytes_length,
+    #             # hash=downloaded_interpreter.fingerprint
+    #         ),
+    #         File(name=pex_name, key="pexecutable"),
+    #     ],
+    # )
 
-    process = Process(
-        argv=(downloaded_tool.exe,),
-        input_digest=input_digest,
-        description="Run scie-jump on the input digests ",
-        output_files=[binary_name],
-    )
-    result = await Get(ProcessResult, Process, process)
-    snapshot = await Get(
-        Snapshot,
-        Digest,
-        result.output_digest,
-    )
-    return BuiltPackage(
-        result.output_digest,
-        artifacts=tuple(BuiltPackageArtifact(file) for file in snapshot.files),
-    )
+    # lift_file = await Get(
+    #     Digest, CreateDigest([FileContent("lift.json", lift_config.to_json().encode("utf-8"))])
+    # )
+    # input_digest = await Get(
+    #     Digest,
+    #     MergeDigests(
+    #         (
+    #             downloaded_tool.digest,
+    #             downloaded_interpreter,
+    #             lift_file,
+    #             *(built_package.digest for built_package in built_packages),
+    #         )
+    #     ),
+    # )
+
+    # process = Process(
+    #     argv=(downloaded_tool.exe,),
+    #     input_digest=input_digest,
+    #     description="Run scie-jump on the input digests ",
+    #     output_files=[binary_name],
+    # )
+    # result = await Get(ProcessResult, Process, process)
+    # snapshot = await Get(
+    #     Snapshot,
+    #     Digest,
+    #     result.output_digest,
+    # )
+    # return BuiltPackage(
+    #     result.output_digest,
+    #     artifacts=tuple(BuiltPackageArtifact(file) for file in snapshot.files),
+    # )
 
 
 @rule

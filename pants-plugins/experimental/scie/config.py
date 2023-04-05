@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Iterable
 
 @dataclass(frozen=True)
 class Config:
@@ -14,10 +13,10 @@ class Config:
 class ScienceConfig:
     name: str
     description: str
-    platforms: Iterable[str]
-    interpreters: Iterable[Interpreter] 
-    files: Iterable[File]
-    commands: Iterable[Command]
+    platforms: list[str]
+    interpreters: list[Interpreter] 
+    files: list[File]
+    commands: list[Command]
 
 @dataclass(frozen=True)
 class Interpreter:
@@ -33,4 +32,4 @@ class File:
 @dataclass(frozen=True)
 class Command:
     exe: str
-    args: Iterable[str]
+    args: list[str]

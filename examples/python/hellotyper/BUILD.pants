@@ -21,6 +21,7 @@ pyoxidizer_binary(
 
 pex_binary(
     name="hellotyper-pex",
+    entry_point="hellotyper.main",
     dependencies=[":libhellotyper"],
 )
 

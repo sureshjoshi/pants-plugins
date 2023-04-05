@@ -105,7 +105,7 @@ async def scie_binary(
             platforms=target_platforms,
             interpreters=[interpreter],
             files=packagable_files,
-            commands=[Command(exe="#{cpython:python}", args="{science.pex}")],
+            commands=[Command(exe="#{cpython:python}", args=["{hellotyper-pex.pex}"])],
         )
     )
     logger.warning(config)

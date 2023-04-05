@@ -10,7 +10,7 @@ set -euo pipefail
 
 cd "$(git rev-parse --show-toplevel)"
 
-PANTS_SOURCE="${PANTS_SOURCE:-../pants}"
+PANTS_SOURCE="${PANTS_SOURCE:-../pants-peek}"
 
 # When running pants from sources you are likely to be modifying those sources, so
 # you won't want pantsd running.  You can override this by setting ENABLE_PANTSD=true.

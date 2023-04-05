@@ -1,6 +1,11 @@
 # pants-plugin
 
-A small selection of custom PantsBuild plugins
+A small selection of custom PantsBuild plugins.
+
+## Usage
+
+Install Pants via [PantsBuild's instructions](https://www.pantsbuild.org/docs/installation), or use `brew` via `brew install pantsbuild/tap/pants`.
+
 
 ## Plugins
 

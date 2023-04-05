@@ -131,11 +131,11 @@ async def scie_binary(
             )
         ),
     )
-    snapshot = await Get(
-        Snapshot,
-        Digest,
-        input_digest,
-    )
+    # snapshot = await Get(
+    #     Snapshot,
+    #     Digest,
+    #     input_digest,
+    # )
 
     # The output files are the binary name followed by each of the platforms
     output_files = [f"{binary_name}-{platform}" for platform in target_platforms]

@@ -23,6 +23,7 @@ backend_packages = [
     "pants.backend.shell",
     "pants.backend.shell.lint.shellcheck",
     "pants.backend.shell.lint.shfmt",
+    "experimental.scie",
     # "experimental.mypyc",
     #"experimental.ansible",
     #"experimental.ansible.lint.ansible_lint",

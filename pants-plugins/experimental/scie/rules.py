@@ -76,14 +76,12 @@ async def scie_binary(
         Get(BuiltPackage, EnvironmentAwarePackageRequest(field_set))
         for field_set in deps_field_sets.field_sets
     )
-    logger.warning(built_packages)
 
     # Get the interpreter_constraints for the Pex to determine which version of the Python Standalone to use
     constraints = await Get(InterpreterConstraints, InterpreterConstraintsRequest([dep.address for dep in direct_deps]))
     # TODO: Pull the interpreter_universe from somewhere else (Python Build standalone?)
     minimum_version = constraints.minimum_python_version(["3.8", "3.9", "3.10", "3.11"])
     assert minimum_version is not None, "No minimum python version found"
-    logger.warning(f"Minimum version: {minimum_version}, constraints: {constraints}")
 
     # TODO: These target platforms should be part of the target_type
     target_platforms = ["linux-x86_64", "macos-aarch64"]
@@ -101,14 +99,13 @@ async def scie_binary(
     config = Config(
         science=ScienceConfig(
             name=binary_name,
-            description="My awesome tool",
+            description="My awesome tool - TODO: This should be a fieldset item",
             platforms=target_platforms,
             interpreters=[interpreter],
             files=packagable_files,
             commands=[Command(exe="#{cpython:python}", args=["{hellotyper-pex.pex}"])],
         )
     )
-    logger.warning(config)
     config_filename = "config.toml"
     config_digest = await Get(Digest, CreateDigest([FileContent(config_filename, toml.dumps(asdict(config)).encode())]))
 
@@ -117,6 +114,7 @@ async def scie_binary(
         DownloadedExternalTool, ExternalToolRequest, science.get_request(platform)
     )
 
+    # TODO: ... yuck... Need/Want? to remove prefixes from the artifacts in the BuiltPackage - could be a mess if they don't share a prefix
     stripped_packages_digests = await MultiGet(
         Get(Digest, RemovePrefix(built_package.digest, "examples.python.hellotyper"))
         for built_package in built_packages
@@ -138,7 +136,6 @@ async def scie_binary(
         Digest,
         input_digest,
     )
-    logger.error(snapshot.files)
 
     # The output files are the binary name followed by each of the platforms
     output_files = [f"{binary_name}-{platform}" for platform in target_platforms]
@@ -156,7 +153,7 @@ async def scie_binary(
         Digest,
         result.output_digest,
     )
-    logger.error(snapshot.files)
+
     return BuiltPackage(
         result.output_digest,
         artifacts=tuple(BuiltPackageArtifact(file) for file in snapshot.files),

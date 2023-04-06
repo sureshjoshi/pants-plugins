@@ -18,3 +18,15 @@ pyoxidizer_binary(
     entry_point="hellotyper.main",
     dependencies=[":hellotyper-dist"],
 )
+
+pex_binary(
+    name="hellotyper-pex",
+    entry_point="hellotyper.main",
+    dependencies=[":libhellotyper"],
+)
+
+scie_binary(
+    name="hellotyper-scie",
+    dependencies=[":hellotyper-pex"],
+    platforms=["linux-x86_64", "macos-aarch64"]
+)

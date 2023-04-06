@@ -22,3 +22,15 @@ pyoxidizer_binary(
     template="pyoxidizer.bzlt",
     dependencies=[":hellotemplate-dist"],
 )
+
+pex_binary(
+    name="hellotemplate-pex",
+    entry_point="hellotemplate.main",
+    dependencies=[":libhellotemplate"],
+)
+
+scie_binary(
+    name="hellotemplate-scie",
+    dependencies=[":hellotemplate-pex"],
+    platforms=["linux-x86_64", "macos-aarch64"]
+)

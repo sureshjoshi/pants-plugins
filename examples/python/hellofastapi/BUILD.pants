@@ -21,3 +21,15 @@ pyoxidizer_binary(
     entry_point="hellofastapi.main",
     dependencies=[":hellofastapi-dist"],
 )
+
+pex_binary(
+    name="hellofastapi-pex",
+    entry_point="hellofastapi.main",
+    dependencies=[":libhellofastapi"],
+)
+
+scie_binary(
+    name="hellofastapi-scie",
+    dependencies=[":hellofastapi-pex"],
+    platforms=["linux-x86_64", "macos-aarch64"]
+)

@@ -13,14 +13,20 @@ python_distribution(
     ),
 )
 
-pex_binary(
-    name="hellowebview-bin",
-    entry_point="hellowebview.main",
-    dependencies=[":hellowebview-dist"],
-)
-
 pyoxidizer_binary(
     name="hellowebviewox-bin",
     entry_point="hellowebview.main",
     dependencies=[":hellowebview-dist"],
+)
+
+pex_binary(
+    name="hellowebview-pex",
+    entry_point="hellowebview.main",
+    dependencies=[":hellowebview-dist"],
+)
+
+scie_binary(
+    name="hellowebview-scie",
+    dependencies=[":hellowebview-pex"],
+    platforms=["linux-x86_64", "macos-aarch64"]
 )

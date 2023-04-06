@@ -16,3 +16,15 @@ pyoxidizer_binary(
     entry_point="hellofib.main",
     dependencies=[":hellofib-dist"],
 )
+
+pex_binary(
+    name="hellofib-pex",
+    entry_point="hellofib.main",
+    dependencies=[":libhellofib"],
+)
+
+scie_binary(
+    name="hellofib-scie",
+    dependencies=[":hellofib-pex"],
+    platforms=["linux-x86_64", "macos-aarch64"]
+)

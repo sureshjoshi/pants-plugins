@@ -6,7 +6,7 @@ from __future__ import annotations
 import logging
 import os
 from dataclasses import asdict, dataclass
-from typing import Iterable
+from typing import Iterable, Mapping
 from pathlib import PurePath
 
 from pants.backend.python.target_types import PythonSourceField
@@ -19,6 +19,7 @@ from experimental.scie.subsystems.science import Science
 from experimental.scie.target_types import (
     ScieBinaryNameField,
     ScieDependenciesField,
+    SciePlatformField
 )
 import toml
 from experimental.scie.subsystems.standalone import PythonStandaloneInterpreter
@@ -36,17 +37,16 @@ from pants.engine.fs import (
 )
 from pants.engine.platform import Platform
 from pants.engine.process import Process, ProcessResult
-from pants.engine.rules import Get, MultiGet, Rule, collect_rules, rule
+from pants.engine.rules import Get, MultiGet, Rule, collect_rules, rule, rule_helper
 from pants.engine.target import (
     DependenciesRequest,
+    DescriptionField,
     FieldSetsPerTarget,
     FieldSetsPerTargetRequest,
     Targets,
 )
-from pants.engine.fs import EMPTY_DIGEST
 from pants.engine.unions import UnionRule
 from pants.util.logging import LogLevel
-from pants.backend.python.goals.package_pex_binary import rules as pex_binary_rules
 
 logger = logging.getLogger(__name__)
 
@@ -57,14 +57,28 @@ class ScieFieldSet(PackageFieldSet, RunFieldSet):
     run_in_sandbox_behavior = RunInSandboxBehavior.RUN_REQUEST_HERMETIC
 
     binary_name: ScieBinaryNameField
+    description: DescriptionField
     dependencies: ScieDependenciesField
+    platforms: SciePlatformField
 
+
+@rule_helper
+async def _get_interpreter_config(targets: Targets) -> Interpreter:
+    # Get the interpreter_constraints for the Pex to determine which version of the Python Standalone to use
+    constraints = await Get(InterpreterConstraints, InterpreterConstraintsRequest([tgt.address for tgt in targets]))
+    # TODO: Pull the interpreter_universe from somewhere else (Python Build standalone?)
+    minimum_version = constraints.minimum_python_version(["3.8", "3.9", "3.10", "3.11"])
+    assert minimum_version is not None, "No minimum python version found"
+    # Create a toml configuration from the input targets and the minimum_version
+    return Interpreter(version=minimum_version)
+
+def _get_target_platforms(platforms: tuple[str, ...] | None, platform_mapping: Mapping[str, str],  host_platform: Platform) -> Iterable[str]:
+    return platforms or tuple(platform_mapping.get(host_platform.value, []))
 
 @rule(level=LogLevel.DEBUG)
 async def scie_binary(
     science: Science,
     field_set: ScieFieldSet,
-    # standalone_interpreter: PythonStandaloneInterpreter,
     platform: Platform,
 ) -> BuiltPackage:
     # Grab the dependencies of this target, and build them
@@ -77,17 +91,10 @@ async def scie_binary(
         for field_set in deps_field_sets.field_sets
     )
 
-    # Get the interpreter_constraints for the Pex to determine which version of the Python Standalone to use
-    constraints = await Get(InterpreterConstraints, InterpreterConstraintsRequest([dep.address for dep in direct_deps]))
-    # TODO: Pull the interpreter_universe from somewhere else (Python Build standalone?)
-    minimum_version = constraints.minimum_python_version(["3.8", "3.9", "3.10", "3.11"])
-    assert minimum_version is not None, "No minimum python version found"
+    interpreter_config = await _get_interpreter_config(direct_deps)
 
-    # TODO: These target platforms should be part of the target_type
-    target_platforms = ["linux-x86_64", "macos-aarch64"]
-
-    # Create a toml configuration from the input targets and the minimum_version
-    interpreter = Interpreter(version=minimum_version)
+    assert science.default_url_platform_mapping is not None
+    target_platforms = _get_target_platforms(field_set.platforms.value, science.default_url_platform_mapping, platform) 
 
     # Enumerate the files to add to the configuration
     artifact_names = [PurePath(artifact.relpath).name for built_pkg in built_packages for artifact in built_pkg.artifacts if artifact.relpath is not None]
@@ -99,9 +106,9 @@ async def scie_binary(
     config = Config(
         science=ScienceConfig(
             name=binary_name,
-            description="My awesome tool - TODO: This should be a fieldset item",
-            platforms=target_platforms,
-            interpreters=[interpreter],
+            description=field_set.description.value or "",
+            platforms=list(target_platforms),
+            interpreters=[interpreter_config],
             files=packagable_files,
             commands=[Command(exe="#{cpython:python}", args=["{hellotyper-pex.pex}"])],
         )

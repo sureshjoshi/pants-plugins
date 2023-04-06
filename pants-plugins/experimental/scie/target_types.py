@@ -2,9 +2,10 @@
 # Licensed under the Apache License, Version 2.0 (see LICENSE).
 
 from __future__ import annotations
+from enum import Enum
 
 from pants.core.goals.package import OutputPathField
-from pants.engine.target import COMMON_TARGET_FIELDS, Dependencies, Target
+from pants.engine.target import COMMON_TARGET_FIELDS, Dependencies, StringSequenceField, Target
 from pants.util.strutil import softwrap
 
 
@@ -18,7 +19,6 @@ class ScieDependenciesField(Dependencies):
         """
     )
 
-
 class ScieBinaryNameField(OutputPathField):
     alias = "binary_name"
     default = None
@@ -29,6 +29,25 @@ class ScieBinaryNameField(OutputPathField):
         """
     )
 
+class SciePlatform(Enum):
+    LINUX_AARCH64 = "linux-aarch64"
+    LINUX_X86_64 = "linux-x86_64"
+    MACOS_AARCH64 = "macos-aarch64"
+    MACOS_X86_64 = "macos-x86_64"
+
+
+class SciePlatformField(StringSequenceField):
+    alias = "platforms"
+    default = None
+    valid_choices = SciePlatform
+    help = softwrap(
+        """
+        A field to indicate what what platform(s) to build for.
+
+        The default selection is `None`, in which case we will default to the current platform.
+        Possible values are: `linux-aarch64`, `linux-x86_64`, `macos-aarch64`, `macos-x86_64`.
+        """
+    )
 
 class ScieTarget(Target):
     alias = "scie_binary"
@@ -36,6 +55,7 @@ class ScieTarget(Target):
         *COMMON_TARGET_FIELDS,
         ScieDependenciesField,
         ScieBinaryNameField,
+        SciePlatformField,
     )
     help = softwrap(
         """

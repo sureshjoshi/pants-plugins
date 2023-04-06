@@ -16,3 +16,15 @@ pyoxidizer_binary(
     dependencies=[":hellonumpy-dist"],
     filesystem_resources=["numpy"],
 )
+
+pex_binary(
+    name="hellonumpy-pex",
+    entry_point="hellonumpy.main",
+    dependencies=[":libhellonumpy"],
+)
+
+scie_binary(
+    name="hellonumpy-scie",
+    dependencies=[":hellonumpy-pex"],
+    platforms=["linux-x86_64", "macos-aarch64"]
+)

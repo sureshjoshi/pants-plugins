@@ -23,6 +23,17 @@ pyoxidizer_binary(
     dependencies=[":helloworld-dist", "examples/python/core:core-dist"],
 )
 
+pex_binary(
+    name="helloworld-pex",
+    entry_point="helloworld.main",
+    dependencies=[":libhelloworld"],
+)
+
+scie_binary(
+    name="helloworld-scie",
+    dependencies=[":helloworld-pex"],
+    platforms=["linux-x86_64", "macos-aarch64"]
+)
 
 # Testing multi-dependency pyoxidizer cases below
 

@@ -36,7 +36,7 @@ from pants.engine.fs import (
     Snapshot,
 )
 from pants.engine.platform import Platform
-from pants.engine.process import Process, ProcessResult
+from pants.engine.process import Process, ProcessCacheScope, ProcessResult
 from pants.engine.rules import Get, MultiGet, Rule, collect_rules, rule, rule_helper
 from pants.engine.target import (
     DependenciesRequest,
@@ -72,8 +72,19 @@ async def _get_interpreter_config(targets: Targets) -> Interpreter:
     # Create a toml configuration from the input targets and the minimum_version
     return Interpreter(version=minimum_version)
 
-def _get_target_platforms(platforms: tuple[str, ...] | None, platform_mapping: Mapping[str, str],  host_platform: Platform) -> Iterable[str]:
-    return platforms or tuple(platform_mapping.get(host_platform.value, []))
+def _get_target_platforms(platforms: tuple[str, ...] | None, platform_mapping: Mapping[str, str],  host_platform: Platform) -> list[str]:
+    if platforms:
+        return list(platforms)
+    return [platform_mapping.get(host_platform.value, "")]
+
+def _get_files_config(built_packages: Iterable[BuiltPackage]) -> Iterable[File]:
+    # Enumerate the files to add to the configuration
+    artifact_names = [PurePath(artifact.relpath).name for built_pkg in built_packages for artifact in built_pkg.artifacts if artifact.relpath is not None]
+    return [File(str(name)) for name in artifact_names]
+
+def _contains_pex(built_package: BuiltPackage) -> bool:
+    return any(artifact.relpath is not None and artifact.relpath.endswith(".pex") for artifact in built_package.artifacts)
+
 
 @rule(level=LogLevel.DEBUG)
 async def scie_binary(
@@ -83,6 +94,7 @@ async def scie_binary(
 ) -> BuiltPackage:
     # Grab the dependencies of this target, and build them
     direct_deps = await Get(Targets, DependenciesRequest(field_set.dependencies))
+
     deps_field_sets = await Get(
         FieldSetsPerTarget, FieldSetsPerTargetRequest(PackageFieldSet, direct_deps)
     )
@@ -91,16 +103,31 @@ async def scie_binary(
         for field_set in deps_field_sets.field_sets
     )
 
-    interpreter_config = await _get_interpreter_config(direct_deps)
+    # Split the built packages into .pex and non-.pex packages
+    pex_packages = [built_pkg for built_pkg in built_packages if _contains_pex(built_pkg)]
+    non_pex_packages = [built_pkg for built_pkg in built_packages if not _contains_pex(built_pkg)]
+    
+    # Ensure that there is exactly 1 .pex file - reduces complexity of this plugin for now
+    assert len(pex_packages) == 1, f"Expected exactly 1 .pex package, but found {len(pex_packages)}"
+    pex_package = pex_packages[0]
+    
+    # Ensure there is only 1 .pex artifact in the .pex package
+    pex_artifacts = [artifact for artifact in pex_package.artifacts if artifact.relpath is not None and artifact.relpath.endswith(".pex")]
+    assert len(pex_artifacts) == 1, f"Expected exactly 1 .pex artifact, but found {len(pex_artifacts)}"
+    pex_artifact = pex_artifacts[0]
+    assert pex_artifact.relpath is not None, "Expected single .pex artifact to have a relpath"
+    pex_artifact_path = PurePath(pex_artifact.relpath)
+    pex_filename = pex_artifact_path.name
 
+    # Strip the prefix from the .pex file (workaround for https://github.com/a-scie/lift/issues/2)
+    stripped_pex_digest = await Get(Digest, RemovePrefix(pex_package.digest, str(pex_artifact_path.parent)))
+
+    # Prepare the configuration toml for the Science tool
+    binary_name = field_set.binary_name.value or field_set.address.target_name
     assert science.default_url_platform_mapping is not None
     target_platforms = _get_target_platforms(field_set.platforms.value, science.default_url_platform_mapping, platform) 
-
-    # Enumerate the files to add to the configuration
-    artifact_names = [PurePath(artifact.relpath).name for built_pkg in built_packages for artifact in built_pkg.artifacts if artifact.relpath is not None]
-    packagable_files = [File(name) for name in artifact_names]
-
-    binary_name = field_set.binary_name.value or field_set.address.target_name
+    interpreter_config = await _get_interpreter_config(direct_deps)
+    files_config = _get_files_config(built_packages)
 
     # Create a toml configuration from the input targets and the minimum_version, and place that into a Digest for later usage
     config = Config(
@@ -109,8 +136,8 @@ async def scie_binary(
             description=field_set.description.value or "",
             platforms=list(target_platforms),
             interpreters=[interpreter_config],
-            files=packagable_files,
-            commands=[Command(exe="#{cpython:python}", args=["{hellotyper-pex.pex}"])],
+            files=list(files_config),
+            commands=[Command(exe="#{cpython:python}", args=[f"{{{pex_filename}}}"])],
         )
     )
     config_filename = "config.toml"
@@ -121,12 +148,6 @@ async def scie_binary(
         DownloadedExternalTool, ExternalToolRequest, science.get_request(platform)
     )
 
-    # TODO: ... yuck... Need/Want? to remove prefixes from the artifacts in the BuiltPackage - could be a mess if they don't share a prefix
-    stripped_packages_digests = await MultiGet(
-        Get(Digest, RemovePrefix(built_package.digest, "examples.python.hellotyper"))
-        for built_package in built_packages
-    )
-
     # Put the dependencies and toml configuration into a digest
     input_digest = await Get(
         Digest,
@@ -134,18 +155,14 @@ async def scie_binary(
             (
                 config_digest,
                 downloaded_tool.digest,
-                *stripped_packages_digests,
+                *(pkg.digest for pkg in non_pex_packages),
+                stripped_pex_digest,
             )
         ),
     )
-    # snapshot = await Get(
-    #     Snapshot,
-    #     Digest,
-    #     input_digest,
-    # )
 
-    # The output files are the binary name followed by each of the platforms
-    output_files = [f"{binary_name}-{platform}" for platform in target_platforms]
+    # The output files are the binary name followed by each of the platforms (if specified), otherwise just the binary name for native-only
+    output_files = [binary_name] + [f"{binary_name}-{platform}" for platform in target_platforms]
     
     # Run science to generate the scie binaries (depending on the `platforms` setting)
     process = Process(
@@ -153,7 +170,9 @@ async def scie_binary(
         input_digest=input_digest,
         description="Run science on the input digests",
         output_files=output_files,
+        level=LogLevel.DEBUG,
     )
+
     result = await Get(ProcessResult, Process, process)
     snapshot = await Get(
         Snapshot,
@@ -180,20 +199,9 @@ async def run_scie_binary(field_set: ScieFieldSet) -> RunRequest:
     assert artifact.relpath is not None
     return RunRequest(digest=binary.digest, args=(os.path.join("{chroot}", artifact.relpath),))
 
-
-# @rule
-# async def run_scie_debug_adapter_binary(
-#     field_set: ScieFieldSet,
-# ) -> RunDebugAdapterRequest:
-#     raise NotImplementedError(
-#         "Debugging a `scie_binary` using a debug adapter has not yet been implemented."
-#     )
-
-
 def rules() -> Iterable[Rule | UnionRule]:
     return (
         *collect_rules(),
         UnionRule(PackageFieldSet, ScieFieldSet),
-        # UnionRule(RunFieldSet, ScieFieldSet),
         *ScieFieldSet.rules(),
     )

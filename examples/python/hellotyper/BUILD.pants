@@ -28,4 +28,5 @@ pex_binary(
 scie_binary(
     name="hellotyper-scie",
     dependencies=[":hellotyper-pex"],
+    platforms=["linux-x86_64", "macos-aarch64"]
 )

@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0 (see LICENSE).
 
 from __future__ import annotations
+from ast import arg
 
 import logging
 import os
@@ -208,9 +209,13 @@ async def scie_binary(
     output_files = [config.lift.name] + [f"{config.lift.name}-{platform}" for platform in config.lift.platforms]
     
     # If any of the config filenames start with `:` then add a filemapping command line arg in the form --file NAME=LOCATION
-    logger.error(config.lift.files)
     file_mappings = [f"--file {file.name}={pex_artifact_path}" for file in config.lift.files if file.name.startswith(":")]
-    argv = (downloaded_tool.exe, "lift", *file_mappings, "build", "--use-platform-suffix" if not config.lift.platforms else "", lift_path)
+    # Split each file mapping into a list of arguments
+    file_mappings = [arg for mapping in file_mappings for arg in mapping.split(" ")]
+
+    logger.error(file_mappings)
+    argv = (downloaded_tool.exe, "lift", *file_mappings, "build", "--use-platform-suffix" if config.lift.platforms else "", lift_path)
+    logger.error(argv)
 
     # Run science to generate the scie binaries (depending on the `platforms` setting)
     process = Process(

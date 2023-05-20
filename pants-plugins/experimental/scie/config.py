@@ -50,6 +50,7 @@ class Interpreter:
     version: str
     id: str = "cpython"
     provider: str = "PythonBuildStandalone"
+    release: str = "3.11.3"
     lazy: bool = True
 
 @dataclass(frozen=True)

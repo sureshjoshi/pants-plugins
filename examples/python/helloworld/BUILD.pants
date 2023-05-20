@@ -6,23 +6,6 @@ python_sources(
     ],
 )
 
-python_distribution(
-    name="helloworld-dist",
-    dependencies=[":libhelloworld"],
-    provides=python_artifact(
-        name="helloworld-dist",
-        version="0.0.1",
-        description="A distribution for the hello world library.",
-    ),
-)
-
-# TODO: core:core-dist needs to be added directly here, otherwise PyOx tries to grab it from pypi
-pyoxidizer_binary(
-    name="helloworld-bin",
-    entry_point="helloworld.main",
-    dependencies=[":helloworld-dist", "examples/python/core:core-dist"],
-)
-
 pex_binary(
     name="helloworld-pex",
     entry_point="helloworld.main",
@@ -34,34 +17,4 @@ scie_binary(
     dependencies=[":helloworld-pex"],
     #platforms=["linux-x86_64", "macos-aarch64"]
     lift="lift.toml"
-)
-
-# Testing multi-dependency pyoxidizer cases below
-
-python_sources(name="libspeaker", sources=["helloworld/speaker.py"])
-python_sources(name="libtalker", sources=["helloworld/talker.py"])
-
-python_distribution(
-    name="speaker-dist",
-    dependencies=[":libspeaker"],
-    provides=python_artifact(
-        name="speaker-dist",
-        version="0.0.1",
-        description="A distribution for the hello world speaker library.",
-    ),
-)
-
-python_distribution(
-    name="talker-dist",
-    dependencies=[":libtalker"],
-    provides=python_artifact(
-        name="talker-dist",
-        version="0.0.1",
-        description="A distribution for the hello world talker library.",
-    ),
-)
-
-pyoxidizer_binary(
-    name="helloworld-repl",
-    dependencies=[":speaker-dist", ":talker-dist"],
 )

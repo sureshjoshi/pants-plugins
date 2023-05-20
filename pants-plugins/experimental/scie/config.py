@@ -36,6 +36,7 @@ class LiftConfig:
     interpreters: list[Interpreter] 
     files: list[File]
     commands: list[Command]
+    bindings: frozenset[Command] = frozenset()
 
     def __post_init__(self):
         if any(isinstance(i, dict) for i in self.interpreters):
@@ -44,6 +45,8 @@ class LiftConfig:
             object.__setattr__(self, 'files', [File(**f) for f in self.files]) # type: ignore
         if any(isinstance(c, dict) for c in self.commands):
             object.__setattr__(self, 'commands', [Command(**c) for c in self.commands]) # type: ignore
+        if any(isinstance(b, dict) for b in self.bindings):
+            object.__setattr__(self, 'bindings', [Command(**b) for b in self.bindings]) # type: ignore
 
 @dataclass(frozen=True)
 class Interpreter:
@@ -61,3 +64,6 @@ class File:
 class Command:
     exe: str
     args: list[str]
+    env: dict[str, str] | None = None
+    name: str | None = None
+    description: str | None = None

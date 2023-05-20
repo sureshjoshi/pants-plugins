@@ -1,0 +1,26 @@
+[lift]
+name = "helloworld"
+description = "An example HelloWorld Lift application"
+platforms = [
+    "linux-aarch64",
+    "linux-x86_64",
+    "macos-aarch64",
+    "macos-x86_64",
+]
+
+[[lift.interpreters]]
+id = "cpython"
+provider = "PythonBuildStandalone"
+release = "20230507"
+version = "3.11.3"
+
+[[lift.files]]
+name = ":helloworld-pex"
+
+[[lift.commands]]
+# This selects the `python` binary from within the CPython 3.11 interpreter distribution
+# (a tarball) provided by PythonBuildStandalone above.
+exe = "#{cpython:python}"
+args = [
+    "{:helloworld-pex}",
+]

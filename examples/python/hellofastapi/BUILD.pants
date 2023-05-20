@@ -6,22 +6,6 @@ python_sources(
     ],
 )
 
-python_distribution(
-    name="hellofastapi-dist",
-    dependencies=[":libhellofastapi"],
-    provides=python_artifact(
-        name="hellofastapi-dist",
-        version="0.0.1",
-        description="A distribution for the hello FastApi library.",
-    ),
-)
-
-pyoxidizer_binary(
-    name="hellofastapi-bin",
-    entry_point="hellofastapi.main",
-    dependencies=[":hellofastapi-dist"],
-)
-
 pex_binary(
     name="hellofastapi-pex",
     entry_point="hellofastapi.main",

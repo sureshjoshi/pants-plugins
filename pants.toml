@@ -19,7 +19,6 @@ backend_packages = [
     "pants.backend.python.lint.isort",
     "pants.backend.python.lint.pyupgrade",
     "pants.backend.python.typecheck.mypy",
-    "pants.backend.experimental.python.packaging.pyoxidizer",
     "pants.backend.shell",
     "pants.backend.shell.lint.shellcheck",
     "pants.backend.shell.lint.shfmt",
@@ -64,12 +63,6 @@ args = "--profile black"
 
 [pyupgrade]
 args = "--py39-plus"
-
-[pyoxidizer]
-interpreter_constraints = [">=3.9"]
-args = ["--release"]
-lockfile = "build-support/python/pyoxidizer_lock.txt"
-version = "pyoxidizer==0.22.0"
 
 [setuptools]
 extra_requirements = ["wheel", "mypy"]

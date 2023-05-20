@@ -3,22 +3,6 @@ python_sources(
     sources=["**/*.py"],
 )
 
-python_distribution(
-    name="hellotyper-dist",
-    dependencies=[":libhellotyper"],
-    provides=python_artifact(
-        name="hellotyper-dist",
-        version="0.0.1",
-        description="A distribution for the hello typer library.",
-    ),
-)
-
-pyoxidizer_binary(
-    name="hellotyper-bin",
-    entry_point="hellotyper.main",
-    dependencies=[":hellotyper-dist"],
-)
-
 pex_binary(
     name="hellotyper-pex",
     entry_point="hellotyper.main",

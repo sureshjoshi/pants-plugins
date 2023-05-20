@@ -3,23 +3,6 @@ python_sources(
     sources=["**/*.py"],
 )
 
-python_distribution(
-    name="hellokivy-dist",
-    dependencies=[":libhellokivy"],
-    provides=python_artifact(
-        name="hellokivy-dist",
-        version="0.0.1",
-        description="A distribution for the hello kivy library.",
-    ),
-)
-
-pyoxidizer_binary(
-    name="hellokivy-bin",
-    entry_point="hellokivy.main",
-    dependencies=[":hellokivy-dist"],
-    filesystem_resources=["kivy"],
-)
-
 pex_binary(
     name="hellokivy-pex",
     entry_point="hellokivy.main",

@@ -14,15 +14,14 @@ from pants.backend.python.util_rules.pex_from_targets import InterpreterConstrai
 from pants.core.target_types import EnvironmentAwarePackageRequest, RemovePrefix
 from pants.init.plugin_resolver import InterpreterConstraints
 
-from experimental.scie.config import Config, ScienceConfig, Interpreter, File, Command
-from experimental.scie.subsystems.science import Science
+from experimental.scie.config import Config, LiftConfig, Interpreter, File, Command
+from experimental.scie.subsystems import Science
 from experimental.scie.target_types import (
     ScieBinaryNameField,
     ScieDependenciesField,
     SciePlatformField
 )
 import toml
-from experimental.scie.subsystems.standalone import PythonStandaloneInterpreter
 from pants.core.goals.package import BuiltPackage, BuiltPackageArtifact, PackageFieldSet
 from pants.core.goals.run import RunFieldSet, RunRequest, RunInSandboxBehavior
 from pants.core.util_rules.external_tool import DownloadedExternalTool, ExternalToolRequest
@@ -131,7 +130,7 @@ async def scie_binary(
 
     # Create a toml configuration from the input targets and the minimum_version, and place that into a Digest for later usage
     config = Config(
-        science=ScienceConfig(
+        lift=LiftConfig(
             name=binary_name,
             description=field_set.description.value or "",
             platforms=list(target_platforms),
@@ -140,8 +139,10 @@ async def scie_binary(
             commands=[Command(exe="#{cpython:python}", args=[f"{{{pex_filename}}}"])],
         )
     )
-    config_filename = "config.toml"
-    config_digest = await Get(Digest, CreateDigest([FileContent(config_filename, toml.dumps(asdict(config)).encode())]))
+    config_filename = "lift.toml"
+    config_content = toml.dumps(asdict(config)).encode()
+    logger.warning(f"Config: {config_content}")
+    config_digest = await Get(Digest, CreateDigest([FileContent(config_filename, config_content)]))
 
     # Download the Science tool for this platform
     downloaded_tool = await Get(
@@ -166,7 +167,7 @@ async def scie_binary(
     
     # Run science to generate the scie binaries (depending on the `platforms` setting)
     process = Process(
-        argv=(downloaded_tool.exe, "build", config_filename),
+        argv=(downloaded_tool.exe, "lift", "build"),
         input_digest=input_digest,
         description="Run science on the input digests",
         output_files=output_files,

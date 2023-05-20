@@ -7,10 +7,10 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class Config:
-    science: ScienceConfig
+    lift: LiftConfig
 
 @dataclass(frozen=True)
-class ScienceConfig:
+class LiftConfig:
     name: str
     description: str
     platforms: list[str]

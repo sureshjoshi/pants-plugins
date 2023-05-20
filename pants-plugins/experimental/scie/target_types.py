@@ -5,7 +5,7 @@ from __future__ import annotations
 from enum import Enum
 
 from pants.core.goals.package import OutputPathField
-from pants.engine.target import COMMON_TARGET_FIELDS, Dependencies, StringSequenceField, Target
+from pants.engine.target import COMMON_TARGET_FIELDS, Dependencies, DictStringToStringField, NestedDictStringToStringField, OptionalSingleSourceField, StringSequenceField, Target
 from pants.util.strutil import softwrap
 
 
@@ -49,6 +49,65 @@ class SciePlatformField(StringSequenceField):
         """
     )
 
+class ScieLiftSourceField(OptionalSingleSourceField):
+    alias = "lift"
+    expected_file_extensions = (".toml",)
+    default = None
+    help = softwrap(
+        """
+        If set, the specified toml file will be used to configure the `scie` and all other
+        fields will be ignored.
+
+        The path is relative to the BUILD file's directory and it must end in a `.toml` extension.
+
+        Example:
+            lift = "helloworldlift.toml"
+
+        Inside the toml, strings that are prefixed with `:` will be interpreted as references to
+        other targets. For example, `:mypex` will be interpreted as a reference to the
+        `mypex` target in the same BUILD file and the Lift file will be updated to include
+        the `mypex` location.
+
+        Example:
+        [[lift.files]]
+            name = ":helloworld-pex"
+        """
+    )
+
+# class ScieCommandField(NestedDictStringToStringField):
+#     alias = "commands"
+#     default = None
+#     help = softwrap(
+#         """
+#         A field to indicate what command to run when the binary is executed.
+
+#         The default selection is `None`, in which case we will call the bundled PEX
+#         file using the Python interpreter: e.g. `python my_binary.pex`.
+
+#         If you want to allow for different command(s) you can specify them here. If you 
+#         want a default command, you can specify it with an empty name ("") as the key.
+
+#         This field is passed straight-through to the `science` command without any
+#         modification.
+
+#         Example:
+#         commands = {
+#             "": {
+#                 "exe": "#{cpython:python}"
+                
+#                 "description": "My default command",
+#                 "env": {
+                
+#             }
+#             "run": "python my_binary.pex",
+
+
+
+#         Refer to https://github.com/a-scie/jump/blob/main/docs/packaging.md for more 
+#         information on the available boot.command options.
+#         """
+#     )
+
 class ScieTarget(Target):
     alias = "scie_binary"
     core_fields = (
@@ -56,6 +115,7 @@ class ScieTarget(Target):
         ScieDependenciesField,
         ScieBinaryNameField,
         SciePlatformField,
+        ScieLiftSourceField,
     )
     help = softwrap(
         """

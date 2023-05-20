@@ -2,37 +2,43 @@
 # Licensed under the Apache License, Version 2.0 (see LICENSE).
 
 from __future__ import annotations
+from ast import arg
 
 import logging
 import os
-from dataclasses import asdict, dataclass
-from typing import Iterable, Mapping
+from dataclasses import asdict, dataclass, replace
+from typing import Final, Iterable, Mapping
 from pathlib import PurePath
 
 from pants.backend.python.target_types import PythonSourceField
 from pants.backend.python.util_rules.pex_from_targets import InterpreterConstraintsRequest, interpreter_constraints_for_targets
+from pants.backend.visibility.glob import PathGlob
+from pants.base.glob_match_error_behavior import GlobMatchErrorBehavior
 from pants.core.target_types import EnvironmentAwarePackageRequest, RemovePrefix
 from pants.init.plugin_resolver import InterpreterConstraints
 
-from experimental.scie.config import Config, ScienceConfig, Interpreter, File, Command
-from experimental.scie.subsystems.science import Science
+from experimental.scie.config import Config, LiftConfig, Interpreter, File, Command
+from experimental.scie.subsystems import Science
 from experimental.scie.target_types import (
     ScieBinaryNameField,
     ScieDependenciesField,
-    SciePlatformField
+    SciePlatformField,
+    ScieLiftSourceField
 )
 import toml
-from experimental.scie.subsystems.standalone import PythonStandaloneInterpreter
 from pants.core.goals.package import BuiltPackage, BuiltPackageArtifact, PackageFieldSet
 from pants.core.goals.run import RunFieldSet, RunRequest, RunInSandboxBehavior
 from pants.core.util_rules.external_tool import DownloadedExternalTool, ExternalToolRequest
 from pants.engine.fs import (
+    EMPTY_DIGEST,
     CreateDigest,
     Digest,
+    DigestContents,
     DigestEntries,
     DownloadFile,
     FileContent,
     MergeDigests,
+    PathGlobs,
     Snapshot,
 )
 from pants.engine.platform import Platform
@@ -43,6 +49,10 @@ from pants.engine.target import (
     DescriptionField,
     FieldSetsPerTarget,
     FieldSetsPerTargetRequest,
+    HydrateSourcesRequest,
+    HydratedSources,
+    SingleSourceField,
+    SourcesField,
     Targets,
 )
 from pants.engine.unions import UnionRule
@@ -50,6 +60,7 @@ from pants.util.logging import LogLevel
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_LIFT_PATH: Final[str] = "lift.toml"
 
 @dataclass(frozen=True)
 class ScieFieldSet(PackageFieldSet, RunFieldSet):
@@ -60,6 +71,7 @@ class ScieFieldSet(PackageFieldSet, RunFieldSet):
     description: DescriptionField
     dependencies: ScieDependenciesField
     platforms: SciePlatformField
+    lift: ScieLiftSourceField
 
 
 @rule_helper
@@ -85,6 +97,17 @@ def _get_files_config(built_packages: Iterable[BuiltPackage]) -> Iterable[File]:
 def _contains_pex(built_package: BuiltPackage) -> bool:
     return any(artifact.relpath is not None and artifact.relpath.endswith(".pex") for artifact in built_package.artifacts)
 
+@rule_helper
+async def _parse_lift_source(source: ScieLiftSourceField) -> Config:
+    hydrated_source = await Get(HydratedSources, HydrateSourcesRequest(source))
+    digest_contents = await Get(DigestContents, Digest, hydrated_source.snapshot.digest)
+    content = digest_contents[0].content.decode("utf-8")
+    lift_toml = toml.loads(content)
+    logger.error(lift_toml)
+    return Config(**lift_toml)
+
+# def _post_process_lift_config(config: Config, field_set: ScieFieldSet) -> Config:
+#     # 
 
 @rule(level=LogLevel.DEBUG)
 async def scie_binary(
@@ -119,9 +142,6 @@ async def scie_binary(
     pex_artifact_path = PurePath(pex_artifact.relpath)
     pex_filename = pex_artifact_path.name
 
-    # Strip the prefix from the .pex file (workaround for https://github.com/a-scie/lift/issues/2)
-    stripped_pex_digest = await Get(Digest, RemovePrefix(pex_package.digest, str(pex_artifact_path.parent)))
-
     # Prepare the configuration toml for the Science tool
     binary_name = field_set.binary_name.value or field_set.address.target_name
     assert science.default_url_platform_mapping is not None
@@ -131,7 +151,7 @@ async def scie_binary(
 
     # Create a toml configuration from the input targets and the minimum_version, and place that into a Digest for later usage
     config = Config(
-        science=ScienceConfig(
+        lift=LiftConfig(
             name=binary_name,
             description=field_set.description.value or "",
             platforms=list(target_platforms),
@@ -140,8 +160,16 @@ async def scie_binary(
             commands=[Command(exe="#{cpython:python}", args=[f"{{{pex_filename}}}"])],
         )
     )
-    config_filename = "config.toml"
-    config_digest = await Get(Digest, CreateDigest([FileContent(config_filename, toml.dumps(asdict(config)).encode())]))
+
+    lift_digest = EMPTY_DIGEST
+    lift_path = DEFAULT_LIFT_PATH
+    if field_set.lift.value is not None:
+        config = await _parse_lift_source(field_set.lift)
+        assert field_set.lift.file_path is not None
+        lift_path = field_set.lift.file_path
+    
+    config_content = toml.dumps(asdict(config)).encode()
+    lift_digest = await Get(Digest, CreateDigest([FileContent(lift_path, config_content)]))
 
     # Download the Science tool for this platform
     downloaded_tool = await Get(
@@ -153,20 +181,27 @@ async def scie_binary(
         Digest,
         MergeDigests(
             (
-                config_digest,
+                lift_digest,
                 downloaded_tool.digest,
                 *(pkg.digest for pkg in non_pex_packages),
-                stripped_pex_digest,
+                pex_package.digest,
             )
         ),
     )
 
-    # The output files are the binary name followed by each of the platforms (if specified), otherwise just the binary name for native-only
-    output_files = [binary_name] + [f"{binary_name}-{platform}" for platform in target_platforms]
+    # The output files are based on the config.lift.name key and each of the platforms (if specified), otherwise just the config.lift.name for native-only
+    output_files = [config.lift.name] + [f"{config.lift.name}-{platform}" for platform in config.lift.platforms]
     
+    # If any of the config filenames start with `:` then add a filemapping command line arg in the form --file NAME=LOCATION
+    file_mappings = [f"--file {file.name}={pex_artifact_path}" for file in config.lift.files if file.name.startswith(":")]
+    # Split each file mapping into a list of arguments
+    file_mappings = [arg for mapping in file_mappings for arg in mapping.split(" ")]
+    logger.warning(file_mappings)
+
     # Run science to generate the scie binaries (depending on the `platforms` setting)
+    argv = (downloaded_tool.exe, "lift", *file_mappings, "build", "--use-platform-suffix" if config.lift.platforms else "", lift_path)
     process = Process(
-        argv=(downloaded_tool.exe, "build", config_filename),
+        argv=argv,
         input_digest=input_digest,
         description="Run science on the input digests",
         output_files=output_files,

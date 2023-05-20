@@ -32,7 +32,8 @@ pex_binary(
 scie_binary(
     name="helloworld-scie",
     dependencies=[":helloworld-pex"],
-    platforms=["linux-x86_64", "macos-aarch64"]
+    #platforms=["linux-x86_64", "macos-aarch64"]
+    lift="lift.toml"
 )
 
 # Testing multi-dependency pyoxidizer cases below

@@ -26,6 +26,7 @@ pex_binary(
     name="hellofastapi-pex",
     entry_point="hellofastapi.main",
     dependencies=[":libhellofastapi"],
+    include_tools=True,
 )
 
 scie_binary(

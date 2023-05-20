@@ -165,26 +165,10 @@ async def scie_binary(
     lift_path = DEFAULT_LIFT_PATH
     if field_set.lift.value is not None:
         config = await _parse_lift_source(field_set.lift)
-        # Replace files and args that start with `:` with the corresponding file from the built packages
-        # TODO: Knowing we've limited to 1 .pex package, we can probably just hack this for now
-    
-        # config_dict = asdict(config)
-        # files = config_dict["lift"]["files"]
-        # pex_files = [{"key": file["key"], "name": str(pex_artifact_path)} for file in files if file["key"].startswith(":")]
-        # non_pex_files = [{"name": file} for file in files if not file["key"].startswith(":")]
-        # config_dict["lift"]["files"] = pex_files + non_pex_files 
-                
-        # for command in config.lift.commands:
-        #     for i, arg in enumerate(command.args):
-        #         if arg.startswith(":"):
-        #             arg_index = int(arg[1:])
-        #             command.args[i] = pex_filename
-        # config = Config(**config_dict)
         assert field_set.lift.file_path is not None
         lift_path = field_set.lift.file_path
     
     config_content = toml.dumps(asdict(config)).encode()
-    logger.error(f"Config: {config_content}")
     lift_digest = await Get(Digest, CreateDigest([FileContent(lift_path, config_content)]))
 
     # Download the Science tool for this platform
@@ -212,12 +196,10 @@ async def scie_binary(
     file_mappings = [f"--file {file.name}={pex_artifact_path}" for file in config.lift.files if file.name.startswith(":")]
     # Split each file mapping into a list of arguments
     file_mappings = [arg for mapping in file_mappings for arg in mapping.split(" ")]
-
-    logger.error(file_mappings)
-    argv = (downloaded_tool.exe, "lift", *file_mappings, "build", "--use-platform-suffix" if config.lift.platforms else "", lift_path)
-    logger.error(argv)
+    logger.warning(file_mappings)
 
     # Run science to generate the scie binaries (depending on the `platforms` setting)
+    argv = (downloaded_tool.exe, "lift", *file_mappings, "build", "--use-platform-suffix" if config.lift.platforms else "", lift_path)
     process = Process(
         argv=argv,
         input_digest=input_digest,
@@ -232,7 +214,7 @@ async def scie_binary(
         Digest,
         result.output_digest,
     )
-    logger.error(f"Snapshot: {snapshot}")
+
     return BuiltPackage(
         result.output_digest,
         artifacts=tuple(BuiltPackageArtifact(file) for file in snapshot.files),

@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import logging
 import os
-from ast import arg
 from dataclasses import asdict, dataclass, replace
 from pathlib import PurePath
 from typing import Final, Iterable, Mapping
@@ -19,16 +18,12 @@ from experimental.scie.target_types import (
     ScieLiftSourceField,
     SciePlatformField,
 )
-from pants.backend.python.target_types import PythonSourceField
 from pants.backend.python.util_rules.pex_from_targets import (
     InterpreterConstraintsRequest,
-    interpreter_constraints_for_targets,
 )
-from pants.backend.visibility.glob import PathGlob
-from pants.base.glob_match_error_behavior import GlobMatchErrorBehavior
 from pants.core.goals.package import BuiltPackage, BuiltPackageArtifact, PackageFieldSet
 from pants.core.goals.run import RunFieldSet, RunInSandboxBehavior, RunRequest
-from pants.core.target_types import EnvironmentAwarePackageRequest, RemovePrefix
+from pants.core.target_types import EnvironmentAwarePackageRequest
 from pants.core.util_rules.external_tool import (
     DownloadedExternalTool,
     ExternalToolRequest,
@@ -38,15 +33,12 @@ from pants.engine.fs import (
     CreateDigest,
     Digest,
     DigestContents,
-    DigestEntries,
-    DownloadFile,
     FileContent,
     MergeDigests,
-    PathGlobs,
     Snapshot,
 )
 from pants.engine.platform import Platform
-from pants.engine.process import Process, ProcessCacheScope, ProcessResult
+from pants.engine.process import Process, ProcessResult
 from pants.engine.rules import Get, MultiGet, Rule, collect_rules, rule, rule_helper
 from pants.engine.target import (
     DependenciesRequest,
@@ -55,8 +47,6 @@ from pants.engine.target import (
     FieldSetsPerTargetRequest,
     HydratedSources,
     HydrateSourcesRequest,
-    SingleSourceField,
-    SourcesField,
     Targets,
 )
 from pants.engine.unions import UnionRule
@@ -107,12 +97,12 @@ def _get_target_platforms(
 def _get_files_config(built_packages: Iterable[BuiltPackage]) -> Iterable[File]:
     # Enumerate the files to add to the configuration
     artifact_names = [
-        PurePath(artifact.relpath).name
+        PurePath(artifact.relpath)
         for built_pkg in built_packages
         for artifact in built_pkg.artifacts
         if artifact.relpath is not None
     ]
-    return [File(str(name)) for name in artifact_names]
+    return [File(str(path)) for path in artifact_names]
 
 
 def _contains_pex(built_package: BuiltPackage) -> bool:
@@ -177,7 +167,6 @@ async def scie_binary(
         pex_artifact.relpath is not None
     ), "Expected single .pex artifact to have a relpath"
     pex_artifact_path = PurePath(pex_artifact.relpath)
-    pex_filename = pex_artifact_path.name
 
     # Prepare the configuration toml for the Science tool
     binary_name = field_set.binary_name.value or field_set.address.target_name
@@ -186,26 +175,34 @@ async def scie_binary(
         field_set.platforms.value, science.default_url_platform_mapping, platform
     )
     interpreter_config = await _get_interpreter_config(direct_deps)
+    # TODO: This might be better solved by using the `:target_name` syntax and letting downstream handle it
     files_config = _get_files_config(built_packages)
 
     # Create a toml configuration from the input targets and the minimum_version, and place that into a Digest for later usage
-    config = Config(
+    generated_config = Config(
         lift=LiftConfig(
             name=binary_name,
             description=field_set.description.value or "",
             platforms=list(target_platforms),
             interpreters=[interpreter_config],
             files=list(files_config),
-            commands=[Command(exe="#{cpython:python}", args=[f"{{{pex_filename}}}"])],
+            commands=[
+                Command(exe="#{cpython:python}", args=[f"{{{ pex_artifact_path }}}"])
+            ],
         )
     )
 
+    parsed_config: Config | None = None
     lift_digest = EMPTY_DIGEST
     lift_path = DEFAULT_LIFT_PATH
     if field_set.lift.value is not None:
-        config = await _parse_lift_source(field_set.lift)
+        # If the user specified a lift.toml file, then use that instead of the generated one
+        parsed_config = await _parse_lift_source(field_set.lift)
         assert field_set.lift.file_path is not None
         lift_path = field_set.lift.file_path
+
+    # TODO: Merge the parsed config with the generated config, rather than replacing it
+    config = parsed_config or generated_config
 
     config_content = toml.dumps(asdict(config)).encode()
     lift_digest = await Get(

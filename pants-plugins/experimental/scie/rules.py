@@ -2,33 +2,37 @@
 # Licensed under the Apache License, Version 2.0 (see LICENSE).
 
 from __future__ import annotations
-from ast import arg
 
 import logging
 import os
+from ast import arg
 from dataclasses import asdict, dataclass, replace
-from typing import Final, Iterable, Mapping
 from pathlib import PurePath
+from typing import Final, Iterable, Mapping
 
-from pants.backend.python.target_types import PythonSourceField
-from pants.backend.python.util_rules.pex_from_targets import InterpreterConstraintsRequest, interpreter_constraints_for_targets
-from pants.backend.visibility.glob import PathGlob
-from pants.base.glob_match_error_behavior import GlobMatchErrorBehavior
-from pants.core.target_types import EnvironmentAwarePackageRequest, RemovePrefix
-from pants.init.plugin_resolver import InterpreterConstraints
-
-from experimental.scie.config import Config, LiftConfig, Interpreter, File, Command
+import toml
+from experimental.scie.config import Command, Config, File, Interpreter, LiftConfig
 from experimental.scie.subsystems import Science
 from experimental.scie.target_types import (
     ScieBinaryNameField,
     ScieDependenciesField,
+    ScieLiftSourceField,
     SciePlatformField,
-    ScieLiftSourceField
 )
-import toml
+from pants.backend.python.target_types import PythonSourceField
+from pants.backend.python.util_rules.pex_from_targets import (
+    InterpreterConstraintsRequest,
+    interpreter_constraints_for_targets,
+)
+from pants.backend.visibility.glob import PathGlob
+from pants.base.glob_match_error_behavior import GlobMatchErrorBehavior
 from pants.core.goals.package import BuiltPackage, BuiltPackageArtifact, PackageFieldSet
-from pants.core.goals.run import RunFieldSet, RunRequest, RunInSandboxBehavior
-from pants.core.util_rules.external_tool import DownloadedExternalTool, ExternalToolRequest
+from pants.core.goals.run import RunFieldSet, RunInSandboxBehavior, RunRequest
+from pants.core.target_types import EnvironmentAwarePackageRequest, RemovePrefix
+from pants.core.util_rules.external_tool import (
+    DownloadedExternalTool,
+    ExternalToolRequest,
+)
 from pants.engine.fs import (
     EMPTY_DIGEST,
     CreateDigest,
@@ -49,18 +53,20 @@ from pants.engine.target import (
     DescriptionField,
     FieldSetsPerTarget,
     FieldSetsPerTargetRequest,
-    HydrateSourcesRequest,
     HydratedSources,
+    HydrateSourcesRequest,
     SingleSourceField,
     SourcesField,
     Targets,
 )
 from pants.engine.unions import UnionRule
+from pants.init.plugin_resolver import InterpreterConstraints
 from pants.util.logging import LogLevel
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_LIFT_PATH: Final[str] = "lift.toml"
+
 
 @dataclass(frozen=True)
 class ScieFieldSet(PackageFieldSet, RunFieldSet):
@@ -77,25 +83,44 @@ class ScieFieldSet(PackageFieldSet, RunFieldSet):
 @rule_helper
 async def _get_interpreter_config(targets: Targets) -> Interpreter:
     # Get the interpreter_constraints for the Pex to determine which version of the Python Standalone to use
-    constraints = await Get(InterpreterConstraints, InterpreterConstraintsRequest([tgt.address for tgt in targets]))
+    constraints = await Get(
+        InterpreterConstraints,
+        InterpreterConstraintsRequest([tgt.address for tgt in targets]),
+    )
     # TODO: Pull the interpreter_universe from somewhere else (Python Build standalone?)
     minimum_version = constraints.minimum_python_version(["3.8", "3.9", "3.10", "3.11"])
     assert minimum_version is not None, "No minimum python version found"
     # Create a toml configuration from the input targets and the minimum_version
     return Interpreter(version=minimum_version)
 
-def _get_target_platforms(platforms: tuple[str, ...] | None, platform_mapping: Mapping[str, str],  host_platform: Platform) -> list[str]:
+
+def _get_target_platforms(
+    platforms: tuple[str, ...] | None,
+    platform_mapping: Mapping[str, str],
+    host_platform: Platform,
+) -> list[str]:
     if platforms:
         return list(platforms)
     return [platform_mapping.get(host_platform.value, "")]
 
+
 def _get_files_config(built_packages: Iterable[BuiltPackage]) -> Iterable[File]:
     # Enumerate the files to add to the configuration
-    artifact_names = [PurePath(artifact.relpath).name for built_pkg in built_packages for artifact in built_pkg.artifacts if artifact.relpath is not None]
+    artifact_names = [
+        PurePath(artifact.relpath).name
+        for built_pkg in built_packages
+        for artifact in built_pkg.artifacts
+        if artifact.relpath is not None
+    ]
     return [File(str(name)) for name in artifact_names]
 
+
 def _contains_pex(built_package: BuiltPackage) -> bool:
-    return any(artifact.relpath is not None and artifact.relpath.endswith(".pex") for artifact in built_package.artifacts)
+    return any(
+        artifact.relpath is not None and artifact.relpath.endswith(".pex")
+        for artifact in built_package.artifacts
+    )
+
 
 @rule_helper
 async def _parse_lift_source(source: ScieLiftSourceField) -> Config:
@@ -106,8 +131,6 @@ async def _parse_lift_source(source: ScieLiftSourceField) -> Config:
     logger.error(lift_toml)
     return Config(**lift_toml)
 
-# def _post_process_lift_config(config: Config, field_set: ScieFieldSet) -> Config:
-#     # 
 
 @rule(level=LogLevel.DEBUG)
 async def scie_binary(
@@ -127,25 +150,41 @@ async def scie_binary(
     )
 
     # Split the built packages into .pex and non-.pex packages
-    pex_packages = [built_pkg for built_pkg in built_packages if _contains_pex(built_pkg)]
-    non_pex_packages = [built_pkg for built_pkg in built_packages if not _contains_pex(built_pkg)]
-    
+    pex_packages = [
+        built_pkg for built_pkg in built_packages if _contains_pex(built_pkg)
+    ]
+    non_pex_packages = [
+        built_pkg for built_pkg in built_packages if not _contains_pex(built_pkg)
+    ]
+
     # Ensure that there is exactly 1 .pex file - reduces complexity of this plugin for now
-    assert len(pex_packages) == 1, f"Expected exactly 1 .pex package, but found {len(pex_packages)}"
+    assert (
+        len(pex_packages) == 1
+    ), f"Expected exactly 1 .pex package, but found {len(pex_packages)}"
     pex_package = pex_packages[0]
-    
+
     # Ensure there is only 1 .pex artifact in the .pex package
-    pex_artifacts = [artifact for artifact in pex_package.artifacts if artifact.relpath is not None and artifact.relpath.endswith(".pex")]
-    assert len(pex_artifacts) == 1, f"Expected exactly 1 .pex artifact, but found {len(pex_artifacts)}"
+    pex_artifacts = [
+        artifact
+        for artifact in pex_package.artifacts
+        if artifact.relpath is not None and artifact.relpath.endswith(".pex")
+    ]
+    assert (
+        len(pex_artifacts) == 1
+    ), f"Expected exactly 1 .pex artifact, but found {len(pex_artifacts)}"
     pex_artifact = pex_artifacts[0]
-    assert pex_artifact.relpath is not None, "Expected single .pex artifact to have a relpath"
+    assert (
+        pex_artifact.relpath is not None
+    ), "Expected single .pex artifact to have a relpath"
     pex_artifact_path = PurePath(pex_artifact.relpath)
     pex_filename = pex_artifact_path.name
 
     # Prepare the configuration toml for the Science tool
     binary_name = field_set.binary_name.value or field_set.address.target_name
     assert science.default_url_platform_mapping is not None
-    target_platforms = _get_target_platforms(field_set.platforms.value, science.default_url_platform_mapping, platform) 
+    target_platforms = _get_target_platforms(
+        field_set.platforms.value, science.default_url_platform_mapping, platform
+    )
     interpreter_config = await _get_interpreter_config(direct_deps)
     files_config = _get_files_config(built_packages)
 
@@ -167,9 +206,11 @@ async def scie_binary(
         config = await _parse_lift_source(field_set.lift)
         assert field_set.lift.file_path is not None
         lift_path = field_set.lift.file_path
-    
+
     config_content = toml.dumps(asdict(config)).encode()
-    lift_digest = await Get(Digest, CreateDigest([FileContent(lift_path, config_content)]))
+    lift_digest = await Get(
+        Digest, CreateDigest([FileContent(lift_path, config_content)])
+    )
 
     # Download the Science tool for this platform
     downloaded_tool = await Get(
@@ -190,16 +231,29 @@ async def scie_binary(
     )
 
     # The output files are based on the config.lift.name key and each of the platforms (if specified), otherwise just the config.lift.name for native-only
-    output_files = [config.lift.name] + [f"{config.lift.name}-{platform}" for platform in config.lift.platforms]
-    
+    output_files = [config.lift.name] + [
+        f"{config.lift.name}-{platform}" for platform in config.lift.platforms
+    ]
+
     # If any of the config filenames start with `:` then add a filemapping command line arg in the form --file NAME=LOCATION
-    file_mappings = [f"--file {file.name}={pex_artifact_path}" for file in config.lift.files if file.name.startswith(":")]
+    file_mappings = [
+        f"--file {file.name}={pex_artifact_path}"
+        for file in config.lift.files
+        if file.name.startswith(":")
+    ]
     # Split each file mapping into a list of arguments
     file_mappings = [arg for mapping in file_mappings for arg in mapping.split(" ")]
     logger.warning(file_mappings)
 
     # Run science to generate the scie binaries (depending on the `platforms` setting)
-    argv = (downloaded_tool.exe, "lift", *file_mappings, "build", "--use-platform-suffix" if config.lift.platforms else "", lift_path)
+    argv = (
+        downloaded_tool.exe,
+        "lift",
+        *file_mappings,
+        "build",
+        "--use-platform-suffix" if config.lift.platforms else "",
+        lift_path,
+    )
     process = Process(
         argv=argv,
         input_digest=input_digest,
@@ -220,6 +274,7 @@ async def scie_binary(
         artifacts=tuple(BuiltPackageArtifact(file) for file in snapshot.files),
     )
 
+
 @rule
 async def run_scie_binary(field_set: ScieFieldSet) -> RunRequest:
     """After packaging, the scie-jump plugin will place the executable in a location like this:
@@ -229,10 +284,15 @@ async def run_scie_binary(field_set: ScieFieldSet) -> RunRequest:
     """
 
     binary = await Get(BuiltPackage, PackageFieldSet, field_set)
-    assert len(binary.artifacts) == 1, "`scie_binary` should only generate one output package"
+    assert (
+        len(binary.artifacts) == 1
+    ), "`scie_binary` should only generate one output package"
     artifact = binary.artifacts[0]
     assert artifact.relpath is not None
-    return RunRequest(digest=binary.digest, args=(os.path.join("{chroot}", artifact.relpath),))
+    return RunRequest(
+        digest=binary.digest, args=(os.path.join("{chroot}", artifact.relpath),)
+    )
+
 
 def rules() -> Iterable[Rule | UnionRule]:
     return (

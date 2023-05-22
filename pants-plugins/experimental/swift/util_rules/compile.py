@@ -38,7 +38,6 @@ class FallibleTypecheckedSwiftModule:
 async def typecheck_swift_module(
     toolchain: SwiftToolchain, request: TypecheckSwiftModuleRequest
 ) -> FallibleTypecheckedSwiftModule:
-
     # Get the source files for the passed in targets
     source_fields = [target.get(SourcesField) for target in request.targets]
     source_files = await Get(

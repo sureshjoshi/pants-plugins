@@ -11,6 +11,7 @@ backend_packages = [
     "pants.backend.experimental.cc.lint.clangformat",
     "pants.backend.experimental.javascript",
     "pants.backend.experimental.javascript.lint.prettier",
+    "pants.backend.experimental.python", # Enable publishing to PyPI
     "pants.backend.python",
     "pants.backend.python.lint.autoflake",
     "pants.backend.python.lint.bandit",

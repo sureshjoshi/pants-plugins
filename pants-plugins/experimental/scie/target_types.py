@@ -2,10 +2,19 @@
 # Licensed under the Apache License, Version 2.0 (see LICENSE).
 
 from __future__ import annotations
+
 from enum import Enum
 
 from pants.core.goals.package import OutputPathField
-from pants.engine.target import COMMON_TARGET_FIELDS, Dependencies, DictStringToStringField, NestedDictStringToStringField, OptionalSingleSourceField, StringSequenceField, Target
+from pants.engine.target import (
+    COMMON_TARGET_FIELDS,
+    Dependencies,
+    DictStringToStringField,
+    NestedDictStringToStringField,
+    OptionalSingleSourceField,
+    StringSequenceField,
+    Target,
+)
 from pants.util.strutil import softwrap
 
 
@@ -19,6 +28,7 @@ class ScieDependenciesField(Dependencies):
         """
     )
 
+
 class ScieBinaryNameField(OutputPathField):
     alias = "binary_name"
     default = None
@@ -28,6 +38,7 @@ class ScieBinaryNameField(OutputPathField):
         to the name of this target.
         """
     )
+
 
 class SciePlatform(Enum):
     LINUX_AARCH64 = "linux-aarch64"
@@ -48,6 +59,7 @@ class SciePlatformField(StringSequenceField):
         Possible values are: `linux-aarch64`, `linux-x86_64`, `macos-aarch64`, `macos-x86_64`.
         """
     )
+
 
 class ScieLiftSourceField(OptionalSingleSourceField):
     alias = "lift"
@@ -74,6 +86,7 @@ class ScieLiftSourceField(OptionalSingleSourceField):
         """
     )
 
+
 # class ScieCommandField(NestedDictStringToStringField):
 #     alias = "commands"
 #     default = None
@@ -84,7 +97,7 @@ class ScieLiftSourceField(OptionalSingleSourceField):
 #         The default selection is `None`, in which case we will call the bundled PEX
 #         file using the Python interpreter: e.g. `python my_binary.pex`.
 
-#         If you want to allow for different command(s) you can specify them here. If you 
+#         If you want to allow for different command(s) you can specify them here. If you
 #         want a default command, you can specify it with an empty name ("") as the key.
 
 #         This field is passed straight-through to the `science` command without any
@@ -94,19 +107,19 @@ class ScieLiftSourceField(OptionalSingleSourceField):
 #         commands = {
 #             "": {
 #                 "exe": "#{cpython:python}"
-                
+
 #                 "description": "My default command",
 #                 "env": {
-                
+
 #             }
 #             "run": "python my_binary.pex",
 
 
-
-#         Refer to https://github.com/a-scie/jump/blob/main/docs/packaging.md for more 
+#         Refer to https://github.com/a-scie/jump/blob/main/docs/packaging.md for more
 #         information on the available boot.command options.
 #         """
 #     )
+
 
 class ScieTarget(Target):
     alias = "scie_binary"

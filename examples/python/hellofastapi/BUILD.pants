@@ -1,15 +1,11 @@
 python_sources(
     name="libhellofastapi",
     sources=["**/*.py"],
-    dependencies=[
-        "//:reqs#uvicorn",
-    ],
 )
 
 pex_binary(
     name="hellofastapi-pex",
-    entry_point="hellofastapi.main",
-    dependencies=[":libhellofastapi"],
+    dependencies=[":libhellofastapi", "//:reqs#uvicorn"],
     include_tools=True,
 )
 

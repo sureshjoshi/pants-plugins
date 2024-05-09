@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from typing import Iterable
+from collections.abc import Iterable
 
 from experimental.migrate.rules import rules as migrate_rules
 from pants.engine.rules import Rule

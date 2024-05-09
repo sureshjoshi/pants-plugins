@@ -3,8 +3,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable
 
 from experimental.swift.target_types import (
     SWIFT_FILE_EXTENSIONS,

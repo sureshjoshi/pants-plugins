@@ -8,7 +8,7 @@ See https://github.com/a-scie/jump for details.
 
 from __future__ import annotations
 
-from typing import Iterable
+from collections.abc import Iterable
 
 from experimental.scie.rules import rules as scie_rules
 from experimental.scie.target_types import ScieTarget

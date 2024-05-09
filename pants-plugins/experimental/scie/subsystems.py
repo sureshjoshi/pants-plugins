@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from typing import Iterable
+from collections.abc import Iterable
 
 from pants.core.util_rules.external_tool import TemplatedExternalTool
 from pants.engine.rules import Rule, collect_rules

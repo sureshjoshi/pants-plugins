@@ -5,9 +5,10 @@ from __future__ import annotations
 
 import logging
 import os
-from dataclasses import asdict, dataclass, replace
+from collections.abc import Iterable, Mapping
+from dataclasses import asdict, dataclass
 from pathlib import PurePath
-from typing import Final, Iterable, Mapping
+from typing import Final
 
 import toml
 from experimental.scie.config import Command, Config, File, Interpreter, LiftConfig

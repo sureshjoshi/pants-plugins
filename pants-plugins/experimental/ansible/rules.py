@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable
 
 from experimental.ansible.deploy import DeploymentFieldSet, DeployResult, DeployResults
 from experimental.ansible.subsystems.ansible import Ansible

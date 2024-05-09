@@ -19,7 +19,7 @@ python_distribution(
             "Programming Language :: Python",
             "Programming Language :: Python :: 3 :: Only",
             "Topic :: Software Development :: Build Tools",
-        ]
+        ],
         description="A Pants plugin adding support for packaging SCIE.",
         keywords=["pants", "pants-plugin", "scie"],
         license="Apache License, Version 2.0",
@@ -29,7 +29,7 @@ python_distribution(
             "Documentation": "https://github.com/sureshjoshi/pants-plugins",
             "Source": "https://github.com/sureshjoshi/pants-plugins",
             "Tracker": "https://github.com/sureshjoshi/pants-plugins/issues",
-            "Changelog": "https://www.pantsbuild.org/docs/changelog",
+            "Changelog": "https://github.com/sureshjoshi/pants-plugins/blob/main/pants-plugins/experimental/scie/CHANGELOG.md",
         },
         version="0.0.3",
     ),

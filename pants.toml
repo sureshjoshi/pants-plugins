@@ -48,8 +48,8 @@ interpreter_constraints = [">=3.9"]
 tailor_pex_binary_targets = false
 
 [python.resolves]
-pants-plugins = "build-support/pants-plugins/lock.txt"
-python-default = "build-support/python/default_lock.txt"
+pants-plugins = "build-support/lockfiles/pants-plugins.lock"
+python-default = "build-support/lockfiles/python-default.lock"
 
 [python.resolves_to_interpreter_constraints]
 pants-plugins = [">=3.9,<3.10"]

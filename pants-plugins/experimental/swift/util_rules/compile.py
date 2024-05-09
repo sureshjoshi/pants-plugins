@@ -3,8 +3,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable
 
 from experimental.swift.subsystems.toolchain import SwiftToolchain
 from experimental.swift.target_types import SwiftFieldSet, SwiftSourceField

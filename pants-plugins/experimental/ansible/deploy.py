@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import logging
 from abc import ABCMeta
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Any, Iterable
+from typing import Any
 
 from pants.core.goals.publish import (
     NoApplicableTargetsBehavior,

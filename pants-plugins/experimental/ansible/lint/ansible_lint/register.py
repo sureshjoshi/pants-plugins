@@ -6,7 +6,7 @@ See https://ansible-lint.readthedocs.io/en/latest/ for details"""
 
 from __future__ import annotations
 
-from typing import Iterable
+from collections.abc import Iterable
 
 from experimental.ansible.lint.ansible_lint import rules as ansible_lint_rules
 from experimental.ansible.lint.ansible_lint import skip_field, subsystem

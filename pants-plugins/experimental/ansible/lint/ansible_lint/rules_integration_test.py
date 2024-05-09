@@ -3,8 +3,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from textwrap import dedent
-from typing import Iterable
 
 import pytest
 from experimental.ansible.lint.ansible_lint import rules as ansible_lint_rules

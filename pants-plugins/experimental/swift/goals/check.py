@@ -4,8 +4,8 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Iterable
 from itertools import groupby
-from typing import Iterable
 
 from experimental.swift.subsystems.toolchain import SwiftSubsystem
 from experimental.swift.target_types import SwiftFieldSet, SwiftSourceField

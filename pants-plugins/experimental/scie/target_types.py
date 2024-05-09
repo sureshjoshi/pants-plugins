@@ -9,8 +9,6 @@ from pants.core.goals.package import OutputPathField
 from pants.engine.target import (
     COMMON_TARGET_FIELDS,
     Dependencies,
-    DictStringToStringField,
-    NestedDictStringToStringField,
     OptionalSingleSourceField,
     StringSequenceField,
     Target,

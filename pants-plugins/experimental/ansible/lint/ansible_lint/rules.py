@@ -4,8 +4,8 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable
 
 from experimental.ansible.lint.ansible_lint.subsystem import AnsibleLint
 from experimental.ansible.target_types import AnsibleSourceField

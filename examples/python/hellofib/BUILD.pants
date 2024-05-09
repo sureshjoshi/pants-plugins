@@ -1,5 +1,20 @@
 python_sources(name="libhellofib", sources=["**/*.py"])
 
+python_distribution(
+    name="hellofib-dist",
+    dependencies=[":libhellofib"],
+    provides=python_artifact(name="hellofib-dist", version="0.0.1"),
+    generate_setup=False,
+    sdist=False,
+    uses_mypyc=True,
+)
+
+pex_binary(
+    name="hellofib-mypyc",
+    entry_point="hellofib.main",
+    dependencies=[":hellofib-dist"],
+)
+
 pex_binary(
     name="hellofib-pex",
     entry_point="hellofib.main",

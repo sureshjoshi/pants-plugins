@@ -35,7 +35,11 @@ class RemoveRuleTransformer(m.MatcherDecoratableTransformer):
             return RemoveFromParent()
 
         return updated_node.with_changes(
-            names=[n for n in original_node.names if n.evaluated_name != "rule_helper"]
+            names=[n for n in original_node.names if n.evaluated_name != "rule_helper"],
+            # This is a workaround for https://github.com/Instagram/LibCST/issues/532
+            # Formatters/isort will clean this up, but it doesn't compile without this
+            lpar=libcst.LeftParen(),
+            rpar=libcst.RightParen(),
         )
 
     @m.leave(m.Decorator(decorator=m.Name("rule_helper")))

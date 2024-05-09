@@ -40,7 +40,7 @@ from pants.engine.fs import (
 )
 from pants.engine.platform import Platform
 from pants.engine.process import Process, ProcessResult
-from pants.engine.rules import Get, MultiGet, Rule, collect_rules, rule, rule_helper
+from pants.engine.rules import Get, MultiGet, Rule, collect_rules, rule
 from pants.engine.target import (
     DependenciesRequest,
     DescriptionField,
@@ -71,7 +71,6 @@ class ScieFieldSet(PackageFieldSet, RunFieldSet):
     lift: ScieLiftSourceField
 
 
-@rule_helper
 async def _get_interpreter_config(targets: Targets) -> Interpreter:
     # Get the interpreter_constraints for the Pex to determine which version of the Python Standalone to use
     constraints = await Get(
@@ -113,7 +112,6 @@ def _contains_pex(built_package: BuiltPackage) -> bool:
     )
 
 
-@rule_helper
 async def _parse_lift_source(source: ScieLiftSourceField) -> Config:
     hydrated_source = await Get(HydratedSources, HydrateSourcesRequest(source))
     digest_contents = await Get(DigestContents, Digest, hydrated_source.snapshot.digest)

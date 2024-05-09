@@ -1,5 +1,6 @@
 import time
 
+
 def fib() -> None:
     def fib(n: int) -> int:
         if n <= 1:

@@ -1,6 +1,5 @@
+from mypyc.build import mypycify  # pants: no-infer-dep
 from setuptools import setup
-
-from mypyc.build import mypycify # pants: no-infer-dep
 
 setup(
     name="hellofib",

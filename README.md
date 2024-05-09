@@ -11,7 +11,7 @@ Install Pants via [PantsBuild's instructions](https://www.pantsbuild.org/docs/in
 
 - [ansible](https://github.com/sureshjoshi/pants-plugins/blob/main/pants-plugins/experimental/ansible/README.md)
 - ClangFormat - Mainlined via [PR #15395](https://github.com/pantsbuild/pants/pull/15395)
-- [mypyc](https://github.com/sureshjoshi/pants-plugins/blob/main/pants-plugins/experimental/mypyc/README.md)
+- [mypyc](https://github.com/sureshjoshi/pants-plugins/blob/main/pants-plugins/experimental/mypyc/README.md) - Similar solution mainlined in 2.13 via [PR #15380](https://github.com/pantsbuild/pants/pull/15380)
 - nodejs - Mainlined via [PR #15442](https://github.com/pantsbuild/pants/pull/15442)
 - Prettier - Mainlined via [PR #15480](https://github.com/pantsbuild/pants/pull/15480)
 - [PyOxidizer](https://www.pantsbuild.org/v2.10/docs/pyoxidizer) - Mainlined in 2.10 via [PR #14183](https://github.com/pantsbuild/pants/pull/14183)

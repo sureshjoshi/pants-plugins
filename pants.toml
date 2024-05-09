@@ -44,7 +44,7 @@ root_patterns = [
 
 [python]
 enable_resolves = true
-interpreter_constraints = [">=3.9"]
+interpreter_constraints = ["==3.9.*"]
 tailor_pex_binary_targets = false
 
 [python.resolves]

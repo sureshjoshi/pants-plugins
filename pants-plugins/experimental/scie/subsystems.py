@@ -15,12 +15,12 @@ class Science(TemplatedExternalTool):
     options_scope = "science"
     help = softwrap("""A high level tool to build scies with.""")
 
-    default_version = "0.3.0"
+    default_version = "0.3.4"
     default_known_versions = [
-        "0.3.0|linux_arm64|8a134f2f307137319300d695aa177551a4a4d508cd6324a0aad09d7365edfdef|6364946",
-        "0.3.0|linux_x86_64|60730e7d03888254d7b41f5aace431f4264ee20d80924b989d4106b3e2f238dc|7258131",
-        "0.3.0|macos_arm64|badfafe685138bf8606d96e7501723f24b9127b9d4e415e2125cf4f06f7f7f64|4185377",
-        "0.3.0|macos_x86_64|bcae03dbd58b8412f1b3e62f1d882b424a15e60848c392dd4c19601cd234477c|4317644",
+        "0.3.4|linux_arm64|9d30ffffee826f52a69c056fcb7c5e9a25d48980c573066cf64dd7f987c13b66|8578528",
+        "0.3.4|linux_x86_64|926791a2243446711ed84b5465aa3786eed3c90d1654dd86ea82498fd5fcd4a2|9728714",
+        "0.3.4|macos_arm64|d1e6eefd9bc89f2edb39775435ee25ad7fd5b158431561ac6fbbbf1552f855c0|4303745",
+        "0.3.4|macos_x86_64|c3012fdd237a918db378bc215ec985aca0f26f42e8e4c80066032da94322897a|4502350",
     ]
 
     default_url_template = (

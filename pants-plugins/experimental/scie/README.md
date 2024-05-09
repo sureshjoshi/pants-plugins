@@ -6,7 +6,7 @@ It uses [science](https://github.com/a-scie/lift) and a `.toml` configuration fi
 
 ## Installation
 
-This plugin was developed using Python 3.9 and Pants 2.16.0.rc3, but should work with Pants 2.15+ (however, your mileage may vary).
+This plugin was tested on Python 3.9 and Pants 2.20.
 
 Add the following to your `pants.toml` file:
 

@@ -18,3 +18,4 @@ Install Pants via [PantsBuild's instructions](https://www.pantsbuild.org/docs/in
     - My [Packaging Python with the PyOxidizer Pants Plugin](https://blog.pantsbuild.org/packaging-python-with-the-pyoxidizer-pants-plugin/) blog post
     - Examples removed from repo as of May 20, 2023 (last commit with examples: [ea2b275](https://github.com/sureshjoshi/pants-plugins/commit/ea2b2755e6d1ffc8b3222f0b03a222a036f1e65a))
     - [Issue #90](https://github.com/sureshjoshi/pants-plugins/issues/90) for rationale
+- [scie](https://github.com/sureshjoshi/pants-plugins/blob/main/pants-plugins/experimental/scie/README.md)

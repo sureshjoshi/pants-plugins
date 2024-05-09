@@ -11,15 +11,26 @@ python_distribution(
     sdist=False,
     provides=python_artifact(
         name="robotpajamas.pants.scie",
-        version="0.0.2",
+        classifiers=[
+            "Intended Audience :: Developers",
+            "License :: OSI Approved :: Apache Software License",
+            "Operating System :: MacOS :: MacOS X",
+            "Operating System :: POSIX :: Linux",
+            "Programming Language :: Python",
+            "Programming Language :: Python :: 3 :: Only",
+            "Topic :: Software Development :: Build Tools",
+        ]
         description="A Pants plugin adding support for packaging SCIE.",
+        keywords=["pants", "pants-plugin", "scie"],
         license="Apache License, Version 2.0",
+        long_description_content_type="text/markdown",
+        long_description=open("pants-plugins/experimental/scie/README.md").read(),
         project_urls={
             "Documentation": "https://github.com/sureshjoshi/pants-plugins",
             "Source": "https://github.com/sureshjoshi/pants-plugins",
             "Tracker": "https://github.com/sureshjoshi/pants-plugins/issues",
+            "Changelog": "https://www.pantsbuild.org/docs/changelog",
         },
-        long_description_content_type="text/markdown",
-        long_description=open("pants-plugins/experimental/scie/README.md").read(),
+        version="0.0.3",
     ),
 )

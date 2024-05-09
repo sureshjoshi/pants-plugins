@@ -3,33 +3,55 @@
 
 from __future__ import annotations
 
-import logging
-import os
-from dataclasses import asdict, dataclass, replace
-from pathlib import Path, PurePath
-from typing import Final, Iterable, Mapping
+from pathlib import Path
+from typing import Iterable
 
+import libcst
+import libcst.matchers as m
+from libcst import RemovalSentinel, RemoveFromParent
 from pants.engine.console import Console
-from pants.engine.rules import Get, MultiGet, Rule, collect_rules, goal_rule, rule
-from pants.engine.target import SourcesField, UnexpandedTargets
-from pants.engine.unions import UnionRule
-from pants.util.logging import LogLevel
+from pants.engine.rules import Rule, collect_rules, goal_rule
+from pants.engine.target import UnexpandedTargets
 
 from experimental.migrate.subsystems import Migrate, MigrateSubsystem
+
+class RemoveRuleTransformer(m.MatcherDecoratableTransformer):
+
+    @m.leave(m.ImportFrom(module=m.DoNotCare(), names=[m.ZeroOrMore(), m.ImportAlias(name=m.Name("rule_helper")), m.ZeroOrMore()]))
+    def handle_imports(self, original_node: libcst.ImportFrom, updated_node: libcst.ImportFrom) -> libcst.ImportFrom | RemovalSentinel:
+        assert not isinstance(original_node.names, libcst.ImportStar)
+
+        if len(original_node.names) == 1:
+            return RemoveFromParent()
+        
+        return updated_node.with_changes(
+            names=[n for n in original_node.names if n.evaluated_name != "rule_helper"]
+        )
+    
+    @m.leave(m.Decorator(decorator=m.Name("rule_helper")))
+    def handle_decorator(self, original_node: libcst.Decorator, updated_node: libcst.Decorator) -> libcst.Decorator | RemovalSentinel:
+        return RemoveFromParent()
 
 # TODO: This will need to become a BuiltinGoal, so just hacking around to get a list of Targets
 # Normally, will use the same code for "call-by-name-migration"
 @goal_rule
 async def migrate(console: Console, subsystem: MigrateSubsystem, targets: UnexpandedTargets) -> Migrate:
-    for target in targets:
-        if target.address.is_file_target:
-            print(target.address.filename)
-
     filenames = [t.address.filename for t in targets if t.address.is_file_target]
 
     for f in sorted(filenames):
         file = Path(f)
-        
+        if file.suffix != ".py":
+            continue
+        with open(file, "r") as f:
+            source = f.read()
+            tree = libcst.parse_module(source)
+            new_tree = tree.visit(RemoveRuleTransformer())
+            new_source = new_tree.code
+
+            if source != new_source:
+                console.print_stderr(f"Rewriting {file}")
+                with open(file, "w") as f:
+                    f.write(new_source)
 
     return Migrate(exit_code=0)
 

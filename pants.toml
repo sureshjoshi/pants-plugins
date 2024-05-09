@@ -1,5 +1,5 @@
 [GLOBAL]
-pants_version = "2.16.0rc3"
+pants_version = "2.20.1"
 pantsd = true 
 build_patterns = ["BUILD.pants", "BUILD"]
 pythonpath = ["pants-plugins"]
@@ -23,6 +23,7 @@ backend_packages = [
     "pants.backend.shell",
     "pants.backend.shell.lint.shellcheck",
     "pants.backend.shell.lint.shfmt",
+    "experimental.migrate",
     "experimental.scie",
     # "experimental.mypyc",
     #"experimental.ansible",
@@ -65,9 +66,9 @@ args = "--profile black"
 [pyupgrade]
 args = "--py39-plus"
 
-[setuptools]
-extra_requirements = ["wheel", "mypy"]
-lockfile = "build-support/setuptools.txt"
+#[setuptools]
+#extra_requirements = ["wheel", "mypy"]
+#lockfile = "build-support/setuptools.txt"
 
 [shfmt]
 # See https://github.com/mvdan/sh/blob/master/cmd/shfmt/shfmt.1.scd#printer-flags.

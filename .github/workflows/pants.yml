@@ -48,7 +48,7 @@ jobs:
               rm -rf "${nuke_prefix}.*"
             fi
           }
-          nuke_if_too_big ${{ inputs.named-caches-location }} 1
+          nuke_if_too_big ~/.cache/pants/named_caches 1
 
       - name: Bootstrap Pants
         run: |

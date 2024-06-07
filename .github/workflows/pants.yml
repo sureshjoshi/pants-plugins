@@ -30,7 +30,7 @@ jobs:
       - uses: pantsbuild/actions/init-pants@v8
         with:
           # cache0 makes it easy to bust the cache if needed
-          gha-cache-key: cache2-py${{ matrix.python_version }}
+          gha-cache-key: cache3-py${{ matrix.python_version }}
           named-caches-hash: ${{ hashFiles('build-support/lockfiles/*.lock') }}
 
       - name: Bootstrap Pants

@@ -1,7 +1,1 @@
-fastapi
-kivy
-numpy
-pydantic
-pywebview
 typer
-uvicorn

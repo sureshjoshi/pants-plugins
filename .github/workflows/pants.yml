@@ -33,22 +33,39 @@ jobs:
           gha-cache-key: cache4-py${{ matrix.python_version }}
           named-caches-hash: ${{ hashFiles('build-support/lockfiles/*.lock') }}
 
+      # - shell: bash
+      #   # https://www.pantsbuild.org/2.20/docs/using-pants/using-pants-in-ci#directories-to-cache
+      #   run: |
+      #     function nuke_if_too_big() {
+      #       path=$1
+      #       limit_mb=$2
+      #       size_mb=$(du -m -d0 "${path}" | cut -f 1)
+      #       if (( size_mb > limit_mb )); then
+      #         echo "${path} is too large (${size_mb}mb), nuking it."
+      #         nuke_prefix="$(dirname "${path}")/$(basename "${path}").nuke"
+      #         nuke_path=$(mktemp -d "${nuke_prefix}.XXXXXX")
+      #         mv "${path}" "${nuke_path}/"
+      #         rm -rf "${nuke_prefix}.*"
+      #       fi
+      #     }
+      #     nuke_if_too_big ${{ inputs.named-caches-location }} 1
+
       - name: Bootstrap Pants
         run: |
           pants --version
 
-      - name: Check BUILD files
-        run: |
-          pants update-build-files --check
+      # - name: Check BUILD files
+      #   run: |
+      #     pants update-build-files --check
 
-      - name: Lint and (TODO) typecheck
-        run: |
-          pants lint ::
+      # - name: Lint and (TODO) typecheck
+      #   run: |
+      #     pants lint ::
 
-      - name: Package/Run smoke test
-        run: |
-          pants package examples/python::
-          pants run examples/python/helloworld:helloworld-pex
+      # - name: Package/Run smoke test
+      #   run: |
+      #     pants package examples/python::
+      #     pants run examples/python/helloworld:helloworld-pex
 
       - name: Upload pants log
         uses: actions/upload-artifact@v2

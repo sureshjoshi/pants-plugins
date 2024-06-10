@@ -39,7 +39,7 @@ jobs:
 
       - name: Check BUILD files
         run: |
-          pants update-build-files --check
+          pants update-build-files --check ::
 
       - name: Lint and (TODO) typecheck
         run: |

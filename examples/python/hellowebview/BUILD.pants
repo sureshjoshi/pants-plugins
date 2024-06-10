@@ -12,5 +12,5 @@ pex_binary(
 scie_binary(
     name="hellowebview-scie",
     dependencies=[":hellowebview-pex"],
-    platforms=["linux-x86_64", "macos-aarch64"]
+    platforms=["linux-x86_64", "macos-aarch64"],
 )

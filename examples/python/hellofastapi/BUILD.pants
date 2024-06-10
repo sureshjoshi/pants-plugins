@@ -12,6 +12,6 @@ pex_binary(
 scie_binary(
     name="hellofastapi-scie",
     dependencies=[":hellofastapi-pex"],
-    #platforms=["linux-x86_64", "macos-aarch64"]
-    lift="hellofastapi.toml"
+    # platforms=["linux-x86_64", "macos-aarch64"]
+    lift="hellofastapi.toml",
 )

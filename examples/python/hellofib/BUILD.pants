@@ -24,5 +24,5 @@ pex_binary(
 scie_binary(
     name="hellofib-scie",
     dependencies=[":hellofib-pex"],
-    platforms=["linux-x86_64", "macos-aarch64"]
+    platforms=["linux-x86_64", "macos-aarch64"],
 )

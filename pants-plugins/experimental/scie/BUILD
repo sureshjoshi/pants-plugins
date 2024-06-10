@@ -6,7 +6,7 @@ python_sources()
 python_distribution(
     name="scie-dist",
     dependencies=[":scie"],
-    repositories=["@pypi"], # Configuration in ~/.pypirc
+    repositories=["@pypi"],  # Configuration in ~/.pypirc
     wheel=True,
     sdist=False,
     provides=python_artifact(

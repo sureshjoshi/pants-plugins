@@ -34,6 +34,7 @@ Ensure the following:
 backend_packages = [
     "pants.backend.plugin_development",
     ...
+]
 
 [python]
 enable_resolves = true

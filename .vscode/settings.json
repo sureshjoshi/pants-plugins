@@ -1,5 +1,4 @@
 {
-  "python.formatting.provider": "black",
   "python.analysis.packageIndexDepths": [
     { "name": "pants", "depth": 5, "includeAllSymbols": true }
   ]

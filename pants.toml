@@ -30,6 +30,7 @@ backend_packages = [
     #"experimental.ansible",
     #"experimental.ansible.lint.ansible_lint",
     #"experimental.swift",
+    "experimental.plugin",
 ]
 
 [source]

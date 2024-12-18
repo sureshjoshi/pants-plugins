@@ -31,6 +31,6 @@ python_distribution(
             "Tracker": "https://github.com/sureshjoshi/pants-plugins/issues",
             "Changelog": "https://github.com/sureshjoshi/pants-plugins/blob/main/pants-plugins/experimental/scie/CHANGELOG.md",
         },
-        version="0.0.3",
+        version="0.0.4",
     ),
 )

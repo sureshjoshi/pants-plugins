@@ -78,8 +78,8 @@ async def _get_interpreter_config(targets: Targets) -> Interpreter:
         InterpreterConstraintsRequest([tgt.address for tgt in targets]),
     )
     # TODO: Pull the interpreter_universe from somewhere else (Python Build standalone?)
-    minimum_version = constraints.minimum_python_version(["3.8", "3.9", "3.10", "3.11"])
-    assert minimum_version is not None, "No minimum python version found"
+    minimum_version = constraints.minimum_python_version(["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"])
+    assert minimum_version is not None, f"scie-plugin: No minimum python version found given py-{minimum_version}"
     # Create a toml configuration from the input targets and the minimum_version
     return Interpreter(version=minimum_version)
 

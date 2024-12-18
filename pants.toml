@@ -1,10 +1,10 @@
 [GLOBAL]
-pants_version = "2.21.0"
+pants_version = "2.23.0"
 pantsd = true 
 build_patterns = ["BUILD.pants", "BUILD"]
 pythonpath = ["pants-plugins"]
 print_stacktrace = true
-plugins=["libcst==1.3.1"]
+plugins=["libcst==1.4.0"]
 
 backend_packages = [
     "pants.backend.plugin_development",
@@ -44,7 +44,7 @@ root_patterns = [
 
 [python]
 enable_resolves = true
-interpreter_constraints = ["==3.9.*"]
+interpreter_constraints = [">=3.9"]
 tailor_pex_binary_targets = false
 
 [python.resolves]
@@ -52,7 +52,7 @@ pants-plugins = "build-support/lockfiles/pants-plugins.lock"
 python-default = "build-support/lockfiles/python-default.lock"
 
 [python.resolves_to_interpreter_constraints]
-pants-plugins = [">=3.9,<3.10"]
+pants-plugins = [">=3.9,<3.14"]
 
 [bandit]
 # Skipping assertion warnings - because this is an example project

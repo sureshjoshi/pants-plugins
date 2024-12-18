@@ -2,7 +2,11 @@
 
 ## [Unreleased]
 
-## [0.0.4] - 2024-05-09
+## [0.0.5] - 2024-12-18
+
+- Expanded `requires` to being greater than 3.9
+
+## [0.0.4] - 2024-12-18
 
 - Bumped `science` to 0.9.0
 - No assertion on Python 3.12 or 3.13

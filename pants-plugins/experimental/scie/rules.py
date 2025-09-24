@@ -22,13 +22,15 @@ from experimental.scie.target_types import (
 from pants.backend.python.util_rules.pex_from_targets import (
     InterpreterConstraintsRequest,
 )
-from pants.core.goals.package import BuiltPackage, BuiltPackageArtifact, PackageFieldSet
+from pants.core.goals.package import (
+    BuiltPackage,
+    BuiltPackageArtifact,
+    PackageFieldSet,
+    environment_aware_package,
+)
 from pants.core.goals.run import RunFieldSet, RunInSandboxBehavior, RunRequest
 from pants.core.target_types import EnvironmentAwarePackageRequest
-from pants.core.util_rules.external_tool import (
-    DownloadedExternalTool,
-    ExternalToolRequest,
-)
+from pants.core.util_rules.external_tool import download_external_tool
 from pants.engine.fs import (
     EMPTY_DIGEST,
     CreateDigest,
@@ -36,15 +38,15 @@ from pants.engine.fs import (
     DigestContents,
     FileContent,
     MergeDigests,
-    Snapshot,
 )
+from pants.engine.internals.graph import find_valid_field_sets, resolve_targets
+from pants.engine.intrinsics import create_digest, digest_to_snapshot, merge_digests
 from pants.engine.platform import Platform
-from pants.engine.process import Process, ProcessResult
-from pants.engine.rules import Get, MultiGet, Rule, collect_rules, rule
+from pants.engine.process import Process, fallible_to_exec_result_or_raise
+from pants.engine.rules import Get, Rule, collect_rules, concurrently, implicitly, rule
 from pants.engine.target import (
     DependenciesRequest,
     DescriptionField,
-    FieldSetsPerTarget,
     FieldSetsPerTargetRequest,
     HydratedSources,
     HydrateSourcesRequest,
@@ -132,13 +134,15 @@ async def scie_binary(
     platform: Platform,
 ) -> BuiltPackage:
     # Grab the dependencies of this target, and build them
-    direct_deps = await Get(Targets, DependenciesRequest(field_set.dependencies))
-
-    deps_field_sets = await Get(
-        FieldSetsPerTarget, FieldSetsPerTargetRequest(PackageFieldSet, direct_deps)
+    direct_deps = await resolve_targets(
+        **implicitly(DependenciesRequest(field_set.dependencies))
     )
-    built_packages = await MultiGet(
-        Get(BuiltPackage, EnvironmentAwarePackageRequest(field_set))
+
+    deps_field_sets = await find_valid_field_sets(
+        FieldSetsPerTargetRequest(PackageFieldSet, direct_deps), **implicitly()
+    )
+    built_packages = await concurrently(
+        environment_aware_package(EnvironmentAwarePackageRequest(field_set))
         for field_set in deps_field_sets.field_sets
     )
 
@@ -208,18 +212,15 @@ async def scie_binary(
     config = parsed_config or generated_config
 
     config_content = toml.dumps(asdict(config)).encode()
-    lift_digest = await Get(
-        Digest, CreateDigest([FileContent(lift_path, config_content)])
+    lift_digest = await create_digest(
+        CreateDigest([FileContent(lift_path, config_content)])
     )
 
     # Download the Science tool for this platform
-    downloaded_tool = await Get(
-        DownloadedExternalTool, ExternalToolRequest, science.get_request(platform)
-    )
+    downloaded_tool = await download_external_tool(science.get_request(platform))
 
     # Put the dependencies and toml configuration into a digest
-    input_digest = await Get(
-        Digest,
+    input_digest = await merge_digests(
         MergeDigests(
             (
                 lift_digest,
@@ -227,7 +228,7 @@ async def scie_binary(
                 *(pkg.digest for pkg in non_pex_packages),
                 pex_package.digest,
             )
-        ),
+        )
     )
 
     # The output files are based on the config.lift.name key and each of the platforms (if specified), otherwise just the config.lift.name for native-only
@@ -254,20 +255,19 @@ async def scie_binary(
         "--use-platform-suffix" if config.lift.platforms else "",
         lift_path,
     )
-    process = Process(
-        argv=argv,
-        input_digest=input_digest,
-        description="Run science on the input digests",
-        output_files=output_files,
-        level=LogLevel.DEBUG,
-    )
 
-    result = await Get(ProcessResult, Process, process)
-    snapshot = await Get(
-        Snapshot,
-        Digest,
-        result.output_digest,
+    result = await fallible_to_exec_result_or_raise(
+        **implicitly(
+            Process(
+                argv=argv,
+                input_digest=input_digest,
+                description="Run science on the input digests",
+                output_files=output_files,
+                level=LogLevel.DEBUG,
+            )
+        )
     )
+    snapshot = await digest_to_snapshot(result.output_digest)
 
     return BuiltPackage(
         result.output_digest,

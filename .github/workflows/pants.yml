@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          fetch-depth: 5
+          fetch-depth: 0
 
       - uses: actions/setup-python@v4
         with:

@@ -45,7 +45,7 @@ jobs:
 
       - name: Lint and (TODO) typecheck
         run: |
-          pants ----changed-since=origin/main --changed-dependents=transitive lint
+          pants --changed-since=origin/main --changed-dependents=transitive lint
 
       - name: Package/Run smoke test
         run: |

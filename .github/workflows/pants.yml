@@ -53,7 +53,7 @@ jobs:
           pants run examples/python/helloworld:helloworld-pex
 
       - name: Upload pants log
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: pants-log
           path: .pants.d/pants.log

@@ -21,7 +21,9 @@ jobs:
         python-version: [3.9]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 5
 
       - uses: actions/setup-python@v4
         with:
@@ -43,7 +45,7 @@ jobs:
 
       - name: Lint and (TODO) typecheck
         run: |
-          pants lint ::
+          pants ----changed-since=origin/main --changed-dependents=transitive lint
 
       - name: Package/Run smoke test
         run: |

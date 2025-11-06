@@ -16,8 +16,7 @@ from pants.util.logging import LogLevel
 
 
 @dataclass(frozen=True)
-class PutativeAnsibleTargetsRequest(PutativeTargetsRequest):
-    ...
+class PutativeAnsibleTargetsRequest(PutativeTargetsRequest): ...
 
 
 @rule(

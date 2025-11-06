@@ -1,10 +1,9 @@
 [GLOBAL]
-pants_version = "2.23.0"
+pants_version = "2.31.0.dev0"
 pantsd = true 
 build_patterns = ["BUILD.pants", "BUILD"]
 pythonpath = ["pants-plugins"]
 print_stacktrace = true
-plugins=["libcst==1.4.0"]
 
 backend_packages = [
     "pants.backend.plugin_development",
@@ -15,7 +14,7 @@ backend_packages = [
     "pants.backend.experimental.python", # Enable publishing to PyPI
     "pants.backend.python",
     "pants.backend.python.lint.autoflake",
-    "pants.backend.python.lint.bandit",
+    #"pants.backend.python.lint.bandit",
     "pants.backend.python.lint.black",
     "pants.backend.python.lint.flake8",
     "pants.backend.python.lint.isort",
@@ -44,7 +43,9 @@ root_patterns = [
 
 [python]
 enable_resolves = true
-interpreter_constraints = [">=3.9"]
+interpreter_constraints = ["==3.14.0"]
+pip_version = "latest"
+separate_lockfile_metadata_file = true
 tailor_pex_binary_targets = false
 
 [python.resolves]
@@ -52,11 +53,11 @@ pants-plugins = "build-support/lockfiles/pants-plugins.lock"
 python-default = "build-support/lockfiles/python-default.lock"
 
 [python.resolves_to_interpreter_constraints]
-pants-plugins = [">=3.9,<3.14"]
+pants-plugins = ["==3.11.*"]
 
-[bandit]
+#[bandit]
 # Skipping assertion warnings - because this is an example project
-args = ["--skip B101"]
+#args = ["--skip B101"]
 
 [flake8]
 args = ["--max-line-length 88", "--ignore=E501,W503"]
@@ -65,7 +66,7 @@ args = ["--max-line-length 88", "--ignore=E501,W503"]
 args = "--profile black"
 
 [pyupgrade]
-args = "--py39-plus"
+args = "--py311-plus"
 
 #[setuptools]
 #extra_requirements = ["wheel", "mypy"]

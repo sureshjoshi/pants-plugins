@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.1.0] - 2025-11-05
+
+- Migrated to call-by-name
+- Updated science to 0.15.1
+- Updated PBS to 20251031
+- Requires Python >= 3.11
+
 ## [0.0.5] - 2024-12-18
 
 - Expanded `requires` to being greater than 3.9

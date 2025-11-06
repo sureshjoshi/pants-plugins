@@ -43,7 +43,7 @@ root_patterns = [
 
 [python]
 enable_resolves = true
-interpreter_constraints = ["==3.14.0"]
+interpreter_constraints = [">=3.11.0"]
 pip_version = "latest"
 separate_lockfile_metadata_file = true
 tailor_pex_binary_targets = false

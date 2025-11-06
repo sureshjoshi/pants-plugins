@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.1.1] - 2025-11-05
+
+- Required was incorrectly set to 3.14
+
 ## [0.1.0] - 2025-11-05
 
 - Migrated to call-by-name

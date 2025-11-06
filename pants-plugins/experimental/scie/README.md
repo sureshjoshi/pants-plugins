@@ -6,7 +6,7 @@ It uses [science](https://github.com/a-scie/lift) and a `.toml` configuration fi
 
 ## Installation
 
-This plugin was tested on Python 3.9 and Pants 2.20.
+This plugin was tested on Python 3.11 and Pants 2.31.0.dev0.
 
 Add the following to your `pants.toml` file:
 
@@ -101,8 +101,8 @@ description = "An example FastAPI Lift application including using an external u
 [[lift.interpreters]]
 id = "cpython"
 provider = "PythonBuildStandalone"
-release = "20230507"
-version = "3.11.3"
+release = "20251031"
+version = "3.11.14"
 
 [[lift.files]]
 # Note the leading colon, which is required to reference the pex_binary dependency

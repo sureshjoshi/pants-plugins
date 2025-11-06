@@ -33,16 +33,18 @@ from pants.core.goals.package import (
 from pants.core.goals.run import RunFieldSet, RunInSandboxBehavior, RunRequest
 from pants.core.target_types import EnvironmentAwarePackageRequest
 from pants.core.util_rules.external_tool import download_external_tool
-from pants.engine.fs import (
-    EMPTY_DIGEST,
-    CreateDigest,
-    Digest,
-    DigestContents,
-    FileContent,
-    MergeDigests,
+from pants.engine.fs import EMPTY_DIGEST, CreateDigest, FileContent, MergeDigests
+from pants.engine.internals.graph import (
+    find_valid_field_sets,
+    hydrate_sources,
+    resolve_targets,
 )
-from pants.engine.internals.graph import find_valid_field_sets, hydrate_sources, resolve_targets
-from pants.engine.intrinsics import create_digest, digest_to_snapshot, get_digest_contents, merge_digests
+from pants.engine.intrinsics import (
+    create_digest,
+    digest_to_snapshot,
+    get_digest_contents,
+    merge_digests,
+)
 from pants.engine.platform import Platform
 from pants.engine.process import Process, execute_process_or_raise
 from pants.engine.rules import Rule, collect_rules, concurrently, implicitly, rule
@@ -50,12 +52,10 @@ from pants.engine.target import (
     DependenciesRequest,
     DescriptionField,
     FieldSetsPerTargetRequest,
-    HydratedSources,
     HydrateSourcesRequest,
     Targets,
 )
 from pants.engine.unions import UnionRule
-from pants.init.plugin_resolver import InterpreterConstraints
 from pants.util.logging import LogLevel
 
 logger = logging.getLogger(__name__)
@@ -77,7 +77,9 @@ class ScieFieldSet(PackageFieldSet, RunFieldSet):
 
 async def _get_interpreter_config(targets: Targets) -> Interpreter:
     # Get the interpreter_constraints for the Pex to determine which version of the Python Standalone to use
-    constraints = await interpreter_constraints_for_targets(InterpreterConstraintsRequest([tgt.address for tgt in targets]), **implicitly())
+    constraints = await interpreter_constraints_for_targets(
+        InterpreterConstraintsRequest([tgt.address for tgt in targets]), **implicitly()
+    )
     # TODO: Pull the interpreter_universe from somewhere else (Python Build standalone?)
     minimum_version = constraints.minimum_python_version(
         ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
@@ -118,7 +120,9 @@ def _contains_pex(built_package: BuiltPackage) -> bool:
 
 
 async def _parse_lift_source(source: ScieLiftSourceField) -> Config:
-    hydrated_sources = await hydrate_sources(HydrateSourcesRequest(source), **implicitly())
+    hydrated_sources = await hydrate_sources(
+        HydrateSourcesRequest(source), **implicitly()
+    )
     digest_contents = await get_digest_contents(hydrated_sources.snapshot.digest)
     content = digest_contents[0].content.decode("utf-8")
     lift_toml = toml.loads(content)

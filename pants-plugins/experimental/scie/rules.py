@@ -21,11 +21,13 @@ from experimental.scie.target_types import (
 )
 from pants.backend.python.util_rules.pex_from_targets import (
     InterpreterConstraintsRequest,
+    interpreter_constraints_for_targets,
 )
 from pants.core.goals.package import (
     BuiltPackage,
     BuiltPackageArtifact,
     PackageFieldSet,
+    build_package,
     environment_aware_package,
 )
 from pants.core.goals.run import RunFieldSet, RunInSandboxBehavior, RunRequest
@@ -39,11 +41,11 @@ from pants.engine.fs import (
     FileContent,
     MergeDigests,
 )
-from pants.engine.internals.graph import find_valid_field_sets, resolve_targets
-from pants.engine.intrinsics import create_digest, digest_to_snapshot, merge_digests
+from pants.engine.internals.graph import find_valid_field_sets, hydrate_sources, resolve_targets
+from pants.engine.intrinsics import create_digest, digest_to_snapshot, get_digest_contents, merge_digests
 from pants.engine.platform import Platform
-from pants.engine.process import Process, fallible_to_exec_result_or_raise
-from pants.engine.rules import Get, Rule, collect_rules, concurrently, implicitly, rule
+from pants.engine.process import Process, execute_process_or_raise
+from pants.engine.rules import Rule, collect_rules, concurrently, implicitly, rule
 from pants.engine.target import (
     DependenciesRequest,
     DescriptionField,
@@ -75,13 +77,10 @@ class ScieFieldSet(PackageFieldSet, RunFieldSet):
 
 async def _get_interpreter_config(targets: Targets) -> Interpreter:
     # Get the interpreter_constraints for the Pex to determine which version of the Python Standalone to use
-    constraints = await Get(
-        InterpreterConstraints,
-        InterpreterConstraintsRequest([tgt.address for tgt in targets]),
-    )
+    constraints = await interpreter_constraints_for_targets(InterpreterConstraintsRequest([tgt.address for tgt in targets]), **implicitly())
     # TODO: Pull the interpreter_universe from somewhere else (Python Build standalone?)
     minimum_version = constraints.minimum_python_version(
-        ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
     )
     assert (
         minimum_version is not None
@@ -119,11 +118,11 @@ def _contains_pex(built_package: BuiltPackage) -> bool:
 
 
 async def _parse_lift_source(source: ScieLiftSourceField) -> Config:
-    hydrated_source = await Get(HydratedSources, HydrateSourcesRequest(source))
-    digest_contents = await Get(DigestContents, Digest, hydrated_source.snapshot.digest)
+    hydrated_sources = await hydrate_sources(HydrateSourcesRequest(source), **implicitly())
+    digest_contents = await get_digest_contents(hydrated_sources.snapshot.digest)
     content = digest_contents[0].content.decode("utf-8")
     lift_toml = toml.loads(content)
-    logger.error(lift_toml)
+    logger.debug(lift_toml)
     return Config(**lift_toml)
 
 
@@ -244,7 +243,7 @@ async def scie_binary(
     ]
     # Split each file mapping into a list of arguments
     file_mappings = [arg for mapping in file_mappings for arg in mapping.split(" ")]
-    logger.warning(file_mappings)
+    logger.debug(file_mappings)
 
     # Run science to generate the scie binaries (depending on the `platforms` setting)
     argv = (
@@ -256,7 +255,7 @@ async def scie_binary(
         lift_path,
     )
 
-    result = await fallible_to_exec_result_or_raise(
+    result = await execute_process_or_raise(
         **implicitly(
             Process(
                 argv=argv,
@@ -283,7 +282,7 @@ async def run_scie_binary(field_set: ScieFieldSet) -> RunRequest:
     {binary name} will default to `target_name`, but can be modified on the `scie_binary` target.
     """
 
-    binary = await Get(BuiltPackage, PackageFieldSet, field_set)
+    binary = await build_package(field_set, **implicitly())
     assert (
         len(binary.artifacts) == 1
     ), "`scie_binary` should only generate one output package"

@@ -17,7 +17,6 @@ class Config:
 
     def __post_init__(self):
         if isinstance(self.lift, dict):
-            logger.warning(f"LIFT: {self.lift}")
             object.__setattr__(self, "lift", LiftConfig(**self.lift))
 
     @classmethod
@@ -58,7 +57,7 @@ class Interpreter:
     version: str
     id: str = "cpython"
     provider: str = "PythonBuildStandalone"
-    release: str = "20230507"
+    release: str = "20251031"
     lazy: bool = True
 
 

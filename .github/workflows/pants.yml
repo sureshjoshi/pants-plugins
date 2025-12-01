@@ -21,13 +21,13 @@ jobs:
         python-version: [3.9]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
 
-      - uses: pantsbuild/actions/init-pants@v8
+      - uses: pantsbuild/actions/init-pants@v10
         with:
           # cache0 makes it easy to bust the cache if needed
           gha-cache-key: cache0-py${{ matrix.python_version }}
@@ -51,7 +51,7 @@ jobs:
           pants run examples/python/helloworld:helloworld-pex
 
       - name: Upload pants log
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v5
         with:
           name: pants-log
           path: .pants.d/pants.log

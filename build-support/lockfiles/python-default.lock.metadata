@@ -1,7 +1,7 @@
 {
   "version": 5,
   "valid_for_interpreter_constraints": [
-    "CPython==3.14.0"
+    "CPython==3.11.*"
   ],
   "generated_with_requirements": [
     "fastapi",

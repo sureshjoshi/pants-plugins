@@ -4,8 +4,8 @@
     "CPython==3.11.*"
   ],
   "generated_with_requirements": [
-    "pantsbuild.pants.testutil==2.31.0.dev0",
-    "pantsbuild.pants==2.31.0.dev0"
+    "pantsbuild.pants.testutil==2.31.0.dev3",
+    "pantsbuild.pants==2.31.0.dev3"
   ],
   "manylinux": "manylinux2014",
   "requirement_constraints": [],

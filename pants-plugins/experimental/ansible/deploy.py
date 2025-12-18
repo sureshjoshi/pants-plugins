@@ -77,9 +77,7 @@ class DeployResults(EngineAwareReturnType):
 
     @memoized_property
     def exit_code(self) -> int:
-        return next(
-            (result.exit_code for result in self.results if result.exit_code != 0), 0
-        )
+        return next((result.exit_code for result in self.results if result.exit_code != 0), 0)
 
     def level(self) -> LogLevel | None:
         if self.skipped:
@@ -91,9 +89,7 @@ class DeployResults(EngineAwareReturnType):
             return f"{self.deployer_name} skipped."
         message = self.deployer_name
         message += (
-            " succeeded."
-            if self.exit_code == 0
-            else f" failed (exit code {self.exit_code})."
+            " succeeded." if self.exit_code == 0 else f" failed (exit code {self.exit_code})."
         )
 
         def msg_for_result(result: DeployResult) -> str:
@@ -113,9 +109,7 @@ class DeployResults(EngineAwareReturnType):
             for i, result in enumerate(self.results):
                 msg = f"Partition #{i + 1}"
                 msg += (
-                    f" - {result.partition_description}:"
-                    if result.partition_description
-                    else ":"
+                    f" - {result.partition_description}:" if result.partition_description else ":"
                 )
                 msg += msg_for_result(result) or "\n\n"
                 results_msg += msg
@@ -159,9 +153,7 @@ async def deploy(
     )
 
     field_set = target_roots_to_deployment_field_sets.field_sets[0]
-    _ = await Get(
-        DeployResults, DeploymentFieldSet, field_set
-    )  # TODO: Make Flake happy
+    _ = await Get(DeployResults, DeploymentFieldSet, field_set)  # TODO: Make Flake happy
     # request = await Get(DeployResults, DeploymentFieldSet, field_set)
     # TODO: Do something with the result
     return Deploy(exit_code=0)

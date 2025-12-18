@@ -14,24 +14,18 @@ def run_tailor(files: FileInfos, owned: FileInfos) -> PutativeTargets:
     rule_runner = RuleRunner(
         rules=[
             *tailor.rules(),
-            QueryRule(
-                PutativeTargets, [PutativeAnsibleTargetsRequest, AllOwnedSources]
-            ),
+            QueryRule(PutativeTargets, [PutativeAnsibleTargetsRequest, AllOwnedSources]),
         ],
         target_types=[AnsibleDeployment],
     )
 
-    rule_runner.write_files(
-        {os.path.join(directory, fname): "" for directory, fname in files}
-    )
+    rule_runner.write_files({os.path.join(directory, fname): "" for directory, fname in files})
 
     pts = rule_runner.request(
         PutativeTargets,
         [
             PutativeAnsibleTargetsRequest(tuple(directory for directory, _ in files)),
-            AllOwnedSources(
-                [os.path.join(directory, fname) for directory, fname in owned]
-            ),
+            AllOwnedSources([os.path.join(directory, fname) for directory, fname in owned]),
         ],
     )
     return pts
@@ -97,9 +91,7 @@ def test_find_extended_name() -> None:
                     path=files[0][0],
                     name="ansible_playbook",
                     triggering_sources=[files[0][1]],
-                    kwargs={
-                        "playbook": files[0][1]
-                    },  # assert that the playbook field is set
+                    kwargs={"playbook": files[0][1]},  # assert that the playbook field is set
                 ),
             ]
         )
@@ -118,9 +110,7 @@ def test_find_alternate_extension() -> None:
                     path=files[0][0],
                     name="ansible_playbook",
                     triggering_sources=[files[0][1]],
-                    kwargs={
-                        "playbook": files[0][1]
-                    },  # assert that the playbook field is set
+                    kwargs={"playbook": files[0][1]},  # assert that the playbook field is set
                 ),
             ]
         )

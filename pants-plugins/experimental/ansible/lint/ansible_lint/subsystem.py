@@ -46,9 +46,7 @@ class AnsibleLint(PythonToolBase):
             ".ansible-lint",
             ".config/ansible-lint.yml",
         )
-        check_existence = [
-            os.path.join(d, file) for file in config_files for d in ("", *dirs)
-        ]
+        check_existence = [os.path.join(d, file) for file in config_files for d in ("", *dirs)]
         return ConfigFilesRequest(
             discovery=True,
             check_existence=check_existence,

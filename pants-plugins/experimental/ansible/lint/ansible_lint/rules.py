@@ -49,14 +49,10 @@ class Setup:
 
 
 @rule(level=LogLevel.DEBUG)
-async def setup_ansible_lint(
-    setup_request: SetupRequest, ansible_lint: AnsibleLint
-) -> Setup:
+async def setup_ansible_lint(setup_request: SetupRequest, ansible_lint: AnsibleLint) -> Setup:
     source_files_get = Get(
         SourceFiles,
-        SourceFilesRequest(
-            field_set.source for field_set in setup_request.request.field_sets
-        ),
+        SourceFilesRequest(field_set.source for field_set in setup_request.request.field_sets),
     )
 
     ansiblelint_pex, source_files = await MultiGet(
@@ -114,17 +110,13 @@ async def setup_ansible_lint(
 
 
 @rule(level=LogLevel.DEBUG)
-async def ansible_lint(
-    request: AnsibleLintRequest, ansible_lint: AnsibleLint
-) -> LintResults:
+async def ansible_lint(request: AnsibleLintRequest, ansible_lint: AnsibleLint) -> LintResults:
     if ansible_lint.skip:
         return LintResults([], linter_name=request.name)
 
     setup = await Get(Setup, SetupRequest(request, check_only=True))
     result = await Get(FallibleProcessResult, VenvPexProcess, setup.process)
-    return LintResults(
-        [LintResult.from_fallible_process_result(result)], linter_name=request.name
-    )
+    return LintResults([LintResult.from_fallible_process_result(result)], linter_name=request.name)
 
 
 def rules() -> Iterable[Rule | UnionRule]:

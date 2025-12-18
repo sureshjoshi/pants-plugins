@@ -1,5 +1,5 @@
 [GLOBAL]
-pants_version = "2.31.0.dev0"
+pants_version = "2.31.0.dev3"
 pantsd = true 
 build_patterns = ["BUILD.pants", "BUILD"]
 pythonpath = ["pants-plugins"]
@@ -12,10 +12,11 @@ backend_packages = [
     "pants.backend.experimental.javascript",
     "pants.backend.experimental.javascript.lint.prettier",
     "pants.backend.experimental.python", # Enable publishing to PyPI
+    "pants.backend.experimental.python.lint.ruff.format",
     "pants.backend.python",
     "pants.backend.python.lint.autoflake",
     #"pants.backend.python.lint.bandit",
-    "pants.backend.python.lint.black",
+    #"pants.backend.python.lint.black",
     "pants.backend.python.lint.flake8",
     "pants.backend.python.lint.isort",
     "pants.backend.python.lint.pyupgrade",
@@ -29,6 +30,7 @@ backend_packages = [
     #"experimental.ansible",
     #"experimental.ansible.lint.ansible_lint",
     #"experimental.swift",
+    "experimental.ty",
 ]
 
 [source]

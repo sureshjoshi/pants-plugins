@@ -19,9 +19,7 @@ from pants.util.logging import LogLevel
 class PutativeAnsibleTargetsRequest(PutativeTargetsRequest): ...
 
 
-@rule(
-    level=LogLevel.INFO, desc="Determine candidate Ansible playbook targets to create"
-)
+@rule(level=LogLevel.INFO, desc="Determine candidate Ansible playbook targets to create")
 async def find_putative_targets(
     req: PutativeAnsibleTargetsRequest, all_owned_sources: AllOwnedSources
 ) -> PutativeTargets:
@@ -32,9 +30,7 @@ async def find_putative_targets(
     )
 
     unowned_playbooks = set(playbooks.files) - set(all_owned_sources)
-    return PutativeTargets(
-        [playbook_to_target(playbook) for playbook in sorted(unowned_playbooks)]
-    )
+    return PutativeTargets([playbook_to_target(playbook) for playbook in sorted(unowned_playbooks)])
 
 
 def playbook_to_target(playbook: str) -> PutativeTarget:

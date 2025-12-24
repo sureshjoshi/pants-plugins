@@ -3,10 +3,11 @@
 version: 2
 updates:
   - package-ecosystem: "github-actions"
-    directory: "/"
+    directories: 
+      - "**/*"
     groups:
       gha-deps:
         patterns:
           - "*"
     schedule:
-      interval: "monthly"
+      interval: "weekly"

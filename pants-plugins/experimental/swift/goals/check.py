@@ -35,9 +35,7 @@ async def swift_typecheck(request: SwiftCheckRequest) -> CheckResults:
     # TODO: Each module should be typechecked in isolation (unless explicitly imported)
 
     # From the list of field sets, extract a single address per target (to later retrieve the target)
-    requested_target_names = {
-        field_set.address.target_name for field_set in request.field_sets
-    }
+    requested_target_names = {field_set.address.target_name for field_set in request.field_sets}
 
     # TODO: There is no way this is correct - there must be a simpler way to grab all the swift_sources
     all_targets = await Get(AllTargets, AllTargetsRequest())
@@ -47,9 +45,7 @@ async def swift_typecheck(request: SwiftCheckRequest) -> CheckResults:
         if target.has_field(SwiftSourceField)
         and target.address.target_name in requested_target_names
     ]
-    sorted_swift_targets = sorted(
-        swift_source_targets, key=lambda x: x.address.target_name
-    )
+    sorted_swift_targets = sorted(swift_source_targets, key=lambda x: x.address.target_name)
 
     # Split up sources into each target/module - and typecheck each independently
     typecheck_results = await MultiGet(
@@ -57,9 +53,7 @@ async def swift_typecheck(request: SwiftCheckRequest) -> CheckResults:
             FallibleTypecheckedSwiftModule,
             TypecheckSwiftModuleRequest(target_name, tuple(targets)),
         )
-        for target_name, targets in groupby(
-            sorted_swift_targets, lambda x: x.address.target_name
-        )
+        for target_name, targets in groupby(sorted_swift_targets, lambda x: x.address.target_name)
     )
 
     return CheckResults(

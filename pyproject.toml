@@ -1,0 +1,9 @@
+[tool.ruff]
+# Exclusions were copied from [tool.black]
+exclude = [".git", ".mypy_cache", ".pants.d", "dist/"]
+line-length = 100
+target-version = "py311"
+
+[tool.ty.rules]
+# Can't find the pantsbuild.pants namespace
+unresolved-import = "ignore"

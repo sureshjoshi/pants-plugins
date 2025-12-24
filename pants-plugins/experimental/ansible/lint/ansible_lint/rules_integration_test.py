@@ -98,9 +98,7 @@ def test_success(rule_runner: RuleRunner) -> None:
             "BUILD": "ansible_sources(name='t', sources=['playbook.yml'])",
         }
     )
-    tgt = rule_runner.get_target(
-        Address("", target_name="t", relative_file_path="playbook.yml")
-    )
+    tgt = rule_runner.get_target(Address("", target_name="t", relative_file_path="playbook.yml"))
     lint_results = run_ansible_lint(
         rule_runner,
         [tgt],
@@ -117,9 +115,7 @@ def test_failure(rule_runner: RuleRunner) -> None:
             "BUILD": "ansible_sources(name='t', sources=['playbook.yml'])",
         }
     )
-    tgt = rule_runner.get_target(
-        Address("", target_name="t", relative_file_path="playbook.yml")
-    )
+    tgt = rule_runner.get_target(Address("", target_name="t", relative_file_path="playbook.yml"))
     lint_results = run_ansible_lint(
         rule_runner,
         [tgt],
@@ -138,9 +134,7 @@ def test_config(rule_runner: RuleRunner) -> None:
             "BUILD": "ansible_sources(name='t', sources=['playbook.yml'])",
         }
     )
-    tgt = rule_runner.get_target(
-        Address("", target_name="t", relative_file_path="playbook.yml")
-    )
+    tgt = rule_runner.get_target(Address("", target_name="t", relative_file_path="playbook.yml"))
     lint_results = run_ansible_lint(
         rule_runner,
         [tgt],
@@ -157,10 +151,6 @@ def test_skip(rule_runner: RuleRunner) -> None:
             "BUILD": "ansible_sources(name='t',  sources=['**/*'])",
         }
     )
-    tgt = rule_runner.get_target(
-        Address("", target_name="t", relative_file_path="playbook.yml")
-    )
-    lint_result = run_ansible_lint(
-        rule_runner, [tgt], extra_args=["--ansible-lint-skip"]
-    )
+    tgt = rule_runner.get_target(Address("", target_name="t", relative_file_path="playbook.yml"))
+    lint_result = run_ansible_lint(rule_runner, [tgt], extra_args=["--ansible-lint-skip"])
     assert not lint_result

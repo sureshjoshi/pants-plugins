@@ -84,9 +84,9 @@ async def _get_interpreter_config(targets: Targets) -> Interpreter:
     minimum_version = constraints.minimum_python_version(
         ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
     )
-    assert (
-        minimum_version is not None
-    ), f"scie-plugin: No minimum python version found given py-{minimum_version}"
+    assert minimum_version is not None, (
+        f"scie-plugin: No minimum python version found given py-{minimum_version}"
+    )
     # Create a toml configuration from the input targets and the minimum_version
     return Interpreter(version=minimum_version)
 
@@ -120,9 +120,7 @@ def _contains_pex(built_package: BuiltPackage) -> bool:
 
 
 async def _parse_lift_source(source: ScieLiftSourceField) -> Config:
-    hydrated_sources = await hydrate_sources(
-        HydrateSourcesRequest(source), **implicitly()
-    )
+    hydrated_sources = await hydrate_sources(HydrateSourcesRequest(source), **implicitly())
     digest_contents = await get_digest_contents(hydrated_sources.snapshot.digest)
     content = digest_contents[0].content.decode("utf-8")
     lift_toml = toml.loads(content)
@@ -137,9 +135,7 @@ async def scie_binary(
     platform: Platform,
 ) -> BuiltPackage:
     # Grab the dependencies of this target, and build them
-    direct_deps = await resolve_targets(
-        **implicitly(DependenciesRequest(field_set.dependencies))
-    )
+    direct_deps = await resolve_targets(**implicitly(DependenciesRequest(field_set.dependencies)))
 
     deps_field_sets = await find_valid_field_sets(
         FieldSetsPerTargetRequest(PackageFieldSet, direct_deps), **implicitly()
@@ -150,17 +146,11 @@ async def scie_binary(
     )
 
     # Split the built packages into .pex and non-.pex packages
-    pex_packages = [
-        built_pkg for built_pkg in built_packages if _contains_pex(built_pkg)
-    ]
-    non_pex_packages = [
-        built_pkg for built_pkg in built_packages if not _contains_pex(built_pkg)
-    ]
+    pex_packages = [built_pkg for built_pkg in built_packages if _contains_pex(built_pkg)]
+    non_pex_packages = [built_pkg for built_pkg in built_packages if not _contains_pex(built_pkg)]
 
     # Ensure that there is exactly 1 .pex file - reduces complexity of this plugin for now
-    assert (
-        len(pex_packages) == 1
-    ), f"Expected exactly 1 .pex package, but found {len(pex_packages)}"
+    assert len(pex_packages) == 1, f"Expected exactly 1 .pex package, but found {len(pex_packages)}"
     pex_package = pex_packages[0]
 
     # Ensure there is only 1 .pex artifact in the .pex package
@@ -169,13 +159,11 @@ async def scie_binary(
         for artifact in pex_package.artifacts
         if artifact.relpath is not None and artifact.relpath.endswith(".pex")
     ]
-    assert (
-        len(pex_artifacts) == 1
-    ), f"Expected exactly 1 .pex artifact, but found {len(pex_artifacts)}"
+    assert len(pex_artifacts) == 1, (
+        f"Expected exactly 1 .pex artifact, but found {len(pex_artifacts)}"
+    )
     pex_artifact = pex_artifacts[0]
-    assert (
-        pex_artifact.relpath is not None
-    ), "Expected single .pex artifact to have a relpath"
+    assert pex_artifact.relpath is not None, "Expected single .pex artifact to have a relpath"
     pex_artifact_path = PurePath(pex_artifact.relpath)
 
     # Prepare the configuration toml for the Science tool
@@ -196,9 +184,7 @@ async def scie_binary(
             platforms=list(target_platforms),
             interpreters=[interpreter_config],
             files=list(files_config),
-            commands=[
-                Command(exe="#{cpython:python}", args=[f"{{{ pex_artifact_path }}}"])
-            ],
+            commands=[Command(exe="#{cpython:python}", args=[f"{{{pex_artifact_path}}}"])],
         )
     )
 
@@ -215,9 +201,7 @@ async def scie_binary(
     config = parsed_config or generated_config
 
     config_content = toml.dumps(asdict(config)).encode()
-    lift_digest = await create_digest(
-        CreateDigest([FileContent(lift_path, config_content)])
-    )
+    lift_digest = await create_digest(CreateDigest([FileContent(lift_path, config_content)]))
 
     # Download the Science tool for this platform
     downloaded_tool = await download_external_tool(science.get_request(platform))
@@ -287,14 +271,10 @@ async def run_scie_binary(field_set: ScieFieldSet) -> RunRequest:
     """
 
     binary = await build_package(field_set, **implicitly())
-    assert (
-        len(binary.artifacts) == 1
-    ), "`scie_binary` should only generate one output package"
+    assert len(binary.artifacts) == 1, "`scie_binary` should only generate one output package"
     artifact = binary.artifacts[0]
     assert artifact.relpath is not None
-    return RunRequest(
-        digest=binary.digest, args=(os.path.join("{chroot}", artifact.relpath),)
-    )
+    return RunRequest(digest=binary.digest, args=(os.path.join("{chroot}", artifact.relpath),))
 
 
 def rules() -> Iterable[Rule | UnionRule]:

@@ -48,9 +48,7 @@ class AnsibleCheckRequest(CheckRequest):
 
 
 @rule(level=LogLevel.DEBUG)
-async def run_ansible_check(
-    request: AnsibleCheckRequest, ansible: Ansible
-) -> CheckResults:
+async def run_ansible_check(request: AnsibleCheckRequest, ansible: Ansible) -> CheckResults:
     # if ansible.skip:
     # return CheckResults([], checker_name="Ansible")
 

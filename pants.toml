@@ -5,6 +5,7 @@ pythonpath = ["pants-plugins"]
 print_stacktrace = true
 # plugins = [
 #   "robotpajamas.pants.scie",
+#   "robotpajamas.pants.pyrefly",
 #   "robotpajamas.pants.ty",
 # ]
 
@@ -35,6 +36,7 @@ backend_packages = [
     # "experimental.ansible.lint.ansible_lint",
     # "experimental.swift",
     "experimental.ty",
+    "experimental.pyrefly",
 ]
 
 [source]

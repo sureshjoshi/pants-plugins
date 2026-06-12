@@ -1,7 +1,22 @@
 # Copyright 2025 Pants project contributors (see CONTRIBUTORS.md).
 # Licensed under the Apache License, Version 2.0 (see LICENSE).
 
-python_sources()
+python_sources(
+    name="pyrefly",
+    resolve="pants-plugins",
+)
+
+python_tests(
+    name="tests",
+    resolve="pants-plugins",
+    dependencies=[
+        ":pyrefly",
+        "pants-plugins:pants",
+    ],
+    overrides={
+        "rules_integration_test.py": {"timeout": 240},
+    },
+)
 
 python_distribution(
     name="pyrefly-dist",

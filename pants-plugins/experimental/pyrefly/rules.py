@@ -36,7 +36,7 @@ from pants.backend.python.util_rules.python_sources import (
     PythonSourceFilesRequest,
     prepare_python_sources,
 )
-from pants.core.goals.check import CheckRequest, CheckResult, CheckResults
+from pants.core.goals.check import CheckRequest, CheckResult, CheckResults, CheckSubsystem
 from pants.core.util_rules import config_files
 from pants.core.util_rules.config_files import find_config_file
 from pants.core.util_rules.external_tool import download_external_tool
@@ -107,6 +107,8 @@ async def pyrefly_typecheck_partition(
     pyrefly: Pyrefly,
     platform: Platform,
     pex_environment: PexEnvironment,
+    check_subsystem: CheckSubsystem,
+    python_setup: PythonSetup,
 ) -> CheckResult:
     pyrefly_tool, config_files, roots_sources, transitive_sources, requirements_pex = await concurrently(
         download_external_tool(pyrefly.get_request(platform)),
@@ -125,8 +127,7 @@ async def pyrefly_typecheck_partition(
         ),
     )
 
-    # Create a venv with the 3rd-party requirements and let Pyrefly know about it using `--venv`
-    complete_pex_env = pex_environment.in_workspace()
+    complete_pex_env = pex_environment.in_sandbox(working_directory=None)
     requirements_venv_pex = await create_venv_pex(
         VenvPexRequest(
             PexRequest(
@@ -172,18 +173,20 @@ async def pyrefly_typecheck_partition(
     # TODO: If finding the minimum failed, just arbitrarily hardcoded it to 3.10...
     python_version = (
         partition.interpreter_constraints.minimum_python_version(
-            ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+            python_setup.interpreter_versions_universe
         )
         or "3.10"
     )
-    # TODO: Handle this properly, checking out the various ways we can set the correct python version from config, pants, universe, etc
 
+    search_path_args = tuple(
+        f"--search-path={source_root}" for source_root in transitive_sources.source_roots
+    )
     TODO_DUMP_CONFIG = False
     initial_args = (
         "check" if not TODO_DUMP_CONFIG else "dump-config",
         f"--python-version={python_version}",
-        # TODO: This is greasy... Also, I don't know the configuration very well yet - so, unsure if this is the one of 3-4 interpreter paths to use
-        f"--python-interpreter-path={os.path.join(complete_pex_env.pex_root, requirements_venv_pex.venv_rel_dir)}",
+        f"--python-interpreter-path={requirements_venv_pex.python.argv0}",
+        *search_path_args,
     )
     result = await execute_process(
         Process(
@@ -192,6 +195,10 @@ async def pyrefly_typecheck_partition(
             immutable_input_digests={immutable_input_key: pyrefly_tool.digest},
             description=f"Run Pyrefly on {pluralize(len(roots_sources.files), 'file')}.",
             level=LogLevel.DEBUG,
+            cache_scope=getattr(
+                check_subsystem, "default_process_cache_scope", ProcessCacheScope.SUCCESSFUL
+            ),
+            append_only_caches=complete_pex_env.append_only_caches,
         ),
         **implicitly(),
     )
@@ -238,7 +245,7 @@ async def pyrefly_determine_partitions(
     )
 
 
-@rule(desc="Pyreflypecheck using Pyrefly", level=LogLevel.DEBUG)
+@rule(desc="Typecheck using Pyrefly", level=LogLevel.DEBUG)
 async def pyrefly_typecheck(
     request: PyreflyRequest,
     pyrefly: Pyrefly,

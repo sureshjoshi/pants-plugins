@@ -4,7 +4,9 @@ This plugin provides a Pants `check` backend using [Pyrefly](https://github.com/
 
 ## Installation
 
-This plugin was tested on Python 3.11 and Pants 2.31.0.dev3.
+This plugin was tested on Python 3.11+ and Pants 2.33.0.dev3 and 2.32.0.
+
+The plugin ships Pyrefly **1.0.0** from the [official GitHub releases](https://github.com/facebook/pyrefly/releases). Pants automatically passes your configured `[source].root_patterns` to Pyrefly as `--search-path`, so you typically do not need a `search-path` entry in `[tool.pyrefly]`.
 
 Add the following to your `pants.toml` file:
 

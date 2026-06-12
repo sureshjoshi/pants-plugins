@@ -23,19 +23,16 @@ class Pyrefly(TemplatedExternalTool):
     name = "Pyrefly"
     help = softwrap("""A fast type checker and language server for Python (https://github.com/facebook/pyrefly).""")
 
-    default_version = "0.47.0"
+    default_version = "1.0.0"
     default_known_versions = [
-        "0.47.0|linux_arm64|ff64d8c6191f6199423b96e1f29a9d52405fad49347880af7f9d1559c51176d3|112163992",
-        "0.47.0|linux_x86_64|0a84a30753622c0f988bbc650fe6e6307df57986cba1afea2e67e1d8c2e989fc|113266536",
-        "0.47.0|macos_arm64|494934686a7ecc2e589407bf8979795272aa8eb68abfea06f3643d6422d6ecce|22188776",
-        "0.47.0|macos_x86_64|e1d38aa61bcc4df1b9a1036db2b94ab24e24fbac53f674ef2b8e2ec326246d62|23746832",
+        "1.0.0|linux_arm64|0f4a075b510c56089f672c7283528398656fd0a54110d6836919ce34dbf15c0b|12611542",
+        "1.0.0|linux_x86_64|8b35318ba7377a621ff9d9ef77a443b6ad3cf065be566c84f5ae9c8318df5459|13141546",
+        "1.0.0|macos_arm64|f3c2277245677b0128099f4971ae11c9c4a4d9a39aad70444c2f79a9d64b6893|12156236",
+        "1.0.0|macos_x86_64|a152c7a775aa3088e7af5257330ba37d7d85337a0e85823b4dc2db556b7c39cf|12775069",
     ]
 
-    # TODO: Pyrefly only releases to PyPi
-    # TODO: https://github.com/facebook/pyrefly/issues/883
-    # Pulling from my super temporary repo... Uncompressed binaries - the Linux ones are > 100MB !?!?
     default_url_template = (
-        "https://github.com/sureshjoshi/pyrefly-binaries/releases/download/{version}/pyrefly-{platform}"
+        "https://github.com/facebook/pyrefly/releases/download/{version}/pyrefly-{platform}.tar.gz"
     )
 
     default_url_platform_mapping = {
@@ -46,7 +43,7 @@ class Pyrefly(TemplatedExternalTool):
     }
 
     def generate_exe(self, plat: Platform) -> str:
-        return f"pyrefly-{self.default_url_platform_mapping[plat.value]}"
+        return "pyrefly"
 
     skip = SkipOption("check")
     args = ArgsListOption(example="--version")

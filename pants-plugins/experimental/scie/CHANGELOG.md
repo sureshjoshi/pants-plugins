@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-06-19
+
+- Remove Python 3.8, 3.9 from universe
+- Update to Science 0.18.1
+- Use fat Science, and musl on Linux
+- Scies are fat by default, rather than lazy/thin
+
 ## [0.1.1] - 2025-11-05
 
 - Required was incorrectly set to 3.14

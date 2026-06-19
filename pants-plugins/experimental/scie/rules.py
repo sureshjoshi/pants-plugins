@@ -81,9 +81,7 @@ async def _get_interpreter_config(targets: Targets) -> Interpreter:
         InterpreterConstraintsRequest([tgt.address for tgt in targets]), **implicitly()
     )
     # TODO: Pull the interpreter_universe from somewhere else (Python Build standalone?)
-    minimum_version = constraints.minimum_python_version(
-        ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
-    )
+    minimum_version = constraints.minimum_python_version(["3.10", "3.11", "3.12", "3.13", "3.14"])
     assert minimum_version is not None, (
         f"scie-plugin: No minimum python version found given py-{minimum_version}"
     )

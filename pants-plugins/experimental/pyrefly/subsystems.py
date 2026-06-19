@@ -21,7 +21,9 @@ from pants.util.strutil import softwrap
 class Pyrefly(TemplatedExternalTool):
     options_scope = "pyrefly"
     name = "Pyrefly"
-    help = softwrap("""A fast type checker and language server for Python (https://github.com/facebook/pyrefly).""")
+    help = softwrap(
+        """A fast type checker and language server for Python (https://github.com/facebook/pyrefly)."""
+    )
 
     default_version = "0.47.0"
     default_known_versions = [
@@ -34,9 +36,7 @@ class Pyrefly(TemplatedExternalTool):
     # TODO: Pyrefly only releases to PyPi
     # TODO: https://github.com/facebook/pyrefly/issues/883
     # Pulling from my super temporary repo... Uncompressed binaries - the Linux ones are > 100MB !?!?
-    default_url_template = (
-        "https://github.com/sureshjoshi/pyrefly-binaries/releases/download/{version}/pyrefly-{platform}"
-    )
+    default_url_template = "https://github.com/sureshjoshi/pyrefly-binaries/releases/download/{version}/pyrefly-{platform}"
 
     default_url_platform_mapping = {
         "linux_arm64": "linux-arm64",

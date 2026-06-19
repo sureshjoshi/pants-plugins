@@ -15,21 +15,21 @@ class Science(TemplatedExternalTool):
     options_scope = "science"
     help = softwrap("""A high level tool to build scies with.""")
 
-    default_version = "0.15.1"
+    default_version = "0.18.1"
     default_known_versions = [
-        "0.15.1|linux_arm64|928dddc37d98117b4310d7779b677f04ce25839898e947531b3db9bf4b473d70|9444039",
-        "0.15.1|linux_x86_64|a1b7986a8db40495ffdd7a8e8a20ed6d02f3213f8e2bdd5f3c9f4ce48dd8265f|10948381",
-        "0.15.1|macos_arm64|51aec4fcea783dddc78d54aaa07bbb8a3002d3a0308c75bd12f27eadbc53b3d1|8880820",
-        "0.15.1|macos_x86_64|d57b503c4e1073d7c89c12719b6fca43ffc956e2dfdcd68df180d5899c01b885|9617696",
+        "0.18.1|linux_arm64|f2e813b0e72f1b1c291d58b39389a20128d475c8ca55d7ac0fbe2b2e16e58c6d|33079228",
+        "0.18.1|linux_x86_64|18d43f10f908f8dc0332909ced3da172cb53c47676e35b882f815655c9d091e9|33201562",
+        "0.18.1|macos_arm64|aa669262b3ff29f3ce223d58f6cf104f5639c97fdabb635b90ffc578b057980f|21706012",
+        "0.18.1|macos_x86_64|8ee8729afe2ed5bd0be4cd1d0ee6232f44c0a98a30e8d1a90f4758e7085d84ac|21876565",
     ]
 
     default_url_template = (
-        "https://github.com/a-scie/lift/releases/download/v{version}/science-{platform}"
+        "https://github.com/a-scie/lift/releases/download/v{version}/science-fat-{platform}"
     )
 
     default_url_platform_mapping = {
-        "linux_arm64": "linux-aarch64",
-        "linux_x86_64": "linux-x86_64",
+        "linux_arm64": "musl-linux-aarch64",
+        "linux_x86_64": "musl-linux-x86_64",
         "macos_arm64": "macos-aarch64",
         "macos_x86_64": "macos-x86_64",
     }

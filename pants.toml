@@ -1,5 +1,5 @@
 [GLOBAL]
-pants_version = "2.31.0.dev3"
+pants_version = "2.32.0"
 build_patterns = ["BUILD.pants", "BUILD"]
 pythonpath = ["pants-plugins"]
 print_stacktrace = true
@@ -25,18 +25,19 @@ backend_packages = [
     "pants.backend.python.lint.flake8",
     "pants.backend.python.lint.isort",
     "pants.backend.python.lint.pyupgrade",
+    "pants.backend.python.providers.experimental.python_build_standalone",
     "pants.backend.python.typecheck.mypy",
     "pants.backend.shell",
     "pants.backend.shell.lint.shellcheck",
     "pants.backend.shell.lint.shfmt",
-    "experimental.migrate",
+    # "experimental.migrate",
     "experimental.scie",
     # "experimental.mypyc",
     # "experimental.ansible",
     # "experimental.ansible.lint.ansible_lint",
     # "experimental.swift",
-    "experimental.ty",
-    "experimental.pyrefly",
+    # "experimental.ty",
+    # "experimental.pyrefly",
 ]
 
 [source]
@@ -61,7 +62,7 @@ pants-plugins = "build-support/lockfiles/pants-plugins.lock"
 python-default = "build-support/lockfiles/python-default.lock"
 
 [python.resolves_to_interpreter_constraints]
-pants-plugins = ["==3.11.*"]
+pants-plugins = ["==3.14.*"]
 
 #[bandit]
 # Skipping assertion warnings - because this is an example project
@@ -87,6 +88,15 @@ args = ["-i 4", "-ci", "-sr"]
 [update-build-files]
 # We use `pants.backend.build_files.fmt.ruff`
 fmt = false
+
+[pex-cli]
+version = "v2.96.0"
+known_versions = [
+    "v2.96.0|linux_arm64|7d51fc3c979f94ff4898f4d3ef8405b34a5988ffbee6ec4627946cfda154e0fc|5125572",
+    "v2.96.0|linux_x86_64|7d51fc3c979f94ff4898f4d3ef8405b34a5988ffbee6ec4627946cfda154e0fc|5125572",
+    "v2.96.0|macos_arm64|7d51fc3c979f94ff4898f4d3ef8405b34a5988ffbee6ec4627946cfda154e0fc|5125572",
+    "v2.96.0|macos_x86_64|7d51fc3c979f94ff4898f4d3ef8405b34a5988ffbee6ec4627946cfda154e0fc|5125572",
+]
 
 [anonymous-telemetry]
 enabled = false

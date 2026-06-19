@@ -6,7 +6,7 @@ It uses [science](https://github.com/a-scie/lift) and a `.toml` configuration fi
 
 ## Installation
 
-This plugin was tested on Python 3.11 and Pants 2.31.0.dev0.
+This plugin was tested on Python 3.14 and Pants 2.32.0.
 
 Add the following to your `pants.toml` file:
 
@@ -14,7 +14,7 @@ Add the following to your `pants.toml` file:
 [GLOBAL]
 plugins = [
     ...
-    "robotpajamas.pants.scie",
+    "robotpajamas.pants.scie==0.2.0",
 ]
 
 ...

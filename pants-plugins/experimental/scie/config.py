@@ -57,8 +57,8 @@ class Interpreter:
     version: str
     id: str = "cpython"
     provider: str = "PythonBuildStandalone"
-    release: str = "20251031"
-    lazy: bool = True
+    release: str = "20260610"
+    lazy: bool = False
 
 
 @dataclass(frozen=True)

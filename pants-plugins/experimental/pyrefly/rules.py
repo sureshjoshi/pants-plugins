@@ -108,7 +108,13 @@ async def pyrefly_typecheck_partition(
     platform: Platform,
     pex_environment: PexEnvironment,
 ) -> CheckResult:
-    pyrefly_tool, config_files, roots_sources, transitive_sources, requirements_pex = await concurrently(
+    (
+        pyrefly_tool,
+        config_files,
+        roots_sources,
+        transitive_sources,
+        requirements_pex,
+    ) = await concurrently(
         download_external_tool(pyrefly.get_request(platform)),
         find_config_file(pyrefly.config_request()),
         determine_source_files(SourceFilesRequest(fs.sources for fs in partition.field_sets)),

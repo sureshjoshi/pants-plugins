@@ -149,14 +149,14 @@ runs:
 
     - name: Cache Pants setup
       id: cache-pants-setup
-      uses: actions/cache@v3
+      uses: actions/cache@v6
       with:
         path: |
           ${{ steps.pants_bootstrap_cache.outputs.pants_bootstrap_cache_dir }}
         key: pants-setup-${{ steps.pants_bootstrap_cache.outputs.pants_bootstrap_cache_key }}
 
     - name: Cache Pants named caches
-      uses: actions/cache@v3
+      uses: actions/cache@v6
       if: inputs.named-caches-hash != 'disable'
       with:
         path: ${{ inputs.named-caches-location }}
@@ -189,7 +189,7 @@ runs:
 
     - name: Cache Pants LMDB store
       if: inputs.cache-lmdb-store == 'true'
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       id: cache-pants-lmdb-store
       with:
         path: ${{ inputs.lmdb-store-location }}
@@ -204,7 +204,7 @@ runs:
     # https://www.pantsbuild.org/2.20/docs/using-pants/remote-caching-and-execution/remote-caching#workflow
     - name: Configure Pants Remote Caching store
       if: inputs.experimental-remote-cache-via-gha == 'true'
-      uses: actions/github-script@v6
+      uses: actions/github-script@v9
       with:
         script: |
           core.exportVariable('PANTS_REMOTE_STORE_ADDRESS', process.env.ACTIONS_CACHE_URL);
@@ -257,6 +257,6 @@ runs:
 
     - name: Setup interpreter for testing in-repo Pants plugins
       if: inputs.setup-python-for-plugins == 'true'
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v7
       with:
         python-version: ${{ steps.python_for_plugins.outputs.python_version }}
